@@ -4,533 +4,112 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transpais FIDS - Terminal Pedro Cárdenas</title>
-  
-  <!-- Estilos y Fuentes -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  
   <style>
-    :root {
-      --bg-dark: #0f172a;
-      --card-bg: #1e293b;
-      --accent-blue: #0284c7;
-      --accent-orange: #f97316;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #334155;
-      --success: #22c55e;
-      --danger: #ef4444;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #000B18;
+      color: #ffffff;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
+      user-select: none;
+      overflow-x: hidden;
     }
 
-    /* HEADER */
-    header {
-      background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
-      padding: 1rem 2rem;
-      border-bottom: 2px solid var(--border-color);
+    .glass-header {
+      background: rgba(0, 20, 45, 0.95);
+      border-bottom: 3px solid #00A859;
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .brand h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.5px;
-    }
-
-    .brand span {
-      background-color: var(--accent-orange);
-      color: #fff;
-      font-size: 0.75rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .clock-box {
-      text-align: right;
-    }
-
-    #live-clock {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #38bdf8;
-    }
-
-    #live-date {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    /* LAYOUT CONTENEDOR */
-    .container {
-      padding: 1.5rem;
-      max-width: 1600px;
-      margin: 0 auto;
-      width: 100%;
-      flex: 1;
-    }
-
-    /* PANEL TAQUILLA (OCULTO EN VISTA TV) */
-    .admin-panel {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
+    .brand-logo {
+      background: #ffffff;
+      padding: 8px 20px;
       border-radius: 12px;
-      padding: 1.2rem;
-      margin-bottom: 1.5rem;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 28px;
+      color: #002A5C;
+      letter-spacing: -1px;
     }
 
-    .admin-panel h2 {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      color: #38bdf8;
+    .glass-card {
+      background: rgba(0, 30, 68, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      margin: 20px 30px;
+      flex-grow: 1;
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-    }
-
-    .form-group {
+    .control-bar {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 30px;
       display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .form-group label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    input, select, button {
-      background-color: var(--bg-dark);
-      border: 1px solid var(--border-color);
-      color: #fff;
-      padding: 0.6rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    input:focus, select:focus {
-      border-color: #38bdf8;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 15px;
+      flex-wrap: wrap;
     }
 
     .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
       cursor: pointer;
-      font-weight: 700;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .btn-primary {
-      background-color: var(--accent-blue);
       border: none;
+      transition: all 0.2s ease;
     }
 
-    .btn-primary:hover {
-      background-color: #0369a1;
-    }
+    .btn-green { background: #00A859; color: #ffffff; }
+    .btn-green:hover { background: #008f4b; }
+    .btn-dark { background: rgba(255, 255, 255, 0.1); color: #cccccc; }
+    .btn-dark:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+    .btn-blue { background: #002A5C; color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
+    .btn-arrive { background: #d97706; color: #ffffff; font-weight: 900; }
+    .btn-arrive:hover { background: #b45309; }
 
-    .btn-danger {
-      background-color: var(--danger);
-      border: none;
-    }
-
-    .btn-danger:hover {
-      background-color: #dc2626;
-    }
-
-    /* TABLA FIDS DE SALIDAS */
-    .fids-table-wrapper {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    thead {
-      background-color: #0f172a;
-      border-bottom: 2px solid var(--border-color);
-    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
 
     th {
-      padding: 1rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
+      background: rgba(0, 20, 45, 0.9);
+      color: #93c5fd;
+      padding: 14px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    tbody tr {
-      border-bottom: 1px solid var(--border-color);
-      transition: background-color 0.15s;
-    }
+    td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
-    tbody tr:hover {
-      background-color: #334155;
-    }
-
-    td {
-      padding: 1.1rem 1rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .time-col {
-      color: #38bdf8;
-      font-weight: 800;
-      font-size: 1.25rem;
-    }
-
-    .status-badge {
-      padding: 0.3rem 0.8rem;
+    .badge-status {
+      padding: 6px 12px;
       border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
       text-transform: uppercase;
+      display: inline-block;
     }
 
-    .status-a-tiempo { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
-    .status-abordando { background-color: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid #f97316; }
-    .status-demorado { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-    .status-cancelado { background-color: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #64748b; }
+    .status-espera { background: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.4); }
+    .status-etiq { background: #FFB800; color: #000; animation: pulseGlow 1.4s infinite ease-in-out; }
+    .status-abordaje { background: #00D974; color: #000; animation: pulseGlow 1.0s infinite ease-in-out; }
+    .status-salido { background: rgba(255, 255, 255, 0.05); color: #888; }
 
-    /* REPRODUCTOR Y VOCEO DE AUDIO */
-    .audio-controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-color);
-    }
-
-    /* VISTA TV ESPECÍFICA */
-    body.tv-mode .admin-panel {
-      display: none !important;
-    }
-
-    body.tv-mode header {
-      padding: 1.5rem 3rem;
-    }
-
-    body.tv-mode #live-clock {
-      font-size: 2.5rem;
-    }
-
-    body.tv-mode td {
-      padding: 1.5rem 1rem;
-      font-size: 1.4rem;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <div class="brand">
-      <h1>TRANSPAIS</h1>
-      <span>Pedro Cárdenas</span>
-    </div>
-    <div class="clock-box">
-      <div id="live-clock">00:00:00</div>
-      <div id="live-date">Cargando fecha...</div>
-    </div>
-  </header>
-
-  <div class="container">
-    
-    <!-- PANEL DE CONTROL PARA TAQUILLA -->
-    <div class="admin-panel" id="adminPanel">
-      <h2>Gestión de Salidas (Taquilla)</h2>
-      <form id="departureForm" class="form-grid">
-        <div class="form-group">
-          <label>Hora</label>
-          <input type="time" id="depTime" required>
-        </div>
-        <div class="form-group">
-          <label>Destino</label>
-          <input type="text" id="depDestination" placeholder="Ej. Ciudad Victoria" required>
-        </div>
-        <div class="form-group">
-          <label>Servicio</label>
-          <select id="depService">
-            <option value="Único">Único</option>
-            <option value="Ejecutivo">Ejecutivo</option>
-            <option value="SÚPER">SÚPER</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Andén</label>
-          <input type="text" id="depGate" placeholder="Ej. 03" required>
-        </div>
-        <div class="form-group">
-          <label>Estatus</label>
-          <select id="depStatus">
-            <option value="A TIEMPO">A TIEMPO</option>
-            <option value="ABORDANDO">ABORDANDO</option>
-            <option value="DEMORADO">DEMORADO</option>
-            <option value="CANCELADO">CANCELADO</option>
-          </select>
-        </div>
-        <div class="form-group" style="justify-content: flex-end;">
-          <button type="submit" class="btn btn-primary" style="height: 38px; margin-top: auto;">Guardar / Agregar</button>
-        </div>
-      </form>
-
-      <!-- CONFIGURACIÓN DE VOCEO Y MÚSICA DE FONDO -->
-      <div class="audio-controls">
-        <div class="form-group" style="flex: 1;">
-          <label>Voz para Anuncios:</label>
-          <select id="voiceSelect"></select>
-        </div>
-        <button id="btnVoiceTest" class="btn" style="background-color: #334155;">Probar Voz</button>
-      </div>
-    </div>
-
-    <!-- TABLA DE SALIDAS (FIDS) -->
-    <div class="fids-table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Destino</th>
-            <th>Servicio</th>
-            <th>Andén</th>
-            <th>Estatus</th>
-            <th class="actions-col">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="fidsBody">
-          <!-- Salidas cargadas dinámicamente -->
-        </tbody>
-      </table>
-    </div>
-
-  </div>
-
-  <script>
-    // --- CONFIGURACIÓN DE RED Y CLOUD (FIREBASE REALTIME DATABASE) ---
-    const API_URL = 'https://transpais-fids-default-rtdb.firebaseio.com/departures.json';
-    
-    // Variables de Estado
-    let departures = [];
-    const urlParams = new URLSearchParams(window.location.search);
-    const isTVMode = urlParams.get('vista') === 'tv';
-
-    // Elementos DOM
-    const fidsBody = document.getElementById('fidsBody');
-    const adminPanel = document.getElementById('adminPanel');
-    const liveClock = document.getElementById('live-clock');
-    const liveDate = document.getElementById('live-date');
-    const voiceSelect = document.getElementById('voiceSelect');
-
-    // Inicializar vista TV si aplica
-    if (isTVMode) {
-      document.body.classList.add('tv-mode');
-    }
-
-    // --- RELOJ EN VIVO ---
-    function updateClock() {
-      const now = new Date();
-      liveClock.textContent = now.toLocaleTimeString('es-MX', { hour12: true });
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      liveDate.textContent = now.toLocaleDateString('es-MX', options);
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // --- SÍNTESIS DE VOZ Y ANUNCIOS ---
-    let synth = window.speechSynthesis;
-    let voices = [];
-
-    function populateVoices() {
-      voices = synth.getVoices().filter(voice => voice.lang.includes('es'));
-      voiceSelect.innerHTML = '';
-      voices.forEach((voice, index) => {
-        const option = document.createElement('option');
-        option.textContent = `${voice.name} (${voice.lang})`;
-        option.value = index;
-        voiceSelect.appendChild(option);
-      });
-    }
-
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = populateVoices;
-    }
-
-    function announceDeparture(destination, gate) {
-      if (!synth) return;
-      const text = `Atención pasajeros de Transpais. Autobús con destino a ${destination}, favor de pasar al andén número ${gate}.`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (voices[voiceSelect.value]) {
-        utterance.voice = voices[voiceSelect.value];
-      }
-      utterance.rate = 0.9;
-      synth.speak(utterance);
-    }
-
-    document.getElementById('btnVoiceTest').addEventListener('click', () => {
-      announceDeparture("Ciudad Victoria", "1");
-    });
-
-    // --- RENDERIZADO DE TABLA ---
-    function render() {
-      fidsBody.innerHTML = '';
-
-      if (departures.length === 0) {
-        fidsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No hay salidas programadas.</td></tr>`;
-        return;
-      }
-
-      // Ordenar por hora
-      departures.sort((a, b) => a.time.localeCompare(b.time));
-
-      departures.forEach((item, index) => {
-        const tr = document.createElement('tr');
-        
-        let statusClass = 'status-a-tiempo';
-        if (item.status === 'ABORDANDO') statusClass = 'status-abordando';
-        if (item.status === 'DEMORADO') statusClass = 'status-demorado';
-        if (item.status === 'CANCELADO') statusClass = 'status-cancelado';
-
-        tr.innerHTML = `
-          <td class="time-col">${item.time}</td>
-          <td>${item.destination}</td>
-          <td>${item.service}</td>
-          <td style="font-weight: 800; color: #f97316;">${item.gate}</td>
-          <td><span class="status-badge ${statusClass}">${item.status}</span></td>
-          <td class="actions-col">
-            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="deleteDeparture(${index})">Eliminar</button>
-          </td>
-        `;
-
-        fidsBody.appendChild(tr);
-      });
-
-      if (isTVMode) {
-        document.querySelectorAll('.actions-col').forEach(el => el.style.display = 'none');
-      }
-    }
-
-    // --- MANEJO DE DATOS Y CONEXIÓN CON FIREBASE ---
-    async function loadFromCloud() {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            departures = data;
-            render();
-            return;
-          }
-        }
-      } catch (err) {
-        console.log("Cargando almacenamiento local...");
-      }
-      
-      departures = JSON.parse(localStorage.getItem("transpais_pedro_cardenas_deps")) || [];
-      render();
-    }
-
-    async function persistData() {
-      localStorage.setItem("transpais_pedro_cardenas_deps", JSON.stringify(departures));
-      render();
-
-      try {
-        await fetch(API_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(departures)
-        });
-      } catch (err) {
-        console.error("Error al sincronizar con Firebase:", err);
-      }
-    }
-
-    // FORMULARIO AGREGAR SALIDA
-    document.getElementById('departureForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      const newDep = {
-        time: document.getElementById('depTime').value,
-        destination: document.getElementById('depDestination').value,
-        service: document.getElementById('depService').value,
-        gate: document.getElementById('depGate').value,
-        status: document.getElementById('depStatus').value
-      };
-
-      if (newDep.status === 'ABORDANDO') {
-        announceDeparture(newDep.destination, newDep.gate);
-      }
-
-      departures.push(newDep);
-      persistData();
-      
-      document.getElementById('depDestination').value = '';
-      document.getElementById('depGate').value = '';
-    });
-
-    window.deleteDeparture = function(index) {
-      departures.splice(index, 1);
-      persistData();
-    };
-
-    // Auto-refresco en tiempo real cada 3 segundos en vivo SIN LÍMITES NI EXPIRACIÓN
-    setInterval(async () => {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(departures)) {
-            departures = data;
-            render();
-          }
-        }
-      } catch (e) {}
-    }, 3000);
-
-    // Carga inicial
-    loadFromCloud();
-    setTimeout(populateVoices, 500);
-  </script>
-</body>
-</html>
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 184, 0, 0.6); }
+      50% { transform: scale(0.96); box-shadow: 0 0 2px rgba
