@@ -20,7 +20,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; padding-bottom: 50px; }
 
-        /* Header */
+        /* Encabezado */
         header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 30px; background: #010712; border-bottom: 2px solid var(--primary-green);
@@ -34,12 +34,12 @@
         .time { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
         .date { font-size: 13px; color: var(--text-sub); text-transform: capitalize; }
 
-        /* Control Panel Header (Solo Operaciones) */
+        /* Barra de Control de Operaciones (Solo PC) */
         .admin-bar { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 12px 30px; background: #051222; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;
         }
-        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn { padding: 8px 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; font-size: 13px; }
         .btn-green { background: var(--primary-green); color: black; }
         .btn-dark { background: #13273e; color: white; }
@@ -54,7 +54,7 @@
             padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; max-width: 180px;
         }
 
-        /* Container & Tables */
+        /* Tabla y Contenedores */
         .container { padding: 20px 30px; }
         .fids-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-bottom: 25px; }
         .card-title { font-size: 16px; font-weight: 800; margin-bottom: 15px; color: var(--primary-green); text-transform: uppercase; }
@@ -88,7 +88,7 @@
             color: white; border-radius: 6px; font-weight: 600;
         }
 
-        /* Footer Ticker */
+        /* Marquesina Inferior */
         footer {
             position: fixed; bottom: 0; left: 0; width: 100%; background: var(--primary-green); color: black;
             font-weight: 800; font-size: 13px; padding: 8px 0; overflow: hidden; white-space: nowrap; z-index: 100;
@@ -96,8 +96,11 @@
         .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
         @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        /* REGLA MODO CLIENTE (TV) */
+        /* OCULTAR ELEMENTOS OPERATIVOS EN MODO TV */
         body.client-mode .admin-only { display: none !important; }
+        body.client-mode .time-col { font-size: 28px; }
+        body.client-mode .dest-title { font-size: 24px; }
+        body.client-mode .dest-stops { font-size: 14px; }
     </style>
 </head>
 <body>
@@ -116,7 +119,7 @@
         </div>
     </header>
 
-    <!-- BARRA OPERATIVA (SE OCULTA EN MODO TV) -->
+    <!-- BARRA OPERATIVA DE TAQUILLA -->
     <div class="admin-bar admin-only">
         <div class="btn-group">
             <button class="btn btn-green" onclick="setMode('tv')">📺 VER MODO SALA DE ESPERA (TV)</button>
@@ -137,7 +140,7 @@
 
     <div class="container">
         
-        <!-- PANEL DE TAQUILLA / GESTIÓN DE CORRIDAS (ADMIN) -->
+        <!-- PANEL DE TAQUILLA (ADMIN) -->
         <div class="fids-card admin-only" id="taquillaPanel">
             <div class="card-title">⚙️ Panel Taquilla / Operaciones (Agregar o Modificar Corridas)</div>
             <form id="corridaForm" onsubmit="guardarCorrida(event)">
@@ -182,7 +185,7 @@
             </form>
         </div>
 
-        <!-- PANTALLA PRINCIPAL DE SALIDAS (CLIENTES) -->
+        <!-- PANTALLA PRINCIPAL DE SALIDAS -->
         <div class="fids-card">
             <div class="card-title">📋 Próximas Salidas</div>
             <table>
@@ -193,11 +196,11 @@
                         <th style="text-align: center;">Autobús</th>
                         <th>Punto de Abordaje</th>
                         <th>Estatus</th>
-                        <th class="admin-only">Acción</th>
+                        <th class="admin-only">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="fidsTableBody">
-                    <!-- Filas cargadas dinámicamente -->
+                    <!-- Cargado dinámicamente -->
                 </tbody>
             </table>
         </div>
@@ -209,7 +212,7 @@
     </footer>
 
     <script>
-        // --- BASE DE DATOS INICIAL ---
+        // --- BASE DE DATOS LOCAL Y SINCRONIZACIÓN ---
         let corridas = JSON.parse(localStorage.getItem('transpais_corridas')) || [
             { id: 1, hora: "18:45", destino: "Tampico x Victoria", escalas: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero", autobus: "---", abordaje: "Oficina Pedro Cárdenas", estatus: "EN ESPERA" },
             { id: 2, hora: "23:00", destino: "Ciudad Valles", escalas: "Ciudad Victoria, Ciudad Mante", autobus: "---", abordaje: "Oficina Pedro Cárdenas", estatus: "EN ESPERA" },
@@ -225,7 +228,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- RENDERIZAR TABLA ---
+        // --- DIBUJAR TABLA ---
         function renderTable() {
             const tbody = document.getElementById('fidsTableBody');
             tbody.innerHTML = '';
@@ -246,6 +249,7 @@
                         <td class="boarding-col">${item.abordaje}</td>
                         <td><span class="status-badge ${statusClass}">${item.estatus}</span></td>
                         <td class="admin-only">
+                            <button class="btn btn-green" onclick="llamarAbordaje(${index})">📢 ABORDAR</button>
                             <button class="btn btn-danger" onclick="eliminarCorrida(${index})">🗑️</button>
                         </td>
                     </tr>
@@ -253,7 +257,12 @@
             });
         }
 
-        // --- GUARDAR Y ELIMINAR ---
+        function syncData() {
+            localStorage.setItem('transpais_corridas', JSON.stringify(corridas));
+            renderTable();
+        }
+
+        // --- OPERACIONES ---
         function guardarCorrida(e) {
             e.preventDefault();
             const nueva = {
@@ -266,15 +275,21 @@
                 estatus: document.getElementById('inputEstatus').value
             };
             corridas.push(nueva);
-            localStorage.setItem('transpais_corridas', JSON.stringify(corridas));
-            renderTable();
+            syncData();
             document.getElementById('corridaForm').reset();
         }
 
         function eliminarCorrida(index) {
             corridas.splice(index, 1);
-            localStorage.setItem('transpais_corridas', JSON.stringify(corridas));
-            renderTable();
+            syncData();
+        }
+
+        function llamarAbordaje(index) {
+            corridas[index].estatus = 'ABORDANDO';
+            syncData();
+            const corrida = corridas[index];
+            const texto = `Atención pasajeros, autobús Transpais con destino a ${corrida.destino} se encuentra abordando en Oficina Pedro Cárdenas.`;
+            ejecutarVoceo(texto);
         }
 
         function applyPreset(val) {
@@ -284,10 +299,11 @@
             document.getElementById('inputEscalas').value = parts[1];
         }
 
-        // --- REPRODUCTOR DE MÚSICA POR CARPETA ---
+        // --- REPRODUCTOR DE MÚSICA CON DUCKING (ATENUACIÓN) ---
         let playlist = [];
         let currentTrack = 0;
         let audioPlayer = new Audio();
+        let savedVolume = 0.5;
 
         function loadMusicFolder(e) {
             playlist = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
@@ -300,6 +316,7 @@
         function playTrack(index) {
             if(playlist.length === 0) return;
             audioPlayer.src = URL.createObjectURL(playlist[index]);
+            audioPlayer.volume = savedVolume;
             audioPlayer.play();
             document.getElementById('playBtn').innerText = '⏸';
         }
@@ -321,9 +338,12 @@
             playTrack(currentTrack);
         }
 
-        function setVolume(v) { audioPlayer.volume = v; }
+        function setVolume(v) { 
+            savedVolume = v;
+            audioPlayer.volume = v; 
+        }
 
-        // --- SELECCIÓN Y CONFIGURACIÓN DE VOCES ESPAÑOL ---
+        // --- CONFIGURACIÓN DE VOCES ---
         let voices = [];
         function populateVoices() {
             voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
@@ -353,29 +373,29 @@
             speechSynthesis.onvoiceschanged = populateVoices;
         }
 
-        // --- VOCEO AUTOMÁTICO (TTS) ---
-        function testTTS() {
-            window.speechSynthesis.cancel(); // Detener voceos previos
-            const text = "Atención pasajeros, autobús Transpais con destino a Tampico por Victoria se encuentra abordando en Oficina Pedro Cárdenas.";
-            const msg = new SpeechSynthesisUtterance(text);
+        function ejecutarVoceo(texto) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(texto);
             msg.lang = 'es-MX';
-            msg.rate = 0.95; // Velocidad ligeramente pausada y clara
-            msg.pitch = 1.0;
+            msg.rate = 0.95;
 
             const selectedIndex = document.getElementById('voiceSelect').value;
             if(voices[selectedIndex]) {
                 msg.voice = voices[selectedIndex];
             }
 
-            // Atenuar música durante el voceo
-            const originalVol = audioPlayer.volume;
-            if(!audioPlayer.paused) audioPlayer.volume = originalVol * 0.2;
+            // Atenuar música (Ducking)
+            if(!audioPlayer.paused) audioPlayer.volume = savedVolume * 0.15;
 
             msg.onend = function() {
-                if(!audioPlayer.paused) audioPlayer.volume = originalVol;
+                if(!audioPlayer.paused) audioPlayer.volume = savedVolume;
             };
 
             window.speechSynthesis.speak(msg);
+        }
+
+        function testTTS() {
+            ejecutarVoceo("Atención pasajeros, autobús Transpais con destino a Tampico por Victoria se encuentra abordando en Oficina Pedro Cárdenas.");
         }
 
         // --- CONTROL DE VISTAS (TV / TAQUILLA) ---
@@ -387,10 +407,18 @@
             }
         }
 
-        // Detectar si se abre con "?vista=tv"
+        // Detectar si la URL incluye ?vista=tv
         const params = new URLSearchParams(window.location.search);
         if(params.get('vista') === 'tv') {
             setMode('tv');
+            // Consultar actualización de datos cada 5 segundos en la Smart TV
+            setInterval(() => {
+                const updatedData = JSON.parse(localStorage.getItem('transpais_corridas'));
+                if (updatedData) {
+                    corridas = updatedData;
+                    renderTable();
+                }
+            }, 5000);
         }
 
         // Cargar tabla inicial
