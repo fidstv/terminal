@@ -456,56 +456,6 @@
       }
     }
 
-    // --- CONEXIÓN Y PERSISTENCIA NPOINT.IO (MÉTODOS GET/PUT) ---
-    async function loadFromCloud() {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const cloudData = await res.json();
-          if (Array.isArray(cloudData)) {
-            departures = cloudData;
-            render();
-            return;
-          }
-        }
-      } catch (err) {
-        console.log("Cargando desde almacenamiento local...");
-      }
-      
-      departures = JSON.parse(localStorage.getItem("transpais_matamoros_deps")) || [];
-      initAutoCatalog();
-      render();
-    }
-
-    async function persistData() {
-      localStorage.setItem("transpais_matamoros_deps", JSON.stringify(departures));
-      render();
-
-      try {
-        await fetch(API_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(departures)
-        });
-      } catch (err) {
-        console.error("Error al sincronizar con npoint.io:", err);
-      }
-    }
-
-    // Auto-refresco continuo cada 5 segundos para mantener Smart TVs sincronizadas
-    setInterval(async () => {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const cloudData = await res.json();
-          if (Array.isArray(cloudData) && JSON.stringify(cloudData) !== JSON.stringify(departures)) {
-            departures = cloudData;
-            render();
-          }
-        }
-      } catch (e) {}
-    }, 5000);
-
     // --- REPRODUCTOR Y PLAYLIST DE MÚSICA ---
     let playlist = [];
     let currentTrackIndex = 0;
@@ -919,6 +869,56 @@
         }
       });
     }
+
+    // --- CONEXIÓN Y PERSISTENCIA NPOINT.IO (MÉTODOS GET/PUT) CON ANTI-CACHÉ ---
+    async function loadFromCloud() {
+      try {
+        const res = await fetch(API_URL + '?t=' + Date.now());
+        if (res.ok) {
+          const cloudData = await res.json();
+          if (Array.isArray(cloudData)) {
+            departures = cloudData;
+            render();
+            return;
+          }
+        }
+      } catch (err) {
+        console.log("Cargando desde almacenamiento local...");
+      }
+      
+      departures = JSON.parse(localStorage.getItem("transpais_matamoros_deps")) || [];
+      initAutoCatalog();
+      render();
+    }
+
+    async function persistData() {
+      localStorage.setItem("transpais_matamoros_deps", JSON.stringify(departures));
+      render();
+
+      try {
+        await fetch(API_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(departures)
+        });
+      } catch (err) {
+        console.error("Error al sincronizar con npoint.io:", err);
+      }
+    }
+
+    // Auto-refresco continuo cada 3 segundos sin guardar en caché para Smart TVs
+    setInterval(async () => {
+      try {
+        const res = await fetch(API_URL + '?t=' + Date.now());
+        if (res.ok) {
+          const cloudData = await res.json();
+          if (Array.isArray(cloudData) && JSON.stringify(cloudData) !== JSON.stringify(departures)) {
+            departures = cloudData;
+            render();
+          }
+        }
+      } catch (e) {}
+    }, 3000);
 
     document.getElementById('template-etiq').value = templateEtiq;
     document.getElementById('template-abord').value = templateAbord;
