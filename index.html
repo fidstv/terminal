@@ -20,7 +20,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; padding-bottom: 50px; }
 
-        /* Encabezado */
         header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 30px; background: #010712; border-bottom: 2px solid var(--primary-green);
@@ -34,7 +33,6 @@
         .time { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
         .date { font-size: 13px; color: var(--text-sub); text-transform: capitalize; }
 
-        /* Barra de Control de Operaciones (Solo PC) */
         .admin-bar { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 12px 30px; background: #051222; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;
@@ -54,7 +52,6 @@
             padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; max-width: 180px;
         }
 
-        /* Tabla y Contenedores */
         .container { padding: 20px 30px; }
         .fids-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-bottom: 25px; }
         .card-title { font-size: 16px; font-weight: 800; margin-bottom: 15px; color: var(--primary-green); text-transform: uppercase; }
@@ -79,7 +76,6 @@
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* Formulario Taquilla */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         .form-group label { font-size: 12px; color: var(--text-sub); font-weight: 700; }
@@ -88,7 +84,22 @@
             color: white; border-radius: 6px; font-weight: 600;
         }
 
-        /* Marquesina Inferior */
+        /* MODAL DE CONFIGURACIÓN DE CREDENCIALES */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-box {
+            background: var(--card-bg); border: 2px solid var(--primary-green); padding: 30px;
+            border-radius: 12px; width: 90%; max-width: 450px; text-align: center;
+        }
+        .modal-box h2 { font-size: 20px; margin-bottom: 15px; color: var(--primary-green); }
+        .modal-box p { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
+        .modal-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px; background: #030c1a;
+            border: 1px solid var(--border-color); color: white; border-radius: 6px; font-weight: 600;
+        }
+
         footer {
             position: fixed; bottom: 0; left: 0; width: 100%; background: var(--primary-green); color: black;
             font-weight: 800; font-size: 13px; padding: 8px 0; overflow: hidden; white-space: nowrap; z-index: 100;
@@ -96,7 +107,6 @@
         .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
         @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        /* OCULTAR ELEMENTOS OPERATIVOS EN MODO TV */
         body.client-mode .admin-only { display: none !important; }
         body.client-mode .time-col { font-size: 28px; }
         body.client-mode .dest-title { font-size: 24px; }
@@ -104,6 +114,17 @@
     </style>
 </head>
 <body>
+
+    <!-- MODAL PARA INGRESAR CREDENCIALES -->
+    <div id="credentialsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h2>🔑 Conexión JSONBin.io</h2>
+            <p>Ingresa tus credenciales para sincronizar la taquilla con la Smart TV de forma privada.</p>
+            <input type="text" id="binIdInput" placeholder="BIN ID (Ej: 65a12345ef6789...)">
+            <input type="password" id="apiKeyInput" placeholder="API Key / Master Key (Solo para Taquilla)">
+            <button class="btn btn-green" style="width: 100%;" onclick="saveCredentials()">CONECTAR TERMINAL</button>
+        </div>
+    </div>
 
     <header>
         <div class="logo-container">
@@ -119,11 +140,11 @@
         </div>
     </header>
 
-    <!-- BARRA OPERATIVA DE TAQUILLA -->
     <div class="admin-bar admin-only">
         <div class="btn-group">
             <button class="btn btn-green" onclick="setMode('tv')">📺 VER MODO SALA DE ESPERA (TV)</button>
             <button class="btn btn-dark" onclick="setMode('admin')">⚙️ VER MODO TAQUILLA</button>
+            <button class="btn btn-dark" onclick="openConfig()">🔑 CONFIGURAR CLAVES</button>
             <select id="voiceSelect" class="voice-select" title="Seleccionar Voz de Voceo"></select>
             <button class="btn btn-blue" onclick="testTTS()">🔊 PROBADOR VOCEO</button>
         </div>
@@ -140,7 +161,6 @@
 
     <div class="container">
         
-        <!-- PANEL DE TAQUILLA (ADMIN / AGREGAR O EDITAR) -->
         <div class="fids-card admin-only" id="taquillaPanel">
             <div class="card-title" id="formTitle">⚙️ Agregar / Modificar Corrida</div>
             <form id="corridaForm" onsubmit="guardarCorrida(event)">
@@ -187,7 +207,6 @@
             </form>
         </div>
 
-        <!-- PANTALLA PRINCIPAL DE SALIDAS -->
         <div class="fids-card">
             <div class="card-title">📋 Próximas Salidas</div>
             <table>
@@ -202,7 +221,6 @@
                     </tr>
                 </thead>
                 <tbody id="fidsTableBody">
-                    <!-- Cargado dinámicamente -->
                 </tbody>
             </table>
         </div>
@@ -214,14 +232,44 @@
     </footer>
 
     <script>
-        // --- BASE DE DATOS LOCAL Y SINCRONIZACIÓN ---
-        let corridas = JSON.parse(localStorage.getItem('transpais_corridas')) || [
-            { id: 1, hora: "18:45", destino: "Tampico x Victoria", escalas: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero", autobus: "---", abordaje: "Oficina Pedro Cárdenas", estatus: "EN ESPERA" },
-            { id: 2, hora: "23:00", destino: "Ciudad Valles", escalas: "Ciudad Victoria, Ciudad Mante", autobus: "---", abordaje: "Oficina Pedro Cárdenas", estatus: "EN ESPERA" },
-            { id: 3, hora: "23:30", destino: "Tampico – Madero", escalas: "Estación Manuel, Puente Altamira Las Piñas", autobus: "---", abordaje: "Oficina Pedro Cárdenas", estatus: "EN ESPERA" }
-        ];
+        let BIN_ID = localStorage.getItem('jb_bin_id') || '';
+        let API_KEY = localStorage.getItem('jb_api_key') || '';
 
-        // --- RELOJ ---
+        let corridas = JSON.parse(localStorage.getItem('transpais_corridas')) || [];
+
+        function checkCredentials() {
+            const isTV = new URLSearchParams(window.location.search).get('vista') === 'tv';
+            if (!BIN_ID || (!API_KEY && !isTV)) {
+                document.getElementById('credentialsModal').style.display = 'flex';
+            } else {
+                document.getElementById('credentialsModal').style.display = 'none';
+                fetchRemoteData();
+            }
+        }
+
+        function saveCredentials() {
+            const binInput = document.getElementById('binIdInput').value.trim();
+            const keyInput = document.getElementById('apiKeyInput').value.trim();
+
+            if (binInput) {
+                BIN_ID = binInput;
+                localStorage.setItem('jb_bin_id', BIN_ID);
+            }
+            if (keyInput) {
+                API_KEY = keyInput;
+                localStorage.setItem('jb_api_key', API_KEY);
+            }
+
+            document.getElementById('credentialsModal').style.display = 'none';
+            fetchRemoteData();
+        }
+
+        function openConfig() {
+            document.getElementById('binIdInput').value = BIN_ID;
+            document.getElementById('apiKeyInput').value = API_KEY;
+            document.getElementById('credentialsModal').style.display = 'flex';
+        }
+
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('es-MX', { hour12: false });
@@ -230,7 +278,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- DIBUJAR TABLA ---
         function renderTable() {
             const tbody = document.getElementById('fidsTableBody');
             tbody.innerHTML = '';
@@ -260,12 +307,45 @@
             });
         }
 
-        function syncData() {
+        async function pushRemoteData() {
             localStorage.setItem('transpais_corridas', JSON.stringify(corridas));
             renderTable();
+
+            if (!BIN_ID || !API_KEY) return;
+
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(corridas)
+                });
+            } catch (err) {
+                console.error("Error al actualizar datos remotos:", err);
+            }
         }
 
-        // --- OPERACIONES: AGREGAR / EDITAR ---
+        async function fetchRemoteData() {
+            if (!BIN_ID) return;
+
+            try {
+                const headers = {};
+                if (API_KEY) headers['X-Master-Key'] = API_KEY;
+
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
+                const data = await res.json();
+                if (data.record) {
+                    corridas = data.record;
+                    localStorage.setItem('transpais_corridas', JSON.stringify(corridas));
+                    renderTable();
+                }
+            } catch (err) {
+                console.error("Error al leer datos remotos:", err);
+            }
+        }
+
         function guardarCorrida(e) {
             e.preventDefault();
             const index = parseInt(document.getElementById('editIndex').value);
@@ -281,14 +361,12 @@
             };
 
             if (index >= 0) {
-                // Actualizar existente
                 corridas[index] = corridaData;
             } else {
-                // Agregar nueva
                 corridas.push(corridaData);
             }
 
-            syncData();
+            pushRemoteData();
             cancelarEdicion();
         }
 
@@ -304,8 +382,6 @@
             document.getElementById('formTitle').innerText = "✏️ Editando Corrida";
             document.getElementById('btnSave').innerText = "💾 ACTUALIZAR CORRIDA";
             document.getElementById('btnCancelEdit').style.display = "inline-block";
-
-            // Scroll suave hacia el formulario
             document.getElementById('taquillaPanel').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -319,12 +395,12 @@
 
         function eliminarCorrida(index) {
             corridas.splice(index, 1);
-            syncData();
+            pushRemoteData();
         }
 
         function llamarAbordaje(index) {
             corridas[index].estatus = 'ABORDANDO';
-            syncData();
+            pushRemoteData();
             const corrida = corridas[index];
             const texto = `Atención pasajeros, autobús Transpais con destino a ${corrida.destino} se encuentra abordando en Oficina Pedro Cárdenas.`;
             ejecutarVoceo(texto);
@@ -337,7 +413,6 @@
             document.getElementById('inputEscalas').value = parts[1];
         }
 
-        // --- REPRODUCTOR DE MÚSICA CON DUCKING (ATENUACIÓN) ---
         let playlist = [];
         let currentTrack = 0;
         let audioPlayer = new Audio();
@@ -381,7 +456,6 @@
             audioPlayer.volume = v; 
         }
 
-        // --- CONFIGURACIÓN DE VOCES ---
         let voices = [];
         function populateVoices() {
             voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
@@ -422,7 +496,6 @@
                 msg.voice = voices[selectedIndex];
             }
 
-            // Atenuar música (Ducking)
             if(!audioPlayer.paused) audioPlayer.volume = savedVolume * 0.15;
 
             msg.onend = function() {
@@ -436,7 +509,6 @@
             ejecutarVoceo("Atención pasajeros, autobús Transpais con destino a Tampico por Victoria se encuentra abordando en Oficina Pedro Cárdenas.");
         }
 
-        // --- CONTROL DE VISTAS (TV / TAQUILLA) ---
         function setMode(mode) {
             if(mode === 'tv') {
                 document.body.classList.add('client-mode');
@@ -445,22 +517,13 @@
             }
         }
 
-        // Detectar si la URL incluye ?vista=tv
         const params = new URLSearchParams(window.location.search);
         if(params.get('vista') === 'tv') {
             setMode('tv');
-            // Consultar actualización de datos cada 5 segundos en la Smart TV
-            setInterval(() => {
-                const updatedData = JSON.parse(localStorage.getItem('transpais_corridas'));
-                if (updatedData) {
-                    corridas = updatedData;
-                    renderTable();
-                }
-            }, 5000);
         }
 
-        // Cargar tabla inicial
-        renderTable();
+        checkCredentials();
+        setInterval(fetchRemoteData, 3000);
     </script>
 </body>
 </html>
