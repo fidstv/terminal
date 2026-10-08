@@ -3,507 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIDS Transpais - Pedro Cárdenas</title>
+  <title>Transpais - Sistema FIDS Pedro Cárdenas</title>
   <style>
     :root {
-      --bg-main: #0a0f1d;
-      --panel-bg: #151d30;
-      --accent-color: #d97706;
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-      --border-color: #27354f;
-      --status-espera: #d97706;
-      --status-abordando: #16a34a;
-      --status-atiempo: #2563eb;
-      --status-retrasado: #ea580c;
-      --status-cancelado: #dc2626;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --accent: #d97706;
+      --green: #16a34a;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --border: #334155;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
       padding: 20px;
     }
-
-    /* Encabezado */
     header {
-      background-color: var(--panel-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
     }
-
-    .brand-title {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #fbbf24;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    h1 { margin: 0; font-size: 1.8rem; color: #fbbf24; }
+    .status-bar { font-size: 0.9rem; color: #94a3b8; }
+    
+    /* Controles de Administración */
+    .admin-panel {
+      background: var(--card);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
     }
-
-    .brand-subtitle {
-      font-size: 1rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .clock-container {
-      text-align: right;
-    }
-
-    .clock-time {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #ffffff;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .clock-date {
-      font-size: 0.9rem;
-      color: #64748b;
-      text-transform: capitalize;
-    }
-
-    /* Panel de Control (Taquilla) */
-    .admin-container {
-      background-color: var(--panel-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 25px;
-    }
-
-    .admin-title {
-      font-size: 1.1rem;
-      color: #fbbf24;
-      margin-bottom: 15px;
+    .admin-panel h3 { margin-top: 0; color: #fbbf24; }
+    .form-row {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 10px;
+      margin-bottom: 10px;
     }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      align-items: end;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .form-control {
-      background-color: #0d1322;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 10px 12px;
+    .admin-panel input, .admin-panel select, .admin-panel button {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #0f172a;
       color: white;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
+      font-size: 0.9rem;
     }
-
-    .form-control:focus {
-      border-color: #3b82f6;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      border-radius: 6px;
-      border: none;
-      font-weight: 700;
+    .admin-panel button {
+      background: var(--blue);
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.95rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      border: none;
+      font-weight: bold;
     }
+    .admin-panel button:hover { background: #1d4ed8; }
+    .btn-voice { background: #8b5cf6 !important; }
+    .btn-voice:hover { background: #7c3aed !important; }
 
-    .btn-primary {
-      background-color: #2563eb;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #1d4ed8;
-    }
-
-    .btn-danger {
-      background-color: #dc2626;
-      color: white;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-    }
-
-    .btn-danger:hover {
-      background-color: #b91c1c;
-    }
-
-    /* Tabla FIDS */
-    .table-container {
-      background-color: var(--panel-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    }
-
+    /* Tabla */
     table {
       width: 100%;
       border-collapse: collapse;
+      background-color: var(--card);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 15px;
       text-align: left;
+      border-bottom: 1px solid var(--border);
     }
-
-    thead {
-      background-color: #1e293b;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    th {
-      padding: 16px 20px;
+    th { background-color: #0284c7; color: white; text-transform: uppercase; font-size: 0.85rem; }
+    tr:hover { background-color: #334155; }
+    
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
       font-size: 0.85rem;
-      font-weight: 700;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    td {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 1rem;
-      vertical-align: middle;
-    }
-
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    tbody tr:hover {
-      background-color: rgba(255, 255, 255, 0.02);
-    }
-
-    .time-cell {
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: #fbbf24;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .destination-cell {
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #ffffff;
-    }
-
-    .escalas-cell {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      max-width: 300px;
-    }
-
-    .badge {
       display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 800;
+    }
+    .status-espera { background-color: var(--accent); color: white; }
+    .status-abordando { background-color: var(--green); color: white; }
+    .status-cancelado { background-color: var(--red); color: white; }
+    .status-atiempo { background-color: var(--blue); color: white; }
+
+    .btn-action {
+      padding: 4px 8px;
+      margin-right: 4px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
       font-size: 0.8rem;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-align: center;
+      font-weight: bold;
     }
+    .btn-edit { background: #eab308; color: black; }
+    .btn-delete { background: var(--red); color: white; }
+    .btn-announce { background: #8b5cf6; color: white; }
 
-    .badge-espera { background-color: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #d97706; }
-    .badge-abordando { background-color: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid #16a34a; }
-    .badge-atiempo { background-color: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid #2563eb; }
-    .badge-retrasado { background-color: rgba(234, 88, 12, 0.2); color: #fb923c; border: 1px solid #ea580c; }
-    .badge-cancelado { background-color: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
-
-    /* Estado de Sincronización */
-    .sync-status {
-      margin-top: auto;
-      padding-top: 20px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .dot {
-      height: 8px;
-      width: 8px;
-      background-color: #22c55e;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-    }
-
-    /* MODO SMART TV (Modo Pantalla) */
-    body.tv-mode .admin-container,
-    body.tv-mode .action-col {
-      display: none !important;
-    }
-
-    body.tv-mode th {
-      font-size: 1.1rem;
-      padding: 22px 28px;
-    }
-
-    body.tv-mode td {
-      padding: 24px 28px;
-      font-size: 1.4rem;
-    }
-
-    body.tv-mode .time-cell {
-      font-size: 1.8rem;
-    }
-
-    body.tv-mode .destination-cell {
-      font-size: 1.6rem;
-    }
-
-    body.tv-mode .escalas-cell {
-      font-size: 1.2rem;
-      max-width: 450px;
-    }
-
-    body.tv-mode .badge {
-      font-size: 1.1rem;
-      padding: 8px 18px;
-    }
+    /* Modo TV */
+    body.tv-mode .admin-panel, body.tv-mode .actions-cell { display: none; }
+    body.tv-mode th, body.tv-mode td { padding: 18px 20px; font-size: 1.3rem; }
   </style>
 </head>
 <body>
 
-  <!-- Encabezado Principal -->
   <header>
     <div>
-      <div class="brand-title">Transpais</div>
-      <div class="brand-subtitle">Terminal Pedro Cárdenas - Matamoros</div>
+      <h1>TRANSPAIS - Terminal Pedro Cárdenas</h1>
+      <div class="status-bar" id="last-update">Sincronizando...</div>
     </div>
-    <div class="clock-container">
-      <div class="clock-time" id="clock-time">00:00:00</div>
-      <div class="clock-date" id="clock-date">Cargando fecha...</div>
-    </div>
+    <div id="clock" style="font-size: 1.6rem; font-weight: bold; color: #fbbf24;"></div>
   </header>
 
-  <!-- Panel Admin (Solo visible en PC / Taquilla) -->
-  <div class="admin-container" id="admin-panel">
-    <div class="admin-title">
-      ⚡ Control de Salidas (Sincronizado en tiempo real)
+  <!-- Panel de administración -->
+  <div id="admin-section" class="admin-panel">
+    <h3 id="form-title">Agregar / Modificar Salida</h3>
+    <input type="hidden" id="edit-index" value="-1">
+    
+    <div class="form-row">
+      <input type="time" id="f-hora" required>
+      <input type="text" id="f-destino" placeholder="Destino" style="flex: 2;" required>
+      <input type="text" id="f-escalas" placeholder="Escalas / Ruta" style="flex: 3;">
+      <input type="text" id="f-autobus" placeholder="No. Autobús" style="width: 110px;">
+      <input type="text" id="f-abordaje" placeholder="Abordaje" value="Oficina Pedro Cárdenas">
+      <select id="f-estatus">
+        <option value="EN ESPERA">EN ESPERA</option>
+        <option value="ABORDANDO">ABORDANDO</option>
+        <option value="A TIEMPO">A TIEMPO</option>
+        <option value="RETRASADO">RETRASADO</option>
+        <option value="CANCELADO">CANCELADO</option>
+      </select>
+      <button onclick="guardarSalida()" id="btn-save">Agregar Salida</button>
+      <button onclick="cancelarEdicion()" id="btn-cancel" style="display:none; background:#64748b;">Cancelar</button>
     </div>
-    <form id="form-salida" onsubmit="agregarOEditarSalida(event)">
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="f-hora">Hora de Salida</label>
-          <input type="time" id="f-hora" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="f-destino">Destino</label>
-          <input type="text" id="f-destino" class="form-control" placeholder="Ej. Tampico x Victoria" required>
-        </div>
-        <div class="form-group">
-          <label for="f-escalas">Escalas / Ruta</label>
-          <input type="text" id="f-escalas" class="form-control" placeholder="San Fernando, Cd. Victoria...">
-        </div>
-        <div class="form-group">
-          <label for="f-autobus">No. Autobús</label>
-          <input type="text" id="f-autobus" class="form-control" placeholder="Ej. 9502">
-        </div>
-        <div class="form-group">
-          <label for="f-abordaje">Abordaje</label>
-          <input type="text" id="f-abordaje" class="form-control" value="Oficina Pedro Cárdenas">
-        </div>
-        <div class="form-group">
-          <label for="f-estatus">Estatus</label>
-          <select id="f-estatus" class="form-control">
-            <option value="EN ESPERA">EN ESPERA</option>
-            <option value="ABORDANDO">ABORDANDO</option>
-            <option value="A TIEMPO">A TIEMPO</option>
-            <option value="RETRASADO">RETRASADO</option>
-            <option value="CANCELADO">CANCELADO</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary" id="btn-submit">
-            + Programar Salida
-          </button>
-        </div>
-      </div>
-    </form>
+
+    <!-- Ajuste de Voz para Anuncios -->
+    <div class="form-row" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
+      <label style="align-self: center; font-weight: bold;">🔊 Configuración de Voz:</label>
+      <select id="voice-select" style="max-width: 300px;"></select>
+      <button onclick="probarVoz()" class="btn-voice">Probar Voz</button>
+    </div>
   </div>
 
-  <!-- Tabla de Salidas -->
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Hora</th>
-          <th>Destino</th>
-          <th>Escalas</th>
-          <th>Autobús</th>
-          <th>Abordaje</th>
-          <th>Estatus</th>
-          <th class="action-col">Acción</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-body">
-        <tr>
-          <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
-            Cargando salidas en tiempo real...
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Pie de estado -->
-  <div class="sync-status">
-    <div><span class="dot"></span> Nube npoint.io: Sincronización activa</div>
-    <div id="sync-time">Última actualización: --:--:--</div>
-  </div>
+  <!-- Tabla FIDS -->
+  <table>
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Destino</th>
+        <th>Escalas</th>
+        <th>Autobús</th>
+        <th>Abordaje</th>
+        <th>Estatus</th>
+        <th class="actions-cell">Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-salidas">
+      <tr><td colspan="7">Cargando datos...</td></tr>
+    </tbody>
+  </table>
 
   <script>
-    // Configuración Base de Datos NPoint.io
     const urlParams = new URLSearchParams(window.location.search);
-    const BIN_ID = urlParams.get('id') || 'e6f5164bca1f30d3fdd1';
-    const ES_MODO_TV = urlParams.get('vista') === 'tv';
-    const API_URL = `https://api.npoint.io/${BIN_ID}`;
+    const binId = urlParams.get('id') || 'e6f5164bca1f30d3fdd1';
+    const esTv = urlParams.get('vista') === 'tv';
+    const API_URL = `https://api.npoint.io/${binId}`;
 
-    let listaSalidas = [];
+    if (esTv) document.body.classList.add('tv-mode');
 
-    // Detectar si se está pidiendo vista TV
-    if (ES_MODO_TV) {
-      document.body.classList.add('tv-mode');
-    }
+    let datosLocales = [];
+    let synth = window.speechSynthesis;
+    let voces = [];
 
-    // Actualización de Reloj en Vivo
-    function actualizarReloj() {
-      const ahora = new Date();
-      document.getElementById('clock-time').innerText = ahora.toLocaleTimeString('es-MX', { hour12: false });
+    // Cargar voces disponibles
+    function cargarVoces() {
+      if (!synth) return;
+      voces = synth.getVoices();
+      const voiceSelect = document.getElementById('voice-select');
+      if (!voiceSelect) return;
+      voiceSelect.innerHTML = '';
       
-      const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('clock-date').innerText = ahora.toLocaleDateString('es-MX', opcionesFecha);
-    }
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
-
-    // Obtener datos de la nube
-    async function obtenerSalidas() {
-      try {
-        const respuesta = await fetch(API_URL);
-        if (!respuesta.ok) throw new Error("Error al consultar npoint.io");
-        
-        const datos = await respuesta.json();
-        
-        // Asegurarnos de que datos sea un Array
-        if (Array.isArray(datos)) {
-          listaSalidas = datos;
-        } else {
-          listaSalidas = [];
+      voces.forEach((voice, index) => {
+        if (voice.lang.includes('es')) {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = `${voice.name} (${voice.lang})`;
+          voiceSelect.appendChild(option);
         }
+      });
+    }
 
-        renderizarTabla();
-        const ahora = new Date();
-        document.getElementById('sync-time').innerText = 'Última actualización: ' + ahora.toLocaleTimeString();
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-        document.getElementById('sync-time').innerText = 'Error de conexión con la nube.';
+    if (synth) {
+      cargarVoces();
+      if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = cargarVoces;
       }
     }
 
-    // Dibujar la tabla
+    function anunciarSalida(index) {
+      const item = datosLocales[index];
+      if (!item || !synth) return;
+
+      const mensaje = `Atención pasajeros. Autobús de Transpais con destino a ${item.destino}, hora de salida ${item.hora}, estatus ${item.estatus}. Por favor pase a ${item.abordaje}.`;
+      const utterance = new SpeechSynthesisUtterance(mensaje);
+      
+      const voiceSelect = document.getElementById('voice-select');
+      if (voiceSelect && voces[voiceSelect.value]) {
+        utterance.voice = voces[voiceSelect.value];
+      }
+      
+      utterance.rate = 0.9;
+      synth.speak(utterance);
+    }
+
+    function probarVoz() {
+      if (!synth) return;
+      const utterance = new SpeechSynthesisUtterance("Prueba de audio del sistema de anuncios Transpais.");
+      const voiceSelect = document.getElementById('voice-select');
+      if (voiceSelect && voces[voiceSelect.value]) {
+        utterance.voice = voces[voiceSelect.value];
+      }
+      synth.speak(utterance);
+    }
+
+    // Reloj
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString('es-MX');
+    }, 1000);
+
+    // Cargar desde npoint.io
+    async function cargarSalidas() {
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('Error de conexión');
+        const data = await res.json();
+        
+        datosLocales = Array.isArray(data) ? data : [];
+        renderizarTabla();
+        document.getElementById('last-update').innerText = 'Sincronizado: ' + new Date().toLocaleTimeString();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('last-update').innerText = 'Error al actualizar datos.';
+      }
+    }
+
     function renderizarTabla() {
-      const tbody = document.getElementById('tabla-body');
+      const tbody = document.getElementById('tabla-salidas');
       tbody.innerHTML = '';
 
-      if (listaSalidas.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
-              No hay salidas programadas por el momento.
-            </td>
-          </tr>
-        `;
+      if (datosLocales.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">No hay corridas programadas</td></tr>';
         return;
       }
 
-      // Ordenar por hora
-      listaSalidas.sort((a, b) => (a.hora > b.hora) ? 1 : -1);
-
-      listaSalidas.forEach((salida, index) => {
-        let badgeClass = 'badge-espera';
-        if (salida.estatus === 'ABORDANDO') badgeClass = 'badge-abordando';
-        if (salida.estatus === 'A TIEMPO') badgeClass = 'badge-atiempo';
-        if (salida.estatus === 'RETRASADO') badgeClass = 'badge-retrasado';
-        if (salida.estatus === 'CANCELADO') badgeClass = 'badge-cancelado';
+      datosLocales.forEach((item, index) => {
+        let badgeClass = 'status-espera';
+        if (item.estatus === 'ABORDANDO') badgeClass = 'status-abordando';
+        if (item.estatus === 'CANCELADO') badgeClass = 'status-cancelado';
+        if (item.estatus === 'A TIEMPO') badgeClass = 'status-atiempo';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="time-cell">${salida.hora || '--:--'}</td>
-          <td class="destination-cell">${salida.destino || 'SIN DESTINO'}</td>
-          <td class="escalas-cell">${salida.escalas || 'Directo'}</td>
-          <td>${salida.autobus || '---'}</td>
-          <td>${salida.abordaje || 'Oficina'}</td>
-          <td><span class="badge ${badgeClass}">${salida.estatus}</span></td>
-          <td class="action-col">
-            <button class="btn btn-danger" onclick="eliminarSalida(${index})">Eliminar</button>
+          <td style="font-weight:bold; color:#fbbf24;">${item.hora || '--:--'}</td>
+          <td><strong>${item.destino || ''}</strong></td>
+          <td style="font-size: 0.85rem; color: #cbd5e1;">${item.escalas || '-'}</td>
+          <td>${item.autobus || '---'}</td>
+          <td>${item.abordaje || 'Oficina'}</td>
+          <td><span class="status-badge ${badgeClass}">${item.estatus}</span></td>
+          <td class="actions-cell">
+            <button class="btn-action btn-announce" onclick="anunciarSalida(${index})" title="Anunciar por voz">🔊</button>
+            <button class="btn-action btn-edit" onclick="editarSalida(${index})">Editar</button>
+            <button class="btn-action btn-delete" onclick="eliminarSalida(${index})">Borrar</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // Guardar cambios en npoint.io
+    // Guardar en npoint.io usando el método PUT correcto
     async function guardarEnNube() {
       try {
-        const respuesta = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(listaSalidas)
+        const res = await fetch(API_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datosLocales)
         });
-
-        if (!respuesta.ok) throw new Error("Error al guardar en la nube");
-        obtenerSalidas();
-      } catch (error) {
-        alert("Ocurrió un error al intentar guardar los cambios en la nube.");
-        console.error(error);
+        if (!res.ok) throw new Error('Error al guardar');
+        cargarSalidas();
+      } catch (err) {
+        alert('Ocurrió un error al intentar guardar los cambios en la nube.');
       }
     }
 
-    // Agregar nueva salida desde el panel
-    function agregarOEditarSalida(event) {
-      event.preventDefault();
-
+    function guardarSalida() {
+      const editIdx = parseInt(document.getElementById('edit-index').value);
       const hora = document.getElementById('f-hora').value;
       const destino = document.getElementById('f-destino').value;
       const escalas = document.getElementById('f-escalas').value;
@@ -511,34 +313,61 @@
       const abordaje = document.getElementById('f-abordaje').value;
       const estatus = document.getElementById('f-estatus').value;
 
-      listaSalidas.push({
-        id: Date.now(),
-        hora,
-        destino,
-        escalas,
-        autobus,
-        abordaje,
-        estatus
-      });
+      if (!hora || !destino) {
+        alert('Por favor ingresa al menos hora y destino');
+        return;
+      }
+
+      const nuevaSalida = { id: Date.now(), hora, destino, escalas, autobus, abordaje, estatus };
+
+      if (editIdx >= 0) {
+        datosLocales[editIdx] = nuevaSalida;
+      } else {
+        datosLocales.push(nuevaSalida);
+      }
 
       guardarEnNube();
-
-      // Limpiar formulario
-      document.getElementById('form-salida').reset();
-      document.getElementById('f-abordaje').value = 'Oficina Pedro Cárdenas';
+      cancelarEdicion();
     }
 
-    // Eliminar una salida
+    function editarSalida(index) {
+      const item = datosLocales[index];
+      document.getElementById('edit-index').value = index;
+      document.getElementById('f-hora').value = item.hora;
+      document.getElementById('f-destino').value = item.destino;
+      document.getElementById('f-escalas').value = item.escalas || '';
+      document.getElementById('f-autobus').value = item.autobus || '';
+      document.getElementById('f-abordaje').value = item.abordaje || 'Oficina Pedro Cárdenas';
+      document.getElementById('f-estatus').value = item.estatus;
+
+      document.getElementById('form-title').innerText = 'Modificar Salida';
+      document.getElementById('btn-save').innerText = 'Guardar Cambios';
+      document.getElementById('btn-cancel').style.display = 'inline-block';
+    }
+
+    function cancelarEdicion() {
+      document.getElementById('edit-index').value = '-1';
+      document.getElementById('f-hora').value = '';
+      document.getElementById('f-destino').value = '';
+      document.getElementById('f-escalas').value = '';
+      document.getElementById('f-autobus').value = '';
+      document.getElementById('f-abordaje').value = 'Oficina Pedro Cárdenas';
+      document.getElementById('f-estatus').value = 'EN ESPERA';
+
+      document.getElementById('form-title').innerText = 'Agregar / Modificar Salida';
+      document.getElementById('btn-save').innerText = 'Agregar Salida';
+      document.getElementById('btn-cancel').style.display = 'none';
+    }
+
     function eliminarSalida(index) {
-      if (confirm('¿Confirma que desea eliminar esta salida de la pantalla?')) {
-        listaSalidas.splice(index, 1);
+      if (confirm('¿Deseas borrar esta corrida?')) {
+        datosLocales.splice(index, 1);
         guardarEnNube();
       }
     }
 
-    // Inicio y auto-refresco continuo cada 5 segundos
-    obtenerSalidas();
-    setInterval(obtenerSalidas, 5000);
+    cargarSalidas();
+    setInterval(cargarSalidas, 8000);
   </script>
 </body>
 </html>
