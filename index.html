@@ -108,11 +108,17 @@
     .status-espera { background: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.4); }
     .status-etiq { background: #FFB800; color: #000; animation: pulseGlow 1.4s infinite ease-in-out; }
     .status-abordaje { background: #00D974; color: #000; animation: pulseGlow 1.0s infinite ease-in-out; }
+    .status-ultima { background: #e11d48; color: #fff; animation: pulseGlowRed 0.8s infinite ease-in-out; }
     .status-salido { background: rgba(255, 255, 255, 0.05); color: #888; }
 
     @keyframes pulseGlow {
       0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 184, 0, 0.6); }
       50% { transform: scale(0.96); box-shadow: 0 0 2px rgba(255, 184, 0, 0.2); }
+    }
+
+    @keyframes pulseGlowRed {
+      0%, 100% { transform: scale(1.03); box-shadow: 0 0 15px rgba(225, 29, 72, 0.9); }
+      50% { transform: scale(0.96); box-shadow: 0 0 2px rgba(225, 29, 72, 0.3); }
     }
 
     input, select, textarea {
@@ -209,26 +215,18 @@
     <!-- REPRODUCTOR DE MÚSICA POR CARPETA -->
     <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
       <label style="font-size: 11px; color: #93c5fd; font-weight: 800;">🎵 MÚSICA:</label>
-      
-      <!-- Selector de Carpeta -->
       <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" onchange="loadMusicFolder(event)" style="display: none;">
       <button class="btn btn-blue" onclick="document.getElementById('folder-input').click()" title="Seleccionar carpeta con música MP3">📁 Carpeta</button>
-      
-      <!-- Controles Playlist -->
       <button class="btn btn-dark" onclick="prevSong()" title="Anterior">⏮️</button>
       <button id="btn-music" class="btn btn-dark" onclick="toggleMusic()" disabled>▶️</button>
       <button class="btn btn-dark" onclick="nextSong()" title="Siguiente">⏭️</button>
-      
-      <!-- Título Canción Actual -->
       <div id="song-title" style="font-size: 11px; color: #FFB800; font-weight: 700; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sin carpeta</div>
-      
-      <!-- Volumen -->
       <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" onchange="setMusicVolume(this.value)" style="width: 60px;" title="Volumen de Música">
-      
       <audio id="bg-music"></audio>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 15px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button id="btn-mute-local" class="btn btn-dark" onclick="toggleLocalMute()" title="Controlar audio en este dispositivo">🔊 AUDIO COMPU: ON</button>
       <div id="audio-badge" style="background: rgba(0,168,89,0.2); color: #00D974; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid rgba(0,217,116,0.3);">
         ✓ VOCEO AUTOMÁTICO ACTIVO
       </div>
@@ -259,7 +257,6 @@
     <div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
       <h3 style="color: #FFB800; font-size: 13px; font-weight: 800; margin-bottom: 6px;">🎙️ PLANTILLAS DE VOCEO Y CONFIGURACIÓN DE VOZ</h3>
       
-      <!-- SELECTOR DE VOZ HUMANA -->
       <div style="margin-bottom: 12px; background: rgba(0, 168, 89, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 217, 116, 0.3);">
         <label style="font-size: 11px; color: #00D974; font-weight: 800; display: block; margin-bottom: 4px;">🗣️ SELECCIONAR VOZ DE ANUNCIOS (Natural / Humana):</label>
         <select id="voice-selector" style="font-size: 12px;" onchange="saveSelectedVoice()"></select>
@@ -275,8 +272,12 @@
           <textarea id="template-etiq" rows="2" onchange="saveSpeechTemplates()"></textarea>
         </div>
         <div>
-          <label style="font-size: 11px; color: #00D974; font-weight: 700;">Mensaje de Abordaje / Arribo (-5 min o Botón Instantáneo):</label>
+          <label style="font-size: 11px; color: #00D974; font-weight: 700;">Mensaje de Abordaje (-5 min o Botón Instantáneo):</label>
           <textarea id="template-abord" rows="2" onchange="saveSpeechTemplates()"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #f43f5e; font-weight: 700;">Mensaje de Última Llamada (Minuto 0):</label>
+          <textarea id="template-ultima" rows="2" onchange="saveSpeechTemplates()"></textarea>
         </div>
       </div>
     </div>
@@ -288,7 +289,7 @@
       <div style="background: rgba(0,168,89,0.15); border: 1px solid #00D974; padding: 14px 18px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
         <div>
           <h3 style="color: #00D974; font-size: 14px; font-weight: 900; margin-bottom: 2px;">⚡ CARGA RÁPIDA DE ITINERARIO DIARIO</h3>
-          <p style="font-size: 11px; color: #93c5fd;">Carga las 11 corridas fijas del día con sus escalas exactas (unidades vacías).</p>
+          <p style="font-size: 11px; color: #93c5fd;">Carga las 12 corridas fijas del día con sus escalas exactas (unidades vacías).</p>
         </div>
         <button class="btn btn-green" onclick="loadAllPresetDepartures()">🚀 CARGAR TODAS LAS SALIDAS PREDETERMINADAS</button>
       </div>
@@ -297,7 +298,7 @@
       <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
         <label style="font-size: 11px; font-weight: 800; color: #FFB800; display: block; margin-bottom: 5px;">Cargar Corrida Individual al Formulario:</label>
         <select id="preset-selector" onchange="loadPresetDeparture(this.value)">
-          <option value="">-- Seleccionar salida individual del catálogo --</option>
+          <option value="">-- Seleccionar salida individual del catálogo (12 Corridas) --</option>
           <option value="p01">05:15 - San Luis Potosí</option>
           <option value="p02">07:35 - Tampico - Madero</option>
           <option value="p03">08:00 - Ciudad Valles</option>
@@ -306,9 +307,10 @@
           <option value="p06">10:45 - San Luis Potosí</option>
           <option value="p07">11:45 - Ciudad Valles</option>
           <option value="p08">13:30 - San Luis Potosí</option>
-          <option value="p09">18:45 - Tampico x Victoria (Semi-Directa)</option>
-          <option value="p10">23:00 - Ciudad Valles</option>
-          <option value="p11">23:30 - Tampico - Madero</option>
+          <option value="p09">13:45 - Tampico - Madero</option>
+          <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
+          <option value="p11">22:45 - Ciudad Valles</option>
+          <option value="p12">23:15 - Tampico - Madero</option>
         </select>
       </div>
 
@@ -338,6 +340,7 @@
               <option value="EN ESPERA">EN ESPERA</option>
               <option value="ETIQUETANDO PASAJE">ETIQUETANDO PASAJE</option>
               <option value="EN ABORDAJE">EN ABORDAJE</option>
+              <option value="ÚLTIMA LLAMADA">ÚLTIMA LLAMADA</option>
               <option value="SALIDO">SALIDO</option>
             </select>
           </div>
@@ -382,9 +385,9 @@
   </footer>
 
   <script>
-    // --- FIREBASE REALTIME DATABASE CONFIGURADA ---
     const API_URL = 'https://transpais-fids-default-rtdb.firebaseio.com/departures.json';
     const urlParams = new URLSearchParams(window.location.search);
+    const ADMIN_PIN = "taqMAT2776";
 
     // Auto-detección de vista TV desde la URL (?vista=tv)
     if (urlParams.get('vista') === 'tv') {
@@ -397,7 +400,9 @@
 
     const defaultEtiqTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. Favor de pasar con el equipajero a documentar y etiquetar su equipaje. Muchas gracias.";
     const defaultAbordTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. La unidad ha llegado a nuestra oficina. Favor de preparar su equipaje de mano y tener su boleto listo para abordar.";
+    const defaultUltimaTemplate = "Última llamada a los pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. El autobús está a punto de partir, favor de abordar inmediatamente por la oficina Pedro Cárdenas.";
 
+    // CATÁLOGO COMPLETO DE 12 SALIDAS DE LA OFICINA PEDRO CÁRDENAS
     const presetCatalog = {
       p01: { time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
       p02: { time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
@@ -407,19 +412,41 @@
       p06: { time: "10:45", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
       p07: { time: "11:45", destination: "Ciudad Valles", scales: "San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
       p08: { time: "13:30", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
-      p09: { time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero" },
-      p10: { time: "23:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
-      p11: { time: "23:30", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" }
+      p09: { time: "13:45", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
+      p10: { time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero" },
+      p11: { time: "22:45", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
+      p12: { time: "23:15", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" }
     };
 
     let departures = [];
     let templateEtiq = localStorage.getItem("transpais_template_etiq") || defaultEtiqTemplate;
     let templateAbord = localStorage.getItem("transpais_template_abord") || defaultAbordTemplate;
+    let templateUltima = localStorage.getItem("transpais_template_ultima") || defaultUltimaTemplate;
     let selectedVoiceURI = localStorage.getItem("transpais_selected_voice") || "";
+    let isLocalMuted = localStorage.getItem("transpais_local_muted") === "true";
     let audioSystemReady = false;
     let availableVoices = [];
 
-    // --- CARGAR Y SELECCIONAR VOCES NATURALES ---
+    function updateMuteButtonUI() {
+      const btn = document.getElementById('btn-mute-local');
+      if (!btn) return;
+      if (isLocalMuted) {
+        btn.textContent = "🔇 AUDIO COMPU: SILENCIADO";
+        btn.className = "btn btn-dark";
+        btn.style.background = "rgba(225,29,72,0.2)";
+        btn.style.color = "#f43f5e";
+      } else {
+        btn.textContent = "🔊 AUDIO COMPU: ACTIVADO";
+        btn.className = "btn btn-green";
+      }
+    }
+
+    function toggleLocalMute() {
+      isLocalMuted = !isLocalMuted;
+      localStorage.setItem("transpais_local_muted", isLocalMuted);
+      updateMuteButtonUI();
+    }
+
     function populateVoiceList() {
       if (!('speechSynthesis' in window)) return;
       availableVoices = window.speechSynthesis.getVoices();
@@ -427,7 +454,6 @@
       if (!voiceSelector) return;
 
       voiceSelector.innerHTML = '';
-      
       const spanishVoices = availableVoices.filter(v => v.lang.includes('es'));
       const voicesToUse = spanishVoices.length > 0 ? spanishVoices : availableVoices;
 
@@ -455,7 +481,6 @@
       }
     }
 
-    // --- REPRODUCTOR Y PLAYLIST DE MÚSICA ---
     let playlist = [];
     let currentTrackIndex = 0;
     const bgMusic = document.getElementById('bg-music');
@@ -474,7 +499,6 @@
 
     function playTrack(index) {
       if (playlist.length === 0) return;
-
       const file = playlist[index];
       const songUrl = URL.createObjectURL(file);
       bgMusic.src = songUrl;
@@ -487,9 +511,7 @@
       document.getElementById('btn-music').className = 'btn btn-green';
     }
 
-    bgMusic.onended = function() {
-      nextSong();
-    };
+    bgMusic.onended = function() { nextSong(); };
 
     function nextSong() {
       if (playlist.length === 0) return;
@@ -516,9 +538,7 @@
       }
     }
 
-    function setMusicVolume(val) {
-      bgMusic.volume = val;
-    }
+    function setMusicVolume(val) { bgMusic.volume = val; }
 
     function initAutoCatalog() {
       const todayKey = new Date().toISOString().slice(0, 10);
@@ -531,7 +551,7 @@
     }
 
     function loadAllPresetDepartures(confirmUser = true) {
-      if (!confirmUser || confirm('¿Cargar todas las salidas predeterminadas a la pantalla?')) {
+      if (!confirmUser || confirm('¿Cargar las 12 salidas predeterminadas a la pantalla?')) {
         departures = Object.keys(presetCatalog).map(key => {
           const item = presetCatalog[key];
           return {
@@ -542,8 +562,8 @@
             bus: "",
             status: 'EN ESPERA',
             notified15: false,
-            notified10: false,
-            notified5: false
+            notified5: false,
+            notified0: false
           };
         });
         persistData();
@@ -576,8 +596,10 @@
     function saveSpeechTemplates() {
       templateEtiq = document.getElementById('template-etiq').value;
       templateAbord = document.getElementById('template-abord').value;
+      templateUltima = document.getElementById('template-ultima').value;
       localStorage.setItem("transpais_template_etiq", templateEtiq);
       localStorage.setItem("transpais_template_abord", templateAbord);
+      localStorage.setItem("transpais_template_ultima", templateUltima);
     }
 
     function cleanScalesFormat(scalesStr) {
@@ -606,14 +628,28 @@
         const depMinutes = h * 60 + m;
         const diffMinutes = depMinutes - currentMinutes;
 
-        if (diffMinutes <= -15) return false;
+        // Limpieza pasados 10 minutos
+        if (diffMinutes <= -10) return false;
 
-        if (diffMinutes <= 0) {
+        // Minuto 0 a -9 (Salida / Cierre)
+        if (diffMinutes < 0) {
           if (dep.status !== "SALIDO") {
             dep.status = "SALIDO";
             updated = true;
           }
         } 
+        // Minuto 0 EXACTO (Última llamada)
+        else if (diffMinutes === 0) {
+          if (dep.status !== "ÚLTIMA LLAMADA") {
+            dep.status = "ÚLTIMA LLAMADA";
+            updated = true;
+          }
+          if (!dep.notified0) {
+            triggerVoice(dep.id, "ULTIMA");
+            dep.notified0 = true;
+          }
+        }
+        // Minuto 1 a 5 (Abordaje)
         else if (diffMinutes <= 5 && diffMinutes > 0) {
           if (dep.status !== "EN ABORDAJE") {
             dep.status = "EN ABORDAJE";
@@ -624,6 +660,7 @@
             dep.notified5 = true;
           }
         }
+        // Minuto 6 a 15 (Etiquetado)
         else if (diffMinutes <= 15 && diffMinutes > 5) {
           if (dep.status !== "ETIQUETANDO PASAJE") {
             dep.status = "ETIQUETANDO PASAJE";
@@ -632,10 +669,6 @@
           if (diffMinutes === 15 && !dep.notified15) {
             triggerVoice(dep.id, "ETIQUETADO");
             dep.notified15 = true;
-          }
-          if (diffMinutes === 10 && !dep.notified10) {
-            triggerVoice(dep.id, "ETIQUETADO");
-            dep.notified10 = true;
           }
         }
 
@@ -658,10 +691,16 @@
         btnScreen.className = 'btn btn-green';
         btnAdmin.className = 'btn btn-dark';
       } else {
-        viewScreen.classList.add('hidden');
-        viewAdmin.classList.remove('hidden');
-        btnAdmin.className = 'btn btn-green';
-        btnScreen.className = 'btn btn-dark';
+        // Validación de PIN de Seguridad para Taquilla
+        const inputPin = prompt("Ingrese el PIN de acceso a Taquilla:");
+        if (inputPin === ADMIN_PIN) {
+          viewScreen.classList.add('hidden');
+          viewAdmin.classList.remove('hidden');
+          btnAdmin.className = 'btn btn-green';
+          btnScreen.className = 'btn btn-dark';
+        } else if (inputPin !== null) {
+          alert("PIN incorrecto. Acceso denegado.");
+        }
       }
     }
 
@@ -680,6 +719,8 @@
           statusMarkup = `<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>`;
         } else if (dep.status === 'EN ABORDAJE') {
           statusMarkup = `<span class="badge-status status-abordaje">EN ABORDAJE</span>`;
+        } else if (dep.status === 'ÚLTIMA LLAMADA') {
+          statusMarkup = `<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>`;
         } else if (dep.status === 'SALIDO') {
           statusMarkup = `<span class="badge-status status-salido">SALIDO</span>`;
         } else {
@@ -782,6 +823,11 @@
     }
 
     function playTerminalChime(onComplete) {
+      if (isLocalMuted) {
+        onComplete();
+        return;
+      }
+
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioCtx();
@@ -838,7 +884,9 @@
       const scalesText = (cleanScales && cleanScales.trim() !== "") ? ` pasando por ${cleanScales},` : "";
       const busText = dep.bus ? ` autobús número ${dep.bus}` : " su autobús";
 
-      let baseTemplate = (mode === "ABORDAJE") ? templateAbord : templateEtiq;
+      let baseTemplate = templateEtiq;
+      if (mode === "ABORDAJE") baseTemplate = templateAbord;
+      if (mode === "ULTIMA") baseTemplate = templateUltima;
 
       let script = baseTemplate
         .replace('{DESTINO}', dep.destination)
@@ -846,7 +894,7 @@
         .replace('{AUTOBUS}', busText);
 
       playTerminalChime(() => {
-        if ('speechSynthesis' in window) {
+        if (!isLocalMuted && 'speechSynthesis' in window) {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(script);
           
@@ -869,7 +917,6 @@
       });
     }
 
-    // --- CONEXIÓN Y PERSISTENCIA A FIREBASE REALTIME DATABASE ---
     async function loadFromCloud() {
       try {
         const res = await fetch(API_URL);
@@ -882,7 +929,7 @@
           }
         }
       } catch (err) {
-        console.log("Cargando desde almacenamiento local...");
+        console.log("Cargando almacenamiento local...");
       }
       
       departures = JSON.parse(localStorage.getItem("transpais_pedro_cardenas_deps")) || [];
@@ -901,11 +948,10 @@
           body: JSON.stringify(departures)
         });
       } catch (err) {
-        console.error("Error al sincronizar con Firebase:", err);
+        console.error("Error de sincronización:", err);
       }
     }
 
-    // Auto-refresco continuo cada 3 segundos en vivo (Sin límites)
     setInterval(async () => {
       try {
         const res = await fetch(API_URL);
@@ -921,6 +967,8 @@
 
     document.getElementById('template-etiq').value = templateEtiq;
     document.getElementById('template-abord').value = templateAbord;
+    document.getElementById('template-ultima').value = templateUltima;
+    updateMuteButtonUI();
     loadFromCloud();
     updateClock();
   </script>
