@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transpais FIDS - Terminal Pedro Cárdenas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #000B18;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    .glass-header {
+      background: rgba(0, 20, 45, 0.95);
+      border-bottom: 3px solid #00A859;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .brand-logo {
+      background: #ffffff;
+      padding: 8px 20px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 28px;
+      color: #002A5C;
+      letter-spacing: -1px;
+    }
+
+    .glass-card {
+      background: rgba(0, 30, 68, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      margin: 20px 30px;
+      flex-grow: 1;
+    }
+
+    .control-bar {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-green { background: #00A859; color: #ffffff; }
+    .btn-green:hover { background: #008f4b; }
+    .btn-dark { background: rgba(255, 255, 255, 0.1); color: #cccccc; }
+    .btn-dark:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+    .btn-blue { background: #002A5C; color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
+    .btn-arrive { background: #d97706; color: #ffffff; font-weight: 900; }
+    .btn-arrive:hover { background: #b45309; }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+
+    th {
+      background: rgba(0, 20, 45, 0.9);
+      color: #93c5fd;
+      padding: 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .status-espera { background: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.4); }
+    .status-etiq { background: #FFB800; color: #000; animation: pulseGlow 1.4s infinite ease-in-out; }
+    .status-abordaje { background: #00D974; color: #000; animation: pulseGlow 1.0s infinite ease-in-out; }
+    .status-salido { background: rgba(255, 255, 255, 0.05); color: #888; }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 184, 0, 0.6); }
+      50% { transform: scale(0.96); box-shadow: 0 0 2px rgba(255, 184, 0, 0.2); }
+    }
+
+    input, select, textarea {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fff;
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .inline-bus-input {
+      background: rgba(255, 184, 0, 0.15);
+      border: 1px solid #FFB800;
+      color: #fff;
+      font-weight: 800;
+      text-align: center;
+      width: 80px;
+      padding: 5px;
+      border-radius: 6px;
+    }
+
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .ticker-footer {
+      background: #00142D;
+      border-top: 2px solid #00A859;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .ticker-title {
+      background: #00A859;
+      color: #fff;
+      padding: 0 20px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-weight: 900;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .ticker-content {
+      white-space: nowrap;
+      animation: tickerAnimation 30s linear infinite;
+      font-size: 12px;
+      color: #93c5fd;
+    }
+
+    @keyframes tickerAnimation {
+      0% { transform: translate3d(100%, 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body onclick="startOfficeAudioSystem()">
+
+  <!-- HEADER -->
+  <header class="glass-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <div class="brand-logo">TRANSPAIS®</div>
+      <div>
+        <h1 style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">TERMINAL PEDRO CÁRDENAS</h1>
+        <div style="font-size: 11px; color: #00D974; font-weight: 700; margin-top: 3px;">
+          MATAMOROS – OFICINA DE PASO
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: right; background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+      <div id="clock-time" style="font-size: 28px; font-weight: 900; font-family: monospace;">00:00:00</div>
+      <div id="clock-date" style="font-size: 11px; color: #93c5fd;">Cargando...</div>
+    </div>
+  </header>
+
+  <!-- BARRA CONTROL DE VISTAS Y MÚSICA -->
+  <div class="control-bar">
+    <div style="display: flex; gap: 10px;">
+      <button id="btn-tab-screen" class="btn btn-green" onclick="switchTab('screen')">Pantalla Sala de Espera</button>
+      <button id="btn-tab-admin" class="btn btn-dark" onclick="switchTab('admin')">Panel Taquilla / Operaciones</button>
+    </div>
+
+    <!-- REPRODUCTOR DE MÚSICA POR CARPETA -->
+    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+      <label style="font-size: 11px; color: #93c5fd; font-weight: 800;">🎵 MÚSICA:</label>
+      
+      <!-- Selector de Carpeta -->
+      <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" onchange="loadMusicFolder(event)" style="display: none;">
+      <button class="btn btn-blue" onclick="document.getElementById('folder-input').click()" title="Seleccionar carpeta con música MP3">📁 Carpeta</button>
+      
+      <!-- Controles Playlist -->
+      <button class="btn btn-dark" onclick="prevSong()" title="Anterior">⏮️</button>
+      <button id="btn-music" class="btn btn-dark" onclick="toggleMusic()" disabled>▶️</button>
+      <button class="btn btn-dark" onclick="nextSong()" title="Siguiente">⏭️</button>
+      
+      <!-- Título Canción Actual -->
+      <div id="song-title" style="font-size: 11px; color: #FFB800; font-weight: 700; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sin carpeta</div>
+      
+      <!-- Volumen -->
+      <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" onchange="setMusicVolume(this.value)" style="width: 60px;" title="Volumen de Música">
+      
+      <audio id="bg-music"></audio>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div id="audio-badge" style="background: rgba(0,168,89,0.2); color: #00D974; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid rgba(0,217,116,0.3);">
+        ✓ VOCEO AUTOMÁTICO ACTIVO
+      </div>
+      <button class="btn btn-blue" onclick="testChimeSound()">Probador Voceo</button>
+    </div>
+  </div>
+
+  <!-- VISTA 1: SALA DE ESPERA (PÚBLICA) -->
+  <main id="view-screen" class="glass-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Destino / Escalas</th>
+          <th style="text-align: center;">Autobús</th>
+          <th style="text-align: center;">Punto de Abordaje</th>
+          <th style="text-align: center;">Estatus</th>
+        </tr>
+      </thead>
+      <tbody id="fids-body"></tbody>
+    </table>
+  </main>
+
+  <!-- VISTA 2: PANEL DE CONTROL TAQUILLA -->
+  <main id="view-admin" class="glass-card hidden">
+    
+    <!-- CONFIGURACIÓN DE PLANTILLA DE VOCEO EDITABLE -->
+    <div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+      <h3 style="color: #FFB800; font-size: 13px; font-weight: 800; margin-bottom: 6px;">🎙️ PLANTILLAS DE VOCEO EDITABLES</h3>
+      <p style="font-size: 11px; color: #93c5fd; margin-bottom: 8px;">
+        Variables automáticas disponibles: <strong>{DESTINO}</strong>, <strong>{ESCALAS}</strong> y <strong>{AUTOBUS}</strong>.
+      </p>
+      
+      <div style="display: grid; gap: 10px;">
+        <div>
+          <label style="font-size: 11px; color: #FFB800; font-weight: 700;">Mensaje de Etiquetado (-15 min):</label>
+          <textarea id="template-etiq" rows="2" onchange="saveSpeechTemplates()"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #00D974; font-weight: 700;">Mensaje de Abordaje / Arribo (-5 min o Botón Instantáneo):</label>
+          <textarea id="template-abord" rows="2" onchange="saveSpeechTemplates()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES DE CARGA Y SELECTOR DE ITINERARIOS -->
+    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      
+      <!-- CARGA MASIVA DEL DÍA -->
+      <div style="background: rgba(0,168,89,0.15); border: 1px solid #00D974; padding: 14px 18px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="color: #00D974; font-size: 14px; font-weight: 900; margin-bottom: 2px;">⚡ CARGA RÁPIDA DE ITINERARIO DIARIO</h3>
+          <p style="font-size: 11px; color: #93c5fd;">Carga las 11 corridas fijas del día con sus escalas exactas (unidades vacías).</p>
+        </div>
+        <button class="btn btn-green" onclick="loadAllPresetDepartures()">🚀 CARGAR TODAS LAS SALIDAS PREDETERMINADAS</button>
+      </div>
+
+      <!-- SELECTOR INDIVIDUAL -->
+      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
+        <label style="font-size: 11px; font-weight: 800; color: #FFB800; display: block; margin-bottom: 5px;">Cargar Corrida Individual al Formulario:</label>
+        <select id="preset-selector" onchange="loadPresetDeparture(this.value)">
+          <option value="">-- Seleccionar salida individual del catálogo --</option>
+          <option value="p01">05:15 - San Luis Potosí</option>
+          <option value="p02">07:35 - Tampico - Madero</option>
+          <option value="p03">08:00 - Ciudad Valles</option>
+          <option value="p04">09:15 - Ciudad Valles</option>
+          <option value="p05">10:00 - Tampico - Madero</option>
+          <option value="p06">10:45 - San Luis Potosí</option>
+          <option value="p07">11:45 - Ciudad Valles</option>
+          <option value="p08">13:30 - San Luis Potosí</option>
+          <option value="p09">18:45 - Tampico x Victoria (Semi-Directa)</option>
+          <option value="p10">23:00 - Ciudad Valles</option>
+          <option value="p11">23:30 - Tampico - Madero</option>
+        </select>
+      </div>
+
+      <!-- FORMULARIO DE EDICIÓN Y CAPTURA MANUAL -->
+      <form id="departure-form" onsubmit="saveDeparture(event)">
+        <input type="hidden" id="dep-id">
+        <div class="grid-form">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Hora Programada</label>
+            <input type="time" id="dep-time" required>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Destino Principal</label>
+            <input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required>
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Escalas (separadas por coma)</label>
+            <input type="text" id="dep-scales" placeholder="Ej. San Fernando, Ciudad Victoria">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #FFB800;">No. Autobús</label>
+            <input type="text" id="dep-bus" placeholder="Ej. 9548" style="border: 1px solid #FFB800; background: rgba(255,184,0,0.1);">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Estatus Manual</label>
+            <select id="dep-status">
+              <option value="EN ESPERA">EN ESPERA</option>
+              <option value="ETIQUETANDO PASAJE">ETIQUETANDO PASAJE</option>
+              <option value="EN ABORDAJE">EN ABORDAJE</option>
+              <option value="SALIDO">SALIDO</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px; text-align: right; display: flex; justify-content: space-between; align-items: center;">
+          <button type="button" class="btn btn-dark" style="background: rgba(230,57,70,0.3); color: #f87171;" onclick="clearAllDepartures()">Limpiar Pantalla del Día</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-dark" onclick="resetForm()">Limpiar Formulario</button>
+            <button type="submit" class="btn btn-green">Guardar / Publicar Corrida</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABLA DE CONTROL OPERATIVO -->
+    <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+      <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 12px;">CORRIDAS ACTIVAS EN PANTALLA</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Destino</th>
+            <th style="text-align: center;">Unidad (Edición)</th>
+            <th style="text-align: center;">Estatus</th>
+            <th style="text-align: center;">Acciones Rápidas de Taquilla</th>
+          </tr>
+        </thead>
+        <tbody id="admin-body"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- CINTILLO FOOTER -->
+  <footer class="ticker-footer">
+    <div class="ticker-title">AVISO DE EQUIPAJE</div>
+    <div style="overflow: hidden; width: 100%;">
+      <div class="ticker-content">
+        🧳 <strong>OFICINA PEDRO CÁRDENAS:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const defaultEtiqTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. Favor de pasar con el equipajero a documentar y etiquetar su equipaje. Muchas gracias.";
+    const defaultAbordTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. La unidad ha llegado a nuestra oficina. Favor de preparar su equipaje de mano y tener su boleto listo para abordar.";
+
+    const presetCatalog = {
+      p01: { time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
+      p02: { time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
+      p03: { time: "08:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p04: { time: "09:15", destination: "Ciudad Valles", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p05: { time: "10:00", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
+      p06: { time: "10:45", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
+      p07: { time: "11:45", destination: "Ciudad Valles", scales: "San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p08: { time: "13:30", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
+      p09: { time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero" },
+      p10: { time: "23:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
+      p11: { time: "23:30", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" }
+    };
+
+    let departures = JSON.parse(localStorage.getItem("transpais_matamoros_deps")) || [];
+    let templateEtiq = localStorage.getItem("transpais_template_etiq") || defaultEtiqTemplate;
+    let templateAbord = localStorage.getItem("transpais_template_abord") || defaultAbordTemplate;
+    let audioSystemReady = false;
+
+    // --- REPRODUCTOR Y PLAYLIST DE MÚSICA ---
+    let playlist = [];
+    let currentTrackIndex = 0;
+    const bgMusic = document.getElementById('bg-music');
+
+    function loadMusicFolder(event) {
+      const files = Array.from(event.target.files);
+      playlist = files.filter(file => file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|m4a)$/i));
+
+      if (playlist.length > 0) {
+        currentTrackIndex = 0;
+        playTrack(currentTrackIndex);
+      } else {
+        alert('No se encontraron archivos de audio en la carpeta elegida.');
+      }
+    }
+
+    function playTrack(index) {
+      if (playlist.length === 0) return;
+
+      const file = playlist[index];
+      const songUrl = URL.createObjectURL(file);
+      bgMusic.src = songUrl;
+
+      document.getElementById('song-title').textContent = file.name.replace(/\.[^/.]+$/, "");
+      document.getElementById('btn-music').disabled = false;
+
+      bgMusic.play();
+      document.getElementById('btn-music').textContent = '⏸️';
+      document.getElementById('btn-music').className = 'btn btn-green';
+    }
+
+    bgMusic.onended = function() {
+      nextSong();
+    };
+
+    function nextSong() {
+      if (playlist.length === 0) return;
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      playTrack(currentTrackIndex);
+    }
+
+    function prevSong() {
+      if (playlist.length === 0) return;
+      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+      playTrack(currentTrackIndex);
+    }
+
+    function toggleMusic() {
+      const btn = document.getElementById('btn-music');
+      if (bgMusic.paused) {
+        bgMusic.play();
+        btn.textContent = '⏸️';
+        btn.className = 'btn btn-green';
+      } else {
+        bgMusic.pause();
+        btn.textContent = '▶️';
+        btn.className = 'btn btn-dark';
+      }
+    }
+
+    function setMusicVolume(val) {
+      bgMusic.volume = val;
+    }
+    // ----------------------------------------
+
+    function initAutoCatalog() {
+      const todayKey = new Date().toISOString().slice(0, 10);
+      const lastLoaded = localStorage.getItem("transpais_last_date");
+
+      if (lastLoaded !== todayKey || departures.length === 0) {
+        loadAllPresetDepartures(false);
+        localStorage.setItem("transpais_last_date", todayKey);
+      }
+    }
+
+    function loadAllPresetDepartures(confirmUser = true) {
+      if (!confirmUser || confirm('¿Cargar todas las salidas predeterminadas a la pantalla?')) {
+        departures = Object.keys(presetCatalog).map(key => {
+          const item = presetCatalog[key];
+          return {
+            id: 'mat-' + key + '-' + Date.now(),
+            time: item.time,
+            destination: item.destination,
+            scales: item.scales,
+            bus: "",
+            status: 'EN ESPERA',
+            notified15: false,
+            notified10: false,
+            notified5: false
+          };
+        });
+        persistData();
+      }
+    }
+
+    function loadPresetDeparture(key) {
+      if (!key || !presetCatalog[key]) return;
+      const preset = presetCatalog[key];
+      
+      document.getElementById('dep-id').value = '';
+      document.getElementById('dep-time').value = preset.time;
+      document.getElementById('dep-destination').value = preset.destination;
+      document.getElementById('dep-scales').value = preset.scales;
+      document.getElementById('dep-status').value = "EN ESPERA";
+      
+      const busInput = document.getElementById('dep-bus');
+      busInput.value = '';
+      busInput.focus();
+    }
+
+    function startOfficeAudioSystem() {
+      if (audioSystemReady) return;
+      try {
+        if ('speechSynthesis' in window) window.speechSynthesis.resume();
+        audioSystemReady = true;
+      } catch(e) {}
+    }
+
+    function saveSpeechTemplates() {
+      templateEtiq = document.getElementById('template-etiq').value;
+      templateAbord = document.getElementById('template-abord').value;
+      localStorage.setItem("transpais_template_etiq", templateEtiq);
+      localStorage.setItem("transpais_template_abord", templateAbord);
+    }
+
+    function cleanScalesFormat(scalesStr) {
+      if (!scalesStr) return "";
+      return scalesStr.split(',').map(item => item.trim()).filter(item => item.length > 0).join(', ');
+    }
+
+    function persistData() {
+      localStorage.setItem("transpais_matamoros_deps", JSON.stringify(departures));
+      render();
+    }
+
+    function updateInlineBus(id, value) {
+      const dep = departures.find(d => d.id === id);
+      if (dep) {
+        dep.bus = value.trim();
+        persistData();
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-MX', { hour12: false });
+      document.getElementById('clock-date').textContent = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      let updated = false;
+
+      departures = departures.filter(dep => {
+        const [h, m] = dep.time.split(':').map(Number);
+        const depMinutes = h * 60 + m;
+        const diffMinutes = depMinutes - currentMinutes;
+
+        if (diffMinutes <= -15) return false;
+
+        if (diffMinutes <= 0) {
+          if (dep.status !== "SALIDO") {
+            dep.status = "SALIDO";
+            updated = true;
+          }
+        } 
+        else if (diffMinutes <= 5 && diffMinutes > 0) {
+          if (dep.status !== "EN ABORDAJE") {
+            dep.status = "EN ABORDAJE";
+            updated = true;
+          }
+          if (diffMinutes === 5 && !dep.notified5) {
+            triggerVoice(dep.id, "ABORDAJE");
+            dep.notified5 = true;
+          }
+        }
+        else if (diffMinutes <= 15 && diffMinutes > 5) {
+          if (dep.status !== "ETIQUETANDO PASAJE") {
+            dep.status = "ETIQUETANDO PASAJE";
+            updated = true;
+          }
+          if (diffMinutes === 15 && !dep.notified15) {
+            triggerVoice(dep.id, "ETIQUETADO");
+            dep.notified15 = true;
+          }
+          if (diffMinutes === 10 && !dep.notified10) {
+            triggerVoice(dep.id, "ETIQUETADO");
+            dep.notified10 = true;
+          }
+        }
+
+        return true;
+      });
+
+      if (updated) persistData();
+    }
+    setInterval(updateClock, 1000);
+
+    function switchTab(tab) {
+      const viewScreen = document.getElementById('view-screen');
+      const viewAdmin = document.getElementById('view-admin');
+      const btnScreen = document.getElementById('btn-tab-screen');
+      const btnAdmin = document.getElementById('btn-tab-admin');
+
+      if (tab === 'screen') {
+        viewScreen.classList.remove('hidden');
+        viewAdmin.classList.add('hidden');
+        btnScreen.className = 'btn btn-green';
+        btnAdmin.className = 'btn btn-dark';
+      } else {
+        viewScreen.classList.add('hidden');
+        viewAdmin.classList.remove('hidden');
+        btnAdmin.className = 'btn btn-green';
+        btnScreen.className = 'btn btn-dark';
+      }
+    }
+
+    function render() {
+      const fidsBody = document.getElementById('fids-body');
+      const adminBody = document.getElementById('admin-body');
+
+      fidsBody.innerHTML = '';
+      adminBody.innerHTML = '';
+
+      departures.sort((a, b) => a.time.localeCompare(b.time));
+
+      departures.forEach(dep => {
+        let statusMarkup = '';
+        if (dep.status === 'ETIQUETANDO PASAJE') {
+          statusMarkup = `<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>`;
+        } else if (dep.status === 'EN ABORDAJE') {
+          statusMarkup = `<span class="badge-status status-abordaje">EN ABORDAJE</span>`;
+        } else if (dep.status === 'SALIDO') {
+          statusMarkup = `<span class="badge-status status-salido">SALIDO</span>`;
+        } else {
+          statusMarkup = `<span class="badge-status status-espera">EN ESPERA</span>`;
+        }
+
+        const cleanScales = cleanScalesFormat(dep.scales);
+        const busDisplay = dep.bus ? dep.bus : '---';
+
+        fidsBody.innerHTML += `
+          <tr>
+            <td style="font-size: 24px; font-weight: 900; font-family: monospace;">${dep.time}</td>
+            <td>
+              <div style="font-size: 20px; font-weight: 900;">${dep.destination}</div>
+              ${cleanScales ? `<div style="font-size: 12px; color: #93c5fd; margin-top: 4px;">Escalas: ${cleanScales}</div>` : ''}
+            </td>
+            <td style="text-align: center; font-size: 18px; font-weight: 800; font-family: monospace;">${busDisplay}</td>
+            <td style="text-align: center; font-size: 16px; font-weight: 800; color: #00D974;">Oficina Pedro Cárdenas</td>
+            <td style="text-align: center;">${statusMarkup}</td>
+          </tr>
+        `;
+
+        adminBody.innerHTML += `
+          <tr>
+            <td><strong>${dep.time}</strong></td>
+            <td>${dep.destination}</td>
+            <td style="text-align: center;">
+              <input type="text" class="inline-bus-input" value="${dep.bus || ''}" placeholder="---" onchange="updateInlineBus('${dep.id}', this.value)">
+            </td>
+            <td style="text-align: center;">${statusMarkup}</td>
+            <td style="text-align: center; display: flex; gap: 5px; justify-content: center;">
+              <button onclick="busArrivedNow('${dep.id}')" class="btn btn-arrive" title="Presionar al ver el autobús afuera">🚌 LLEGANDO YA</button>
+              <button onclick="editDeparture('${dep.id}')" class="btn btn-dark">✏️ Editar</button>
+              <button onclick="triggerVoice('${dep.id}', 'ETIQUETADO')" class="btn btn-blue">🎙️ Vocear</button>
+              <button onclick="deleteDeparture('${dep.id}')" class="btn btn-dark" style="background: rgba(230,57,70,0.3); color: #f87171;">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function busArrivedNow(id) {
+      const dep = departures.find(d => d.id === id);
+      if (dep) {
+        dep.status = "EN ABORDAJE";
+        triggerVoice(id, "ABORDAJE");
+        persistData();
+      }
+    }
+
+    function editDeparture(id) {
+      const dep = departures.find(d => d.id === id);
+      if (!dep) return;
+      document.getElementById('dep-id').value = dep.id;
+      document.getElementById('dep-time').value = dep.time;
+      document.getElementById('dep-destination').value = dep.destination;
+      document.getElementById('dep-scales').value = dep.scales || '';
+      document.getElementById('dep-bus').value = dep.bus || '';
+      document.getElementById('dep-status').value = dep.status;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function saveDeparture(e) {
+      e.preventDefault();
+      const id = document.getElementById('dep-id').value || 'mat-' + Date.now();
+      const time = document.getElementById('dep-time').value;
+      const destination = document.getElementById('dep-destination').value;
+      const scales = document.getElementById('dep-scales').value;
+      const bus = document.getElementById('dep-bus').value.trim();
+      const status = document.getElementById('dep-status').value;
+
+      const existingIndex = departures.findIndex(d => d.id === id);
+      const newObj = { id, time, destination, scales: cleanScalesFormat(scales), bus, status };
+
+      if (existingIndex >= 0) departures[existingIndex] = newObj;
+      else departures.push(newObj);
+
+      persistData();
+      resetForm();
+    }
+
+    function deleteDeparture(id) {
+      if (confirm('¿Eliminar esta corrida de la pantalla?')) {
+        departures = departures.filter(d => d.id !== id);
+        persistData();
+      }
+    }
+
+    function clearAllDepartures() {
+      if (confirm('¿Deseas borrar todas las corridas de la pantalla?')) {
+        departures = [];
+        persistData();
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('departure-form').reset();
+      document.getElementById('dep-id').value = '';
+      document.getElementById('preset-selector').value = "";
+    }
+
+    function playTerminalChime(onComplete) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        ctx.resume();
+
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.frequency.setValueAtTime(587.33, now);
+        osc2.frequency.setValueAtTime(880.00, now + 0.18);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.35, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now + 0.18);
+        osc1.stop(now + 2.0);
+        osc2.stop(now + 2.0);
+
+        setTimeout(onComplete, 1800);
+      } catch (err) {
+        onComplete();
+      }
+    }
+
+    function testChimeSound() {
+      startOfficeAudioSystem();
+      if (departures.length > 0) {
+        triggerVoice(departures[0].id, "ETIQUETADO");
+      } else {
+        playTerminalChime(() => {});
+      }
+    }
+
+    function triggerVoice(id, mode) {
+      const dep = departures.find(d => d.id === id);
+      if (!dep) return;
+
+      startOfficeAudioSystem();
+
+      // Atenuar volumen de la música si está sonando
+      const originalVol = bgMusic.volume;
+      if (!bgMusic.paused) {
+        bgMusic.volume = originalVol * 0.15;
+      }
+
+      const cleanScales = cleanScalesFormat(dep.scales);
+      const scalesText = (cleanScales && cleanScales.trim() !== "") ? ` pasando por ${cleanScales},` : "";
+      const busText = dep.bus ? ` autobús número ${dep.bus}` : " su autobús";
+
+      let baseTemplate = (mode === "ABORDAJE") ? templateAbord : templateEtiq;
+
+      let script = baseTemplate
+        .replace('{DESTINO}', dep.destination)
+        .replace('{ESCALAS}', scalesText)
+        .replace('{AUTOBUS}', busText);
+
+      playTerminalChime(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(script);
+          utterance.lang = 'es-MX';
+          utterance.rate = 0.88;
+
+          // Restaurar volumen de música al terminar el anunciador
+          utterance.onend = () => {
+            if (!bgMusic.paused) bgMusic.volume = originalVol;
+          };
+
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+    }
+
+    document.getElementById('template-etiq').value = templateEtiq;
+    document.getElementById('template-abord').value = templateAbord;
+    initAutoCatalog();
+    updateClock();
+    render();
+  </script>
+</body>
+</html>
