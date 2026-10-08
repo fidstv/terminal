@@ -382,10 +382,11 @@
   </footer>
 
   <script>
-    // --- NPOINT.IO BASE DE DATOS SINCRONIZADA ---
+    // --- JSONBIN.IO BASE DE DATOS CONFIGURADA ---
     const urlParams = new URLSearchParams(window.location.search);
-    const BIN_ID = urlParams.get('id') || 'e6f5164bca1f30d3fdd1';
-    const API_URL = `https://api.npoint.io/${BIN_ID}`;
+    const BIN_ID = '6ac80922ffd5d160535a7040';
+    const API_KEY = '$2a$10$IrcFISMW70oFUoD3.sstYekDZhT1ppOb.lRbGY4PXRjsYNh4isck.';
+    const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
     // Auto-detección de vista TV desde la URL (?vista=tv)
     if (urlParams.get('vista') === 'tv') {
@@ -870,14 +871,16 @@
       });
     }
 
-    // --- CONEXIÓN Y PERSISTENCIA NPOINT.IO (MÉTODOS GET/PUT) CON ANTI-CACHÉ ---
+    // --- CONEXIÓN Y PERSISTENCIA A JSONBIN.IO ---
     async function loadFromCloud() {
       try {
-        const res = await fetch(API_URL + '?t=' + Date.now());
+        const res = await fetch(API_URL + '/latest?t=' + Date.now(), {
+          headers: { 'X-Master-Key': API_KEY }
+        });
         if (res.ok) {
-          const cloudData = await res.json();
-          if (Array.isArray(cloudData)) {
-            departures = cloudData;
+          const data = await res.json();
+          if (Array.isArray(data.record)) {
+            departures = data.record;
             render();
             return;
           }
@@ -898,22 +901,27 @@
       try {
         await fetch(API_URL, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
           body: JSON.stringify(departures)
         });
       } catch (err) {
-        console.error("Error al sincronizar con npoint.io:", err);
+        console.error("Error al sincronizar con JSONBin:", err);
       }
     }
 
-    // Auto-refresco continuo cada 3 segundos sin guardar en caché para Smart TVs
+    // Auto-refresco continuo cada 3 segundos en vivo
     setInterval(async () => {
       try {
-        const res = await fetch(API_URL + '?t=' + Date.now());
+        const res = await fetch(API_URL + '/latest?t=' + Date.now(), {
+          headers: { 'X-Master-Key': API_KEY }
+        });
         if (res.ok) {
-          const cloudData = await res.json();
-          if (Array.isArray(cloudData) && JSON.stringify(cloudData) !== JSON.stringify(departures)) {
-            departures = cloudData;
+          const data = await res.json();
+          if (Array.isArray(data.record) && JSON.stringify(data.record) !== JSON.stringify(departures)) {
+            departures = data.record;
             render();
           }
         }
