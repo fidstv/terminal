@@ -39,7 +39,7 @@
             display: flex; justify-content: space-between; align-items: center; 
             padding: 12px 30px; background: #051222; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;
         }
-        .btn-group { display: flex; gap: 10px; }
+        .btn-group { display: flex; gap: 10px; align-items: center; }
         .btn { padding: 8px 16px; font-weight: 700; border-radius: 6px; cursor: pointer; border: none; font-size: 13px; }
         .btn-green { background: var(--primary-green); color: black; }
         .btn-dark { background: #13273e; color: white; }
@@ -48,6 +48,11 @@
 
         .audio-controls { display: flex; align-items: center; gap: 10px; background: #091d36; padding: 6px 14px; border-radius: 8px; }
         .audio-controls label { font-size: 12px; font-weight: 700; color: #7f9bbd; }
+
+        .voice-select {
+            background: #030c1a; color: white; border: 1px solid var(--border-color);
+            padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; max-width: 180px;
+        }
 
         /* Container & Tables */
         .container { padding: 20px 30px; }
@@ -111,11 +116,12 @@
         </div>
     </header>
 
-    <!-- BARRA OPERATIVA Y CONTROLES (SE OCULTA EN MODO TV) -->
+    <!-- BARRA OPERATIVA (SE OCULTA EN MODO TV) -->
     <div class="admin-bar admin-only">
         <div class="btn-group">
             <button class="btn btn-green" onclick="setMode('tv')">📺 VER MODO SALA DE ESPERA (TV)</button>
             <button class="btn btn-dark" onclick="setMode('admin')">⚙️ VER MODO TAQUILLA</button>
+            <select id="voiceSelect" class="voice-select" title="Seleccionar Voz de Voceo"></select>
             <button class="btn btn-blue" onclick="testTTS()">🔊 PROBADOR VOCEO</button>
         </div>
 
@@ -317,10 +323,58 @@
 
         function setVolume(v) { audioPlayer.volume = v; }
 
+        // --- SELECCIÓN Y CONFIGURACIÓN DE VOCES ESPAÑOL ---
+        let voices = [];
+        function populateVoices() {
+            voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+
+            if(voices.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = "Voz Por Defecto";
+                voiceSelect.appendChild(opt);
+                return;
+            }
+
+            voices.forEach((v, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = `${v.name} (${v.lang})`;
+                if(v.name.includes("Google") || v.name.includes("Sabina") || v.name.includes("Dalia") || v.name.includes("Paulina")) {
+                    opt.selected = true;
+                }
+                voiceSelect.appendChild(opt);
+            });
+        }
+
+        populateVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoices;
+        }
+
         // --- VOCEO AUTOMÁTICO (TTS) ---
         function testTTS() {
-            const msg = new SpeechSynthesisUtterance("Atención pasajeros, autobús Transpais con destino a Tampico por Victoria se encuentra abordando en Oficina Pedro Cárdenas.");
+            window.speechSynthesis.cancel(); // Detener voceos previos
+            const text = "Atención pasajeros, autobús Transpais con destino a Tampico por Victoria se encuentra abordando en Oficina Pedro Cárdenas.";
+            const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'es-MX';
+            msg.rate = 0.95; // Velocidad ligeramente pausada y clara
+            msg.pitch = 1.0;
+
+            const selectedIndex = document.getElementById('voiceSelect').value;
+            if(voices[selectedIndex]) {
+                msg.voice = voices[selectedIndex];
+            }
+
+            // Atenuar música durante el voceo
+            const originalVol = audioPlayer.volume;
+            if(!audioPlayer.paused) audioPlayer.volume = originalVol * 0.2;
+
+            msg.onend = function() {
+                if(!audioPlayer.paused) audioPlayer.volume = originalVol;
+            };
+
             window.speechSynthesis.speak(msg);
         }
 
@@ -333,7 +387,7 @@
             }
         }
 
-        // Detectar si se abre con "?vista=tv" para ocultar controles
+        // Detectar si se abre con "?vista=tv"
         const params = new URLSearchParams(window.location.search);
         if(params.get('vista') === 'tv') {
             setMode('tv');
