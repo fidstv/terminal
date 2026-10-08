@@ -140,10 +140,11 @@
 
     <div class="container">
         
-        <!-- PANEL DE TAQUILLA (ADMIN) -->
+        <!-- PANEL DE TAQUILLA (ADMIN / AGREGAR O EDITAR) -->
         <div class="fids-card admin-only" id="taquillaPanel">
-            <div class="card-title">⚙️ Panel Taquilla / Operaciones (Agregar o Modificar Corridas)</div>
+            <div class="card-title" id="formTitle">⚙️ Agregar / Modificar Corrida</div>
             <form id="corridaForm" onsubmit="guardarCorrida(event)">
+                <input type="hidden" id="editIndex" value="-1">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Hora de Salida:</label>
@@ -181,7 +182,8 @@
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-green">💾 GUARDAR CORRIDA</button>
+                <button type="submit" class="btn btn-green" id="btnSave">💾 GUARDAR CORRIDA</button>
+                <button type="button" class="btn btn-dark" id="btnCancelEdit" onclick="cancelarEdicion()" style="display:none;">❌ CANCELAR EDICIÓN</button>
             </form>
         </div>
 
@@ -250,6 +252,7 @@
                         <td><span class="status-badge ${statusClass}">${item.estatus}</span></td>
                         <td class="admin-only">
                             <button class="btn btn-green" onclick="llamarAbordaje(${index})">📢 ABORDAR</button>
+                            <button class="btn btn-blue" onclick="cargarEdicion(${index})">✏️ EDITAR</button>
                             <button class="btn btn-danger" onclick="eliminarCorrida(${index})">🗑️</button>
                         </td>
                     </tr>
@@ -262,11 +265,13 @@
             renderTable();
         }
 
-        // --- OPERACIONES ---
+        // --- OPERACIONES: AGREGAR / EDITAR ---
         function guardarCorrida(e) {
             e.preventDefault();
-            const nueva = {
-                id: Date.now(),
+            const index = parseInt(document.getElementById('editIndex').value);
+
+            const corridaData = {
+                id: index >= 0 ? corridas[index].id : Date.now(),
                 hora: document.getElementById('inputHora').value,
                 destino: document.getElementById('inputDestino').value,
                 escalas: document.getElementById('inputEscalas').value,
@@ -274,9 +279,42 @@
                 abordaje: "Oficina Pedro Cárdenas",
                 estatus: document.getElementById('inputEstatus').value
             };
-            corridas.push(nueva);
+
+            if (index >= 0) {
+                // Actualizar existente
+                corridas[index] = corridaData;
+            } else {
+                // Agregar nueva
+                corridas.push(corridaData);
+            }
+
             syncData();
+            cancelarEdicion();
+        }
+
+        function cargarEdicion(index) {
+            const item = corridas[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('inputHora').value = item.hora;
+            document.getElementById('inputDestino').value = item.destino;
+            document.getElementById('inputEscalas').value = item.escalas;
+            document.getElementById('inputAutobus').value = item.autobus === '---' ? '' : item.autobus;
+            document.getElementById('inputEstatus').value = item.estatus;
+
+            document.getElementById('formTitle').innerText = "✏️ Editando Corrida";
+            document.getElementById('btnSave').innerText = "💾 ACTUALIZAR CORRIDA";
+            document.getElementById('btnCancelEdit').style.display = "inline-block";
+
+            // Scroll suave hacia el formulario
+            document.getElementById('taquillaPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
             document.getElementById('corridaForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('formTitle').innerText = "⚙️ Agregar / Modificar Corrida";
+            document.getElementById('btnSave').innerText = "💾 GUARDAR CORRIDA";
+            document.getElementById('btnCancelEdit').style.display = "none";
         }
 
         function eliminarCorrida(index) {
