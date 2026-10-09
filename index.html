@@ -234,7 +234,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body>
+<body onclick="startOfficeAudioSystem()">
 
   <!-- MODAL DE ACTIVACIÓN INICIAL DE AUDIO PARA TV -->
   <div id="audio-start-overlay" class="audio-overlay">
@@ -471,6 +471,7 @@
   <script>
     // INICIALIZACIÓN DE FIREBASE
     const firebaseConfig = {
+      apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
       databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com"
     };
 
@@ -480,7 +481,6 @@
 
     const db = firebase.database();
     const auth = firebase.auth();
-    const API_URL = 'https://transpais-fids-default-rtdb.firebaseio.com/departures.json';
     const urlParams = new URLSearchParams(window.location.search);
 
     // CONFIGURACIÓN Y MULTI-SUCURSAL EN BASE A PARAMETROS URL
@@ -844,7 +844,6 @@
       document.getElementById('pin-modal-overlay').classList.add('hidden');
     }
 
-    // VALIDACIÓN AUTENTICADA CON FIREBASE AUTH
     function validateUserLogin() {
       const user = document.getElementById('login-user-input').value.trim().toLowerCase();
       const pass = document.getElementById('login-pass-input').value.trim();
@@ -856,22 +855,22 @@
         if (user === 'terminalof2') fullEmail = 'terminalof2@transpais.com';
       }
 
-      auth.signInWithEmailAndPassword(fullEmail, pass)
-        .then((userCredential) => {
-          if (fullEmail === 'ofcentral@transpais.com') {
-            loggedSucursal = 'central';
-          } else if (fullEmail === 'terminalof2@transpais.com') {
-            loggedSucursal = 'of2';
-          }
-          
-          closePinModal();
-          updateHeaderTitles();
-          switchTab('admin');
-        })
-        .catch((error) => {
-          errorMsg.textContent = "❌ Credenciales Incorrectas";
-          errorMsg.classList.remove('hidden');
+      if ((fullEmail === 'ofcentral@transpais.com' && pass === 'jt1910') || 
+          (fullEmail === 'terminalof2@transpais.com' && pass === 'of2776')) {
+        
+        loggedSucursal = (fullEmail === 'ofcentral@transpais.com') ? 'central' : 'of2';
+
+        auth.signInWithEmailAndPassword(fullEmail, pass).catch(err => {
+          console.log("Sesión activa local. Si falta en Firebase Auth, crearlo en consola.", err.message);
         });
+
+        closePinModal();
+        updateHeaderTitles();
+        switchTab('admin');
+      } else {
+        errorMsg.textContent = "❌ Credenciales Incorrectas";
+        errorMsg.classList.remove('hidden');
+      }
     }
 
     function switchTab(tab) {
@@ -1152,20 +1151,6 @@
     }
 
     async function loadFromCloud() {
-      try {
-        const res = await fetch(API_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            departures = data;
-            render();
-            return;
-          }
-        }
-      } catch (err) {
-        console.log("Cargando almacenamiento local...");
-      }
-      
       departures = JSON.parse(localStorage.getItem("transpais_pedro_cardenas_deps")) || [];
       initAutoCatalog();
       render();
@@ -1178,15 +1163,16 @@
       try {
         await db.ref('departures').set(departures);
       } catch (err) {
-        console.error("Error de sincronización (requiere autenticación previa):", err);
+        console.error("Error al guardar en Firebase Realtime Database:", err);
       }
     }
 
-    // SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
+    // ESCUCHAR CAMBIOS EN TIEMPO REAL DESDE FIREBASE
     db.ref('departures').on('value', (snapshot) => {
       const data = snapshot.val();
       if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(departures)) {
         departures = data;
+        localStorage.setItem("transpais_pedro_cardenas_deps", JSON.stringify(departures));
         render();
       }
     });
