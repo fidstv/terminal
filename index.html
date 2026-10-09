@@ -234,7 +234,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body onclick="startOfficeAudioSystem()">
+<body>
 
   <!-- MODAL DE ACTIVACIÓN INICIAL DE AUDIO PARA TV -->
   <div id="audio-start-overlay" class="audio-overlay">
@@ -540,11 +540,9 @@
     let availableVoices = [];
 
     function enableTVAudioUnlock() {
-  document.getElementById('audio-start-overlay').classList.add('hidden');
-  try {
-    startOfficeAudioSystem();
-  } catch(e) {
-    console.log("Audio unlock skipped");
+  const overlay = document.getElementById('audio-start-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
   }
 }
       
