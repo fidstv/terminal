@@ -244,7 +244,7 @@
       <p style="font-size: 14px; color: #93c5fd; margin-bottom: 25px;">
         Toca la pantalla o presiona el botón para habilitar las alertas de voz y sonidos automáticos en la TV.
       </p>
-      <button class="btn btn-green" style="..." onclick="enableTVAudioUnlock()">
+      <button class="btn btn-green" style="padding: 15px 30px; font-size: 14px; border-radius: 12px; width: 100%;" onclick="enableTVAudioUnlock()">
         ▶️ ACTIVAR AUDIO DE LA TERMINAL
       </button>
     </div>
@@ -540,26 +540,16 @@
     let availableVoices = [];
 
     function enableTVAudioUnlock() {
-  const overlay = document.getElementById('audio-start-overlay');
-  if (overlay) overlay.style.display = 'none';
-
-  setInterval(() => {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        const dummyCtx = new AudioCtx();
-        const osc = dummyCtx.createOscillator();
-        const gain = dummyCtx.createGain();
-        gain.gain.value = 0.0001; 
-        osc.connect(gain);
-        gain.connect(dummyCtx.destination);
-        osc.start();
-        osc.stop(dummyCtx.currentTime + 0.1);
+      const overlay = document.getElementById('audio-start-overlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
       }
-    } catch(e) {}
-  }, 240000);
-}
-      
+
+      try {
+        startOfficeAudioSystem();
+      } catch(e) {}
+
       setInterval(() => {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
