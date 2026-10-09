@@ -541,7 +541,11 @@
 
     function enableTVAudioUnlock() {
   document.getElementById('audio-start-overlay').classList.add('hidden');
-  startOfficeAudioSystem();
+  try {
+    startOfficeAudioSystem();
+  } catch(e) {
+    console.log("Audio unlock skipped");
+  }
 }
       
       setInterval(() => {
