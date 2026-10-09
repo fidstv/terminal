@@ -50,6 +50,7 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       margin: 20px 30px;
       flex-grow: 1;
+      overflow-x: auto;
     }
 
     .control-bar {
@@ -182,10 +183,83 @@
       100% { transform: translate3d(-100%, 0, 0); }
     }
 
+    /* OVERLAY / MODALES */
+    .audio-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 11, 24, 0.92);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .audio-overlay-card {
+      background: rgba(0, 30, 68, 0.9);
+      border: 2px solid #00A859;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      box-shadow: 0 0 50px rgba(0, 168, 89, 0.4);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-card {
+      background: #00142D;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 30px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
 <body onclick="startOfficeAudioSystem()">
+
+  <!-- MODAL DE ACTIVACIÓN INICIAL DE AUDIO PARA TV -->
+  <div id="audio-start-overlay" class="audio-overlay">
+    <div class="audio-overlay-card">
+      <div style="font-size: 48px; margin-bottom: 15px;">🔊</div>
+      <h2 style="font-size: 24px; font-weight: 900; color: #00D974; margin-bottom: 10px;">ACTIVACIÓN DE SISTEMA FIDS</h2>
+      <p style="font-size: 14px; color: #93c5fd; margin-bottom: 25px;">
+        Toca la pantalla o presiona el botón para habilitar las alertas de voz y sonidos automáticos en la TV.
+      </p>
+      <button class="btn btn-green" style="padding: 15px 30px; font-size: 14px; border-radius: 12px; width: 100%;" onclick="enableTVAudioUnlock()">
+        ▶️ ACTIVAR AUDIO DE LA TERMINAL
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE PIN DE TAQUILLA -->
+  <div id="pin-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 style="font-size: 16px; font-weight: 900; color: #FFB800; margin-bottom: 10px;">ACCESO A TAQUILLA</h3>
+      <p style="font-size: 12px; color: #cccccc; margin-bottom: 15px;">Ingrese el PIN de seguridad:</p>
+      <input type="password" id="pin-input" style="text-align: center; font-size: 20px; letter-spacing: 5px; margin-bottom: 15px;" placeholder="****">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-dark" style="flex: 1;" onclick="closePinModal()">Cancelar</button>
+        <button class="btn btn-green" style="flex: 1;" onclick="validatePin()">Acceder</button>
+      </div>
+      <div id="pin-error-msg" style="color: #f43f5e; font-size: 11px; margin-top: 10px; font-weight: 700;" class="hidden">
+        ❌ PIN Incorrecto
+      </div>
+    </div>
+  </div>
 
   <!-- HEADER -->
   <header class="glass-header">
@@ -209,7 +283,7 @@
   <div class="control-bar">
     <div style="display: flex; gap: 10px;">
       <button id="btn-tab-screen" class="btn btn-green" onclick="switchTab('screen')">Pantalla Sala de Espera</button>
-      <button id="btn-tab-admin" class="btn btn-dark" onclick="switchTab('admin')">Panel Taquilla / Operaciones</button>
+      <button id="btn-tab-admin" class="btn btn-dark" onclick="openPinModal()">Panel Taquilla / Operaciones</button>
     </div>
 
     <!-- REPRODUCTOR DE MÚSICA POR CARPETA -->
@@ -258,8 +332,10 @@
       <h3 style="color: #FFB800; font-size: 13px; font-weight: 800; margin-bottom: 6px;">🎙️ PLANTILLAS DE VOCEO Y CONFIGURACIÓN DE VOZ</h3>
       
       <div style="margin-bottom: 12px; background: rgba(0, 168, 89, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 217, 116, 0.3);">
-        <label style="font-size: 11px; color: #00D974; font-weight: 800; display: block; margin-bottom: 4px;">🗣️ SELECCIONAR VOZ DE ANUNCIOS (Natural / Humana):</label>
-        <select id="voice-selector" style="font-size: 12px;" onchange="saveSelectedVoice()"></select>
+        <label style="font-size: 11px; color: #00D974; font-weight: 800; display: block; margin-bottom: 4px;">🗣️ SELECCIONAR MODO DE VOZ (API Web Nube / Local):</label>
+        <select id="voice-selector" style="font-size: 12px;" onchange="saveSelectedVoice()">
+          <option value="WEB_API_ONLINE">🌐 Voz HD por API Web (Nube - Recomendada para TV)</option>
+        </select>
       </div>
 
       <p style="font-size: 11px; color: #93c5fd; margin-bottom: 8px;">
@@ -422,10 +498,33 @@
     let templateEtiq = localStorage.getItem("transpais_template_etiq") || defaultEtiqTemplate;
     let templateAbord = localStorage.getItem("transpais_template_abord") || defaultAbordTemplate;
     let templateUltima = localStorage.getItem("transpais_template_ultima") || defaultUltimaTemplate;
-    let selectedVoiceURI = localStorage.getItem("transpais_selected_voice") || "";
+    let selectedVoiceURI = localStorage.getItem("transpais_selected_voice") || "WEB_API_ONLINE";
     let isLocalMuted = localStorage.getItem("transpais_local_muted") === "true";
     let audioSystemReady = false;
     let availableVoices = [];
+
+    // SISTEMA UNLOCK DE AUDIO TV (AUTOPLAY POLICY & KEEP ALIVE)
+    function enableTVAudioUnlock() {
+      startOfficeAudioSystem();
+      document.getElementById('audio-start-overlay').classList.add('hidden');
+      
+      // Pulso de sonido inaudible cada 4 minutos para mantener el canal despierto en Smart TV
+      setInterval(() => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            const dummyCtx = new AudioCtx();
+            const osc = dummyCtx.createOscillator();
+            const gain = dummyCtx.createGain();
+            gain.gain.value = 0.0001; // Inaudible
+            osc.connect(gain);
+            gain.connect(dummyCtx.destination);
+            osc.start();
+            osc.stop(dummyCtx.currentTime + 0.1);
+          }
+        } catch(e) {}
+      }, 240000);
+    }
 
     function updateMuteButtonUI() {
       const btn = document.getElementById('btn-mute-local');
@@ -448,22 +547,22 @@
     }
 
     function populateVoiceList() {
-      if (!('speechSynthesis' in window)) return;
-      availableVoices = window.speechSynthesis.getVoices();
       const voiceSelector = document.getElementById('voice-selector');
       if (!voiceSelector) return;
 
-      voiceSelector.innerHTML = '';
-      const spanishVoices = availableVoices.filter(v => v.lang.includes('es'));
-      const voicesToUse = spanishVoices.length > 0 ? spanishVoices : availableVoices;
+      voiceSelector.innerHTML = '<option value="WEB_API_ONLINE">🌐 Voz HD por API Web (Nube - Recomendada para TV)</option>';
 
-      voicesToUse.forEach(voice => {
-        const option = document.createElement('option');
-        option.value = voice.voiceURI;
-        option.textContent = `${voice.name} (${voice.lang})${voice.default ? ' — Predeterminada' : ''}`;
-        if (voice.voiceURI === selectedVoiceURI) option.selected = true;
-        voiceSelector.appendChild(option);
-      });
+      if ('speechSynthesis' in window) {
+        availableVoices = window.speechSynthesis.getVoices();
+        const spanishVoices = availableVoices.filter(v => v.lang.includes('es'));
+        spanishVoices.forEach(voice => {
+          const option = document.createElement('option');
+          option.value = voice.voiceURI;
+          option.textContent = `💻 Local: ${voice.name} (${voice.lang})`;
+          if (voice.voiceURI === selectedVoiceURI) option.selected = true;
+          voiceSelector.appendChild(option);
+        });
+      }
     }
 
     if ('speechSynthesis' in window) {
@@ -483,6 +582,7 @@
 
     let playlist = [];
     let currentTrackIndex = 0;
+    let currentObjectUrl = null;
     const bgMusic = document.getElementById('bg-music');
 
     function loadMusicFolder(event) {
@@ -499,14 +599,18 @@
 
     function playTrack(index) {
       if (playlist.length === 0) return;
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl); // Liberación de memoria
+      }
+
       const file = playlist[index];
-      const songUrl = URL.createObjectURL(file);
-      bgMusic.src = songUrl;
+      currentObjectUrl = URL.createObjectURL(file);
+      bgMusic.src = currentObjectUrl;
 
       document.getElementById('song-title').textContent = file.name.replace(/\.[^/.]+$/, "");
       document.getElementById('btn-music').disabled = false;
 
-      bgMusic.play();
+      bgMusic.play().catch(e => console.log("Music play blocked", e));
       document.getElementById('btn-music').textContent = '⏸️';
       document.getElementById('btn-music').className = 'btn btn-green';
     }
@@ -589,6 +693,11 @@
       if (audioSystemReady) return;
       try {
         if ('speechSynthesis' in window) window.speechSynthesis.resume();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          ctx.resume();
+        }
         audioSystemReady = true;
       } catch(e) {}
     }
@@ -615,6 +724,7 @@
       }
     }
 
+    // RELOJ Y LÓGICA DE TIEMPOS CON SOPORTE PARA MEDIANOCHE
     function updateClock() {
       const now = new Date();
       document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-MX', { hour12: false });
@@ -626,12 +736,17 @@
       departures = departures.filter(dep => {
         const [h, m] = dep.time.split(':').map(Number);
         const depMinutes = h * 60 + m;
-        const diffMinutes = depMinutes - currentMinutes;
+        
+        let diffMinutes = depMinutes - currentMinutes;
 
-        // Limpieza pasados 10 minutos
+        // Soporte para cruce de medianoche (Eje: 23:55 vs 00:05)
+        if (diffMinutes < -1200) diffMinutes += 1440; 
+        if (diffMinutes > 1200) diffMinutes -= 1440;
+
+        // Limpieza pasados 10 minutos de la salida
         if (diffMinutes <= -10) return false;
 
-        // Minuto 0 a -9 (Salida / Cierre)
+        // Minuto -1 a -9 (Salido)
         if (diffMinutes < 0) {
           if (dep.status !== "SALIDO") {
             dep.status = "SALIDO";
@@ -679,6 +794,28 @@
     }
     setInterval(updateClock, 1000);
 
+    // SISTEMA DE PIN MODAL
+    function openPinModal() {
+      document.getElementById('pin-input').value = '';
+      document.getElementById('pin-error-msg').classList.add('hidden');
+      document.getElementById('pin-modal-overlay').classList.remove('hidden');
+      document.getElementById('pin-input').focus();
+    }
+
+    function closePinModal() {
+      document.getElementById('pin-modal-overlay').classList.add('hidden');
+    }
+
+    function validatePin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === ADMIN_PIN) {
+        closePinModal();
+        switchTab('admin');
+      } else {
+        document.getElementById('pin-error-msg').classList.remove('hidden');
+      }
+    }
+
     function switchTab(tab) {
       const viewScreen = document.getElementById('view-screen');
       const viewAdmin = document.getElementById('view-admin');
@@ -691,16 +828,10 @@
         btnScreen.className = 'btn btn-green';
         btnAdmin.className = 'btn btn-dark';
       } else {
-        // Validación de PIN de Seguridad para Taquilla
-        const inputPin = prompt("Ingrese el PIN de acceso a Taquilla:");
-        if (inputPin === ADMIN_PIN) {
-          viewScreen.classList.add('hidden');
-          viewAdmin.classList.remove('hidden');
-          btnAdmin.className = 'btn btn-green';
-          btnScreen.className = 'btn btn-dark';
-        } else if (inputPin !== null) {
-          alert("PIN incorrecto. Acceso denegado.");
-        }
+        viewScreen.classList.add('hidden');
+        viewAdmin.classList.remove('hidden');
+        btnAdmin.className = 'btn btn-green';
+        btnScreen.className = 'btn btn-dark';
       }
     }
 
@@ -824,7 +955,7 @@
 
     function playTerminalChime(onComplete) {
       if (isLocalMuted) {
-        onComplete();
+        if (onComplete) onComplete();
         return;
       }
 
@@ -854,9 +985,11 @@
         osc1.stop(now + 2.0);
         osc2.stop(now + 2.0);
 
-        setTimeout(onComplete, 1800);
+        setTimeout(() => {
+          if (onComplete) onComplete();
+        }, 1800);
       } catch (err) {
-        onComplete();
+        if (onComplete) onComplete();
       }
     }
 
@@ -869,6 +1002,7 @@
       }
     }
 
+    // SISTEMA DE VOCEO HÍBRIDO (API WEB NUBE / LOCAL / FALLBACK CHIME)
     function triggerVoice(id, mode) {
       const dep = departures.find(d => d.id === id);
       if (!dep) return;
@@ -894,27 +1028,62 @@
         .replace('{AUTOBUS}', busText);
 
       playTerminalChime(() => {
-        if (!isLocalMuted && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(script);
+        if (isLocalMuted) {
+          if (!bgMusic.paused) bgMusic.volume = originalVol;
+          return;
+        }
+
+        // MODO 1: REPRODUCCIÓN POR API WEB ONLINE (RECOMENDADO PARA TV)
+        if (selectedVoiceURI === "WEB_API_ONLINE") {
+          const encodedText = encodeURIComponent(script);
+          // Usa API pública de TTS en español neutro
+          const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=es&client=tw-ob`;
           
-          if (availableVoices.length === 0) availableVoices = window.speechSynthesis.getVoices();
-          const chosenVoice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
-          if (chosenVoice) {
-            utterance.voice = chosenVoice;
-          } else {
-            utterance.lang = 'es-MX';
-          }
+          const ttsAudio = new Audio(ttsUrl);
+          ttsAudio.volume = 1.0;
 
-          utterance.rate = 0.88;
-
-          utterance.onend = () => {
+          ttsAudio.onended = () => {
             if (!bgMusic.paused) bgMusic.volume = originalVol;
           };
 
-          window.speechSynthesis.speak(utterance);
+          ttsAudio.onerror = () => {
+            console.log("Fallback a voz local...");
+            speakWithLocalTTS(script, originalVol);
+          };
+
+          ttsAudio.play().catch(err => {
+            speakWithLocalTTS(script, originalVol);
+          });
+        } else {
+          // MODO 2: REPRODUCCIÓN CON SÍNTESIS LOCAL DE NAVEGADOR
+          speakWithLocalTTS(script, originalVol);
         }
       });
+    }
+
+    function speakWithLocalTTS(script, originalVol) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(script);
+        
+        if (availableVoices.length === 0) availableVoices = window.speechSynthesis.getVoices();
+        const chosenVoice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+        if (chosenVoice) {
+          utterance.voice = chosenVoice;
+        } else {
+          utterance.lang = 'es-MX';
+        }
+
+        utterance.rate = 0.88;
+
+        utterance.onend = () => {
+          if (!bgMusic.paused) bgMusic.volume = originalVol;
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        if (!bgMusic.paused) bgMusic.volume = originalVol;
+      }
     }
 
     async function loadFromCloud() {
