@@ -1075,6 +1075,21 @@
       const dep = departures.find(d => d.id === id);
       if (!dep) return;
 
+      // Emitir señal en Firebase para reproducción instantánea remota (TV)
+      try {
+        db.ref('lastVoiceTrigger').set({
+          id: id,
+          mode: mode,
+          timestamp: Date.now()
+        });
+      } catch (err) {
+        console.error("Error al enviar señal de voceo a Firebase:", err);
+      }
+
+      playLocalVoiceScript(dep, mode);
+    }
+
+    function playLocalVoiceScript(dep, mode) {
       startOfficeAudioSystem();
 
       const originalVol = bgMusic.volume;
@@ -1174,6 +1189,25 @@
         departures = data;
         localStorage.setItem("transpais_pedro_cardenas_deps", JSON.stringify(departures));
         render();
+      }
+    });
+
+    // ESCUCHAR SEÑAL DE VOCEO INSTANTÁNEO EN TIEMPO REAL
+    let lastHandledVoiceTimestamp = 0;
+
+    db.ref('lastVoiceTrigger').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data || !data.timestamp) return;
+
+      if (data.timestamp > lastHandledVoiceTimestamp) {
+        lastHandledVoiceTimestamp = data.timestamp;
+
+        if (Date.now() - data.timestamp < 10000) {
+          const dep = departures.find(d => d.id === data.id);
+          if (dep) {
+            playLocalVoiceScript(dep, data.mode);
+          }
+        }
       }
     });
 
