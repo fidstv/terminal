@@ -1,829 +1,1060 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Transpais FIDS - Sistema de Información a Pasajeros</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
-.glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
-.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
-.control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
-.btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
-.btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
-.btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
-.btn-red{background:rgba(230,57,70,.3);color:#f87171}.btn-red:hover{background:rgba(230,57,70,.5)}
-.btn-panic{background:#e11d48;color:#fff;font-weight:900;box-shadow:0 0 10px rgba(225,29,72,.5)}.btn-panic:hover{background:#be123c}
-.btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
-.btn-arrive{background:#d97706;color:#fff;font-weight:900}
-.btn-delay{background:#dc2626;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-delay:hover{background:#991b1b}
-.btn-advance{background:#2563eb;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-advance:hover{background:#1d4ed8}
-table{width:100%;border-collapse:collapse;text-align:left}
-th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
-td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
-.c{text-align:center}
-.badge-status{padding:6px 12px;border-radius:20px;font-size:10px;font-weight:900;text-transform:uppercase;display:inline-block}
-.status-espera{background:rgba(23,162,184,.2);color:#17a2b8;border:1px solid rgba(23,162,184,.4)}
-.status-etiq{background:#FFB800;color:#000;animation:pg 1.4s infinite ease-in-out}
-.status-abordaje{background:#00D974;color:#000;animation:pg 1s infinite ease-in-out}
-.status-ultima{background:#e11d48;color:#fff;animation:pr .8s infinite ease-in-out}
-.status-demorado{background:#dc2626;color:#fff}
-.status-salido{background:rgba(255,255,255,.05);color:#888}
-@keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
-@keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
-input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px;color:#fff;font-family:inherit;width:100%}
-.inline-bus-input{background:rgba(255,184,0,.15);border:1px solid #FFB800;font-weight:800;text-align:center;width:80px;padding:5px;border-radius:6px}
-.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
-.lbl{font-size:11px;font-weight:700;color:#93c5fd}
-.flex{display:flex;gap:4px;justify-content:center}
-.ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden}
-.ticker-title{background:#00A859;padding:0 20px;height:100%;display:flex;align-items:center;font-weight:900;font-size:11px;white-space:nowrap}
-.ticker-content{white-space:nowrap;animation:tk 30s linear infinite;font-size:12px;color:#93c5fd}
-@keyframes tk{0%{transform:translate3d(100%,0,0)}100%{transform:translate3d(-100%,0,0)}}
-.overlay{position:fixed;inset:0;background:rgba(0,11,24,.92);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}
-.modal-overlay{z-index:9998;background:rgba(0,0,0,.85)}
-.card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
-.modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
-.hidden{display:none!important}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema FIDS Transpais - Terminal Pedro Cárdenas</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-/* ============ WIDGET QR Y VOCEO ============ */
-.qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
-.qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
-.qr-text{max-width:180px}
-.qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
-.qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
-#qrcode-box{background:#fff;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            transpais: {
+              navy: '#000B18',
+              navyCard: '#00142D',
+              green: '#00A859',
+              greenBright: '#00D974',
+              gold: '#FFB800',
+              blueLight: '#93C5FD',
+              blueBorder: 'rgba(147, 197, 253, 0.25)',
+              pink: '#FF69B4'
+            }
+          }
+        }
+      }
+    }
+  </script>
 
-.voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
-.voice-indicator.active{transform:translateY(0);opacity:1}
-.speaker-pulse{animation:sp 1s infinite alternate}
-@keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
-</style>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body {
+      background-color: #000B18;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* Custom Glassmorphism Cards */
+    .glass-card {
+      background: rgba(0, 20, 45, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(147, 197, 253, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .glass-card-neon {
+      background: rgba(0, 20, 45, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 217, 116, 0.4);
+      box-shadow: 0 0 25px rgba(0, 168, 89, 0.2);
+    }
+
+    /* Pattern Background simulate Transpais Brand Lines */
+    .bg-pattern {
+      background-image: radial-gradient(rgba(147, 197, 253, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Status Glow effects */
+    .glow-green {
+      box-shadow: 0 0 12px rgba(0, 217, 116, 0.6);
+    }
+    .glow-gold {
+      box-shadow: 0 0 12px rgba(255, 184, 0, 0.6);
+    }
+    .glow-blue {
+      box-shadow: 0 0 12px rgba(147, 197, 253, 0.6);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000B18;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #00142D;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 168, 89, 0.3);
+    }
+
+    /* Smooth Poster Fade Transitions */
+    .promo-fade-enter {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    .promo-fade-active {
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 800ms ease-in-out, transform 800ms ease-in-out;
+    }
+    .promo-fade-exit {
+      opacity: 0;
+      transform: scale(1.02);
+      transition: opacity 800ms ease-in-out, transform 800ms ease-in-out;
+    }
+
+    /* Animated pulse for active boarding */
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(0, 217, 116, 0.8); }
+      50% { border-color: rgba(255, 184, 0, 0.9); }
+    }
+    .boarding-pulse {
+      animation: pulse-border 1.5s infinite;
+    }
+  </style>
 </head>
-<body>
 
-<div id="audio-start-overlay" class="overlay">
-  <div class="card">
-    <div style="font-size:48px;margin-bottom:15px">🔊</div>
-    <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
-    <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="document.getElementById('audio-start-overlay').style.display='none'; if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
-  </div>
-</div>
+<body class="h-full bg-pattern flex flex-col min-h-screen">
 
-<div id="pin-modal-overlay" class="overlay modal-overlay hidden">
-  <div class="modal-card">
-    <h3 style="font-size:16px;font-weight:900;color:#FFB800;margin-bottom:10px">ACCESO A TAQUILLA</h3>
-    <p style="font-size:12px;color:#ccc;margin-bottom:15px">Ingrese Usuario y Contraseña:</p>
-    <input type="text" id="login-user-input" style="margin-bottom:10px" placeholder="Usuario / Correo">
-    <input type="password" id="login-pass-input" style="margin-bottom:15px" placeholder="Contraseña">
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-dark" style="flex:1;justify-content:center" id="btn-login-cancel">Cancelar</button>
-      <button class="btn btn-green" style="flex:1;justify-content:center" id="btn-login-ok">Acceder</button>
-    </div>
-    <div id="pin-error-msg" style="color:#f43f5e;font-size:11px;margin-top:10px;font-weight:700" class="hidden">❌ Credenciales Incorrectas</div>
-  </div>
-</div>
-
-<div id="voice-indicator" class="voice-indicator">
-  <span class="speaker-pulse" style="font-size:18px">📢</span>
-  <span>VOCEO EN REPRODUCCIÓN...</span>
-</div>
-
-<div id="qr-card" class="qr-card">
-  <div id="qrcode-box"></div>
-  <div class="qr-text">
-    <h4>📱 LLEVA EL ITINERARIO EN TU CELULAR</h4>
-    <p>Escanea este código para ver el estatus en tiempo real desde tu teléfono.</p>
-  </div>
-</div>
-
-<header class="glass-header">
-  <div style="display:flex;align-items:center;gap:20px">
-    <div class="brand-logo">TRANSPAIS®</div>
-    <div>
-      <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
-      <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
-    </div>
-  </div>
-  <div style="text-align:right;background:rgba(0,0,0,.4);padding:8px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1)">
-    <div id="clock-time" style="font-size:28px;font-weight:900;font-family:monospace">00:00:00</div>
-    <div id="clock-date" style="font-size:11px;color:#93c5fd">Cargando...</div>
-  </div>
-</header>
-
-<div class="control-bar" id="control-bar">
-  <div style="display:flex;gap:10px;align-items:center">
-    <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
-    <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
-    <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1)">
-    <label class="lbl" style="font-weight:800">🎵 MÚSICA AMBIENTAL:</label>
-    <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" style="display:none">
-    <button class="btn btn-blue" id="btn-folder">📁 Carpeta</button>
-    <button class="btn btn-dark" id="btn-prev">⏮️</button>
-    <button id="btn-music" class="btn btn-dark" disabled>▶️</button>
-    <button class="btn btn-dark" id="btn-next">⏭️</button>
-    <div id="song-title" style="font-size:11px;color:#FFB800;font-weight:700;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sin carpeta</div>
-    <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" style="width:60px">
-    <audio id="bg-music"></audio>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente (Barra Espaciadora)">🛑 PÁNICO / DETENER VOCEO</button>
-    <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
-    <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
-    <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
-  </div>
-</div>
-
-<main id="view-screen" class="glass-card">
-  <table>
-    <thead><tr><th>Hora</th><th>Destino / Escalas</th><th class="c">Autobús</th><th class="c">Punto de Abordaje</th><th class="c">Estatus</th></tr></thead>
-    <tbody id="fids-body"></tbody>
-  </table>
-</main>
-
-<main id="view-admin" class="glass-card hidden">
-  <div style="background:rgba(0,168,89,.15);border:1px solid #00D974;padding:14px 18px;border-radius:12px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;gap:10px">
-    <div>
-      <h3 style="color:#00D974;font-size:14px;font-weight:900;margin-bottom:2px">⚡ ITINERARIO GENERAL DEL DÍA</h3>
-      <p style="font-size:11px;color:#93c5fd">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
-    </div>
-    <button class="btn btn-green" id="btn-load-all">🚀 CARGAR TODAS LAS SALIDAS</button>
-  </div>
-  <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;margin-bottom:15px">
-    <label style="font-size:11px;font-weight:800;color:#FFB800;display:block;margin-bottom:5px">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
-    <select id="preset-selector">
-      <option value="">-- Seleccionar ruta del catálogo --</option>
-      <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
-      <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
-      <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
-      <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
-      <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
-      <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
-      <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
-      <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
-      <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
-      <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
-      <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
-      <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
-      <option value="p13">15:00 - Ciudad Valles Completa</option>
-    </select>
-  </div>
-  <form id="departure-form">
-    <input type="hidden" id="dep-id"><input type="hidden" id="dep-preset-key">
-    <div class="grid-form">
-      <div><label class="lbl">Hora Programada</label><input type="time" id="dep-time" required></div>
-      <div><label class="lbl">Destino Principal</label><input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required></div>
-      <div><label class="lbl">Escalas Principales</label><input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante"></div>
-      <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
-      <div><label class="lbl">Estatus Manual</label>
-        <select id="dep-status">
-          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
-        </select></div>
-    </div>
-    <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
-      <button type="button" class="btn btn-dark btn-red" id="btn-clear-all">Limpiar Pantalla del Día</button>
-      <div style="display:flex;gap:8px">
-        <button type="button" class="btn btn-dark" id="btn-reset">Limpiar Formulario</button>
-        <button type="submit" class="btn btn-green">Guardar / Publicar Corrida</button>
+  <!-- TOP APP CONTROLLER HEADER -->
+  <header class="bg-[#000812] border-b border-transpais-blueBorder px-4 py-2 flex flex-wrap items-center justify-between z-50 sticky top-0">
+    <div class="flex items-center space-x-3">
+      <!-- Transpais Official Logo Badge -->
+      <div class="bg-white rounded-lg px-3 py-1 shadow-md flex items-center">
+        <span class="text-xl font-extrabold tracking-tighter text-[#002B66] italic">TRANSPAIS<span class="text-xs align-top font-normal text-gray-500">®</span></span>
+      </div>
+      <div>
+        <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">SISTEMA FIDS - CONTROL OPERATIVO DE TERMINAL</h1>
+        <p class="text-[10px] text-transpais-greenBright font-semibold tracking-wider uppercase">Terminal Pedro Cárdenas | Matamoros - Oficina de Paso</p>
       </div>
     </div>
-  </form>
-  <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
-    <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
-    <table>
-      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
-      <tbody id="admin-body"></tbody>
-    </table>
+
+    <!-- View Mode Selector Buttons -->
+    <div class="flex items-center space-x-1 sm:space-x-2 my-1 sm:my-0 bg-[#00142D] p-1 rounded-xl border border-gray-800">
+      <button id="btnViewTv" onclick="switchMainView('tv')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-transpais-green text-white shadow-lg">
+        <i class="fa-solid fa-tv"></i>
+        <span>📺 TV Sala (70/30)</span>
+      </button>
+      <button id="btnViewOps" onclick="switchMainView('ops')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-gray-400 hover:text-white hover:bg-gray-800">
+        <i class="fa-solid fa-sliders"></i>
+        <span>📱 Panel Taquilla</span>
+      </button>
+      <button id="btnViewSplit" onclick="switchMainView('split')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-gray-400 hover:text-white hover:bg-gray-800 hidden lg:flex">
+        <i class="fa-solid fa-columns"></i>
+        <span>🖥️ Vista Dual</span>
+      </button>
+    </div>
+
+    <!-- Clock and Status -->
+    <div class="flex items-center space-x-3">
+      <div class="hidden sm:block text-right">
+        <div id="liveClock" class="text-base font-extrabold font-mono text-white tracking-wider">17:52:22</div>
+        <div id="liveDate" class="text-[10px] text-transpais-blueLight capitalize">sábado, 10 de octubre de 2026</div>
+      </div>
+      <div class="w-2.5 h-2.5 rounded-full bg-transpais-greenBright animate-ping" title="Sistema Sincronizado en Vivo"></div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 p-2 sm:p-4 max-w-[1920px] mx-auto w-full flex flex-col">
+
+    <!-- VIEW 1: TV SALA DE ESPERA (LAYOUT 70/30) -->
+    <section id="viewTvSection" class="flex-1 flex flex-col gap-3">
+      
+      <!-- FIDS TV Header Bar -->
+      <div class="glass-card rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between border-l-4 border-transpais-green">
+        <div class="flex items-center space-x-4">
+          <div class="bg-white rounded-xl px-4 py-1.5 shadow-md">
+            <span class="text-2xl font-black italic tracking-tighter text-[#002A66]">TRANSPAIS®</span>
+          </div>
+          <div>
+            <h2 class="text-lg sm:text-2xl font-extrabold text-white tracking-tight">TERMINAL PEDRO CÁRDENAS</h2>
+            <p class="text-xs sm:text-sm font-semibold text-transpais-greenBright">MATAMOROS – OFICINA DE PASO</p>
+          </div>
+        </div>
+
+        <div class="bg-[#000B18]/80 border border-transpais-blueBorder px-4 py-2 rounded-xl text-right">
+          <div id="tvClock" class="text-xl sm:text-2xl font-black font-mono text-white tracking-wider">17:52:22</div>
+          <div id="tvDate" class="text-xs text-transpais-blueLight font-medium">sábado, 10 de octubre de 2026</div>
+        </div>
+      </div>
+
+      <!-- FIDS 70 / 30 GRID CONTAINER -->
+      <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch min-h-[580px]">
+        
+        <!-- LEFT COLUMN (70%): SALIDAS TABLERO EN TIEMPO REAL -->
+        <div class="lg:col-span-8 flex flex-col glass-card rounded-2xl p-4 border border-transpais-blueBorder shadow-2xl relative overflow-hidden">
+          
+          <div class="flex items-center justify-between pb-3 border-b border-gray-800 mb-3">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-bus text-transpais-greenBright text-lg"></i>
+              <h3 class="text-base sm:text-lg font-bold text-white tracking-wide uppercase">SALIDAS Y CORRIDAS EN PROGRAMA</h3>
+            </div>
+            <span class="text-xs text-transpais-blueLight bg-transpais-navyCard px-3 py-1 rounded-full border border-transpais-blueBorder">
+              <i class="fa-solid fa-arrows-rotate animate-spin mr-1 text-transpais-greenBright"></i> Sincronizado
+            </span>
+          </div>
+
+          <!-- Board Table Header -->
+          <div class="grid grid-cols-12 gap-2 text-[11px] font-bold text-transpais-blueLight uppercase px-3 py-2 bg-[#001838] rounded-xl mb-2">
+            <div class="col-span-2 text-center">HORA</div>
+            <div class="col-span-4">DESTINO / ESCALAS</div>
+            <div class="col-span-2 text-center">AUTOBÚS</div>
+            <div class="col-span-2">PUNTO ABORDAJE</div>
+            <div class="col-span-2 text-center">ESTATUS</div>
+          </div>
+
+          <!-- Board Rows Container -->
+          <div id="departuresList" class="flex-1 space-y-2 overflow-y-auto pr-1">
+            <!-- Dynamic Departure Rows loaded here via JS -->
+          </div>
+
+          <!-- Footer Notice inside 70% Board -->
+          <div class="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between text-xs text-gray-400">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-circle-info text-transpais-gold"></i>
+              <span>Conserve su boleto. Se solicita estar en sala 15 minutos antes de su salida.</span>
+            </div>
+            <div class="font-bold text-transpais-blueLight">
+              Oficina Pedro Cárdenas
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN (30%): MÓDULO PUBLICITARIO VERTICAL 9:16 GLASSMORPHISM -->
+        <div class="lg:col-span-4 glass-card-neon rounded-2xl flex flex-col relative overflow-hidden p-3 shadow-2xl min-h-[500px]">
+          
+          <!-- Story Progress Bar Container -->
+          <div class="w-full bg-gray-900/80 rounded-full h-1.5 overflow-hidden mb-2 z-20">
+            <div id="storyProgressBar" class="bg-transpais-greenBright h-full w-0 transition-all duration-100 ease-linear shadow-[0_0_8px_#00D974]"></div>
+          </div>
+
+          <!-- Floating Glass Category Badge -->
+          <div class="flex items-center justify-between z-20 mb-2 px-1">
+            <span id="promoBadgeTag" class="text-[10px] font-extrabold tracking-widest uppercase bg-[#000B18]/80 text-transpais-greenBright border border-transpais-greenBright/50 px-3 py-1 rounded-full backdrop-blur-md shadow-md">
+              OFERTA DE RUTA
+            </span>
+            <span class="text-[10px] font-mono text-gray-400 bg-[#000B18]/60 px-2 py-0.5 rounded-md">
+              <i class="fa-solid fa-play text-[8px] text-transpais-gold mr-1"></i> FIDS PROMO
+            </span>
+          </div>
+
+          <!-- Poster Visual Canvas Wrapper (9:16 Aspect ratio container) -->
+          <div class="flex-1 relative w-full rounded-xl overflow-hidden bg-[#000814] flex items-center justify-center border border-transpais-blueBorder">
+            
+            <div id="posterSlideContainer" class="w-full h-full relative flex items-center justify-center p-2">
+              <!-- Rendered Active Offer HTML/SVG dynamic visual -->
+            </div>
+
+          </div>
+
+          <!-- Footer Brand Ribbon inside 30% Ad Module -->
+          <div class="mt-2 pt-2 border-t border-gray-800/80 flex items-center justify-between text-[11px] z-20">
+            <span class="font-bold text-transpais-greenBright flex items-center">
+              <i class="fa-solid fa-globe mr-1"></i> transpais.com.mx
+            </span>
+            <span class="text-gray-400 text-[10px]">
+              Compra en taquilla o App
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- VIEW 2: PANEL TAQUILLA / OPERACIONES (TAQUILLA CONTROL) -->
+    <section id="viewOpsSection" class="hidden flex-1 flex-col gap-4">
+      
+      <!-- Operations Header Control Bar -->
+      <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 border-l-4 border-transpais-gold">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center">
+            <i class="fa-solid fa-desktop text-transpais-gold mr-2"></i> PANEL DE CONTROL TAQUILLA Y OPERACIONES
+          </h2>
+          <p class="text-xs text-gray-300">Gestione corridas en tiempo real, estatus de abordaje y ofertas en pantalla de TV.</p>
+        </div>
+
+        <!-- System Quick Control Buttons (Matching original FIDS top buttons) -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="stopVoceoPánico()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white shadow-lg flex items-center space-x-1 transition">
+            <i class="fa-solid fa-circle-stop"></i>
+            <span>PÁNICO / DETENER VOCEO</span>
+          </button>
+          
+          <button onclick="toggleAudioCompu()" id="btnAudioState" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-transpais-green text-white shadow-lg flex items-center space-x-1 transition">
+            <i class="fa-solid fa-volume-high"></i>
+            <span>AUDIO COMPU: ACTIVADO</span>
+          </button>
+
+          <button onclick="testChimeSound()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-600 text-white shadow-lg flex items-center space-x-1 transition">
+            <i class="fa-solid fa-bell"></i>
+            <span>PROBADOR TONO</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Operations Dashboard Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+
+        <!-- LEFT PANEL: CONTROL DE SALIDAS Y CORRIDAS (8 COLS) -->
+        <div class="lg:col-span-7 glass-card rounded-2xl p-4 flex flex-col gap-4">
+          
+          <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+            <h3 class="text-sm font-bold text-white flex items-center">
+              <i class="fa-solid fa-list-check text-transpais-greenBright mr-2"></i> GESTIÓN DE SALIDAS (PROGRAMA DE HOY)
+            </h3>
+            <button onclick="openNewDepartureModal()" class="px-3 py-1 bg-transpais-green hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-md flex items-center space-x-1">
+              <i class="fa-solid fa-plus"></i>
+              <span>Nueva Corrida</span>
+            </button>
+          </div>
+
+          <!-- Departures Management List -->
+          <div id="opsDeparturesList" class="flex-1 space-y-3 overflow-y-auto max-h-[520px] pr-1">
+            <!-- Loaded dynamically via JS -->
+          </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: GESTOR DE PROMOCIONES Y OFERTAS 9:16 (5 COLS) -->
+        <div class="lg:col-span-5 glass-card-neon rounded-2xl p-4 flex flex-col gap-4">
+          
+          <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center">
+                <i class="fa-solid fa-rectangle-ad text-transpais-gold mr-2"></i> AVISOS Y PROMOCIONES 9:16
+              </h3>
+              <p class="text-[11px] text-gray-400">Active/Desactive lo que se muestra en la TV de la sala.</p>
+            </div>
+            <button onclick="publishToTvAlert()" class="px-3 py-1 bg-transpais-gold hover:bg-amber-400 text-transpais-navy font-bold text-xs rounded-lg transition shadow-md flex items-center space-x-1">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Publicar en TV</span>
+            </button>
+          </div>
+
+          <!-- Promos List Control -->
+          <div id="opsPromosList" class="flex-1 space-y-3 overflow-y-auto max-h-[520px] pr-1">
+            <!-- Loaded dynamically via JS -->
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: ADD NEW DEPARTURE -->
+  <div id="newDepartureModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="glass-card rounded-2xl p-6 max-w-md w-full border border-transpais-green">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-bold text-white flex items-center">
+          <i class="fa-solid fa-bus text-transpais-greenBright mr-2"></i> Programar Nueva Corrida
+        </h3>
+        <button onclick="closeNewDepartureModal()" class="text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="formNewDeparture" onsubmit="handleCreateDeparture(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Hora de Salida</label>
+          <input type="text" id="inputHora" placeholder="22:45" required class="w-full bg-[#000814] border border-gray-700 rounded-lg p-2.5 text-white font-mono focus:border-transpais-green outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Destino Principal</label>
+          <input type="text" id="inputDestino" placeholder="Ciudad Valles" required class="w-full bg-[#000814] border border-gray-700 rounded-lg p-2.5 text-white focus:border-transpais-green outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Escalas / Vía</label>
+          <input type="text" id="inputEscalas" placeholder="Escalas: Ciudad Victoria, Ciudad Mante" class="w-full bg-[#000814] border border-gray-700 rounded-lg p-2.5 text-white focus:border-transpais-green outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Número de Autobús / Unidad</label>
+          <input type="text" id="inputAutobus" placeholder="9520 / Unique" class="w-full bg-[#000814] border border-gray-700 rounded-lg p-2.5 text-white focus:border-transpais-green outline-none">
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Punto de Abordaje</label>
+          <input type="text" id="inputPunto" value="Oficina Pedro Cárdenas" class="w-full bg-[#000814] border border-gray-700 rounded-lg p-2.5 text-white focus:border-transpais-green outline-none">
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeNewDepartureModal()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 font-bold">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-transpais-green text-white rounded-lg hover:bg-emerald-600 font-bold shadow-lg">Guardar y Agregar</button>
+        </div>
+      </form>
+    </div>
   </div>
-</main>
 
-<footer class="ticker-footer">
-  <div class="ticker-title">AVISO DE EQUIPAJE</div>
-  <div style="overflow:hidden;width:100%"><div id="ticker-text-content" class="ticker-content"></div></div>
-</footer>
+  <!-- NOTIFICATION TOAST MESSAGE CONTAINER -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none glass-card-neon p-4 rounded-xl shadow-2xl flex items-center space-x-3 border border-transpais-greenBright">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-transpais-greenBright text-xl"></i>
+    <div>
+      <h4 id="toastTitle" class="text-xs font-bold text-white">Notificación del Sistema</h4>
+      <p id="toastMessage" class="text-[11px] text-gray-300">Mensaje de confirmación</p>
+    </div>
+  </div>
 
-<script>
-/* ============ CONFIG Y UTILIDADES ============ */
-firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
-const db=firebase.database(),auth=firebase.auth();
-const TZ='America/Matamoros';
-const $=function(id){return document.getElementById(id);};
-const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
-const vista=new URLSearchParams(location.search).get('vista')||'screen';
-const isTV=vista.startsWith('tv');
-let suc=null,deps={},ready=false,srvOff=0;
-const viewSuc=function(){return vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));};
-const canWrite=function(){return !isTV&&!!auth.currentUser&&!!suc;};
-const fail=function(e){console.error(e.message);alert('No se pudo guardar: '+e.message);};
-
-const CAT={
-p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
-p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
-p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
-p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
-p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
-p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
-p10:["18:45","Tampico x Victoria","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
-p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
-p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
-p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
-
-/* ============ HORA ANTI-ERRORES ============ */
-db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
-
-let dtf=null;
-try{ dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){}
-
-function nowParts(){
-  const now=new Date(Date.now()+srvOff);
-  if(dtf){
-    try{
-      const p={}; dtf.formatToParts(now).forEach(function(x){p[x.type]=x.value;});
-      if(p.year&&p.month&&p.day&&p.hour!==undefined){
-        const h=+p.hour%24, m=+p.minute, s=+(p.second||0);
-        return {key:p.year+'-'+p.month+'-'+p.day,min:h*60+m,time:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+  <script>
+    /* Transpais Default Offers (Modeled 100% on provided promotional designs) */
+    const DEFAULT_PROMOS = [
+      {
+        id: 'tampico',
+        tag: 'OFERTA DE RUTA',
+        title: 'Tampico desde $771*',
+        route: 'Desde Matamoros A Tampico',
+        price: '$771*',
+        active: true,
+        duration: 10,
+        bgGradient: 'from-[#001026] via-[#001B40] to-[#000B18]',
+        bannerImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+        headline: '¡Al mejor precio!',
+        subtext: 'Desde Matamoros',
+        destName: 'A TAMPICO',
+        priceColor: '#FFB800'
+      },
+      {
+        id: 'las_brisas',
+        tag: 'NUEVA SUCURSAL',
+        title: 'Las Brisas Matamoros',
+        route: 'Matamoros - Sucursal Las Brisas',
+        price: 'Matamoros',
+        active: true,
+        duration: 10,
+        bgGradient: 'from-[#000B18] via-[#00142D] to-[#002454]',
+        bannerImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+        headline: 'Primero',
+        subtext: 'Las Brisas,',
+        destName: 'después tu destino.',
+        priceColor: '#FFB800'
+      },
+      {
+        id: 'asiento_rosa',
+        tag: 'SERVICIO EXCLUSIVO',
+        title: 'Asiento Rosa Transpais',
+        route: 'Exclusivo Mujeres y Menores',
+        price: 'Sin costo',
+        active: true,
+        duration: 10,
+        bgGradient: 'from-[#12001A] via-[#000B18] to-[#00142D]',
+        bannerImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
+        headline: 'Disfruta tu espacio con',
+        subtext: 'Asiento',
+        destName: 'rosa',
+        priceColor: '#FF69B4'
+      },
+      {
+        id: 'aqui_voy',
+        tag: 'NUEVA FUNCIONALIDAD',
+        title: 'Aquí Voy con Transpais',
+        route: 'Rastreo en tiempo real',
+        price: 'En tu App',
+        active: true,
+        duration: 10,
+        bgGradient: 'from-[#000F24] via-[#001D42] to-[#000B18]',
+        bannerImage: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80',
+        headline: '¡Conoce nuestra nueva funcionalidad!',
+        subtext: '¿Por dónde vas?',
+        destName: '¡Que sepan por dónde vas!',
+        priceColor: '#93C5FD'
+      },
+      {
+        id: 'valles',
+        tag: 'OFERTA DE RUTA',
+        title: 'Ciudad Valles desde $1299*',
+        route: 'Matamoros A Ciudad Valles',
+        price: '$1299*',
+        active: true,
+        duration: 10,
+        bgGradient: 'from-[#000B18] via-[#001738] to-[#000812]',
+        bannerImage: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
+        headline: '¡Al mejor precio!',
+        subtext: 'A',
+        destName: 'VALLES',
+        priceColor: '#FFB800'
       }
-    }catch(e){}
-  }
-  const y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,'0'), da=String(now.getDate()).padStart(2,'0');
-  const ho=now.getHours(), mi=now.getMinutes(), se=now.getSeconds();
-  return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:String(ho).padStart(2,'0')+':'+String(mi).padStart(2,'0')+':'+String(se).padStart(2,'0')};
-}
+    ];
 
-function diffOf(d,n){
-  const parts=d.time.split(':').map(Number);
-  let x=parts[0]*60+parts[1]-n.min;
-  if(x<-1200)x+=1440; if(x>1200)x-=1440;
-  return x;
-}
-const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===nowParts().key);};
+    /* Transpais Initial Departure Schedule Data */
+    const DEFAULT_DEPARTURES = [
+      {
+        id: 1,
+        time: '22:45',
+        destination: 'Ciudad Valles',
+        scales: 'Escalas: Ciudad Victoria, Ciudad Mante',
+        bus: '---',
+        boardingPoint: 'Oficina Pedro Cárdenas',
+        status: 'EN ESPERA'
+      },
+      {
+        id: 2,
+        time: '23:15',
+        destination: 'Tampico – Madero',
+        scales: 'Escalas: Estación Manuel, Puente Altamira Las Piñas',
+        bus: '---',
+        boardingPoint: 'Oficina Pedro Cárdenas',
+        status: 'EN ESPERA'
+      },
+      {
+        id: 3,
+        time: '23:45',
+        destination: 'Monterrey Central',
+        scales: 'Directo por Autopista',
+        bus: '9412',
+        boardingPoint: 'Andén 2 - Pedro Cárdenas',
+        status: 'ETIQUETANDO PASAJE'
+      },
+      {
+        id: 4,
+        time: '00:15',
+        destination: 'Reynosa Terminal',
+        scales: 'Escalas: Río Bravo',
+        bus: '8830',
+        boardingPoint: 'Andén 1 - Pedro Cárdenas',
+        status: 'EN ABORDAJE'
+      }
+    ];
 
-function stat(d,diff){
-  if(d.status==='SALIDO'||diff<0)return'SALIDO';
-  if(diff===0)return'ÚLTIMA LLAMADA';
-  if(diff<=5)return'EN ABORDAJE';
-  if(diff<=15)return'ETIQUETANDO PASAJE';
-  return d.status||'EN ESPERA';
-}
+    /* Global Application State */
+    let currentPromos = JSON.parse(localStorage.getItem('fids_promos')) || DEFAULT_PROMOS;
+    let currentDepartures = JSON.parse(localStorage.getItem('fids_departures')) || DEFAULT_DEPARTURES;
+    
+    let activePromoIndex = 0;
+    let promoTimer = null;
+    let progressTimer = null;
+    let audioEnabled = true;
 
-/* ============ TÍTULOS ============ */
-function updateHeaderTitles(){
-  const c=viewSuc()==='central';
-  if($('header-terminal-title'))$('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
-  if($('header-terminal-sub'))$('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';
-  if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
-}
+    /* Clock and Date Updater */
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const timeStr = `${hours}:${minutes}:${seconds}`;
 
-/* ============ AUDIO ============ */
-let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
-let currentVoiceAudio=null;
-const bg=$('bg-music'); if(bg)bg.volume=0.2;
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('es-MX', options);
 
-function setVoiceIndicator(show){
-  const vi=$('voice-indicator');
-  if(vi)vi.classList.toggle('active',!!show);
-}
+      document.getElementById('liveClock').innerText = timeStr;
+      document.getElementById('liveDate').innerText = dateStr;
+      
+      const tvClock = document.getElementById('tvClock');
+      const tvDate = document.getElementById('tvDate');
+      if (tvClock) tvClock.innerText = timeStr;
+      if (tvDate) tvDate.innerText = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-function ctx(){
-  if(!actx){
-    const C=window.AudioContext||window.webkitAudioContext;
-    if(C)actx=new C();
-  }
-  if(actx&&actx.state==='suspended')actx.resume();
-  return actx;
-}
+    /* Render Active Poster in 30% Column */
+    function renderCurrentPoster() {
+      const activePromos = currentPromos.filter(p => p.active);
+      const container = document.getElementById('posterSlideContainer');
+      const tagBadge = document.getElementById('promoBadgeTag');
+      
+      if (!container) return;
 
-function chime(){
-  return new Promise(function(res){
-    if(muted)return res();
-    try{
-      const c=ctx(); if(!c)return res();
-      const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
-      o1.frequency.setValueAtTime(587.33,t); o2.frequency.setValueAtTime(880,t+.18);
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.05); g.gain.exponentialRampToValueAtTime(.0001,t+2);
-      o1.connect(g); o2.connect(g); g.connect(c.destination);
-      o1.start(t); o2.start(t+.18); o1.stop(t+2); o2.stop(t+2);
-      setTimeout(res,1800);
-    }catch(e){res();}
-  });
-}
+      if (activePromos.length === 0) {
+        container.innerHTML = `
+          <div class="text-center p-6 text-gray-400 flex flex-col items-center justify-center h-full">
+            <i class="fa-solid fa-bus text-4xl text-transpais-greenBright mb-3"></i>
+            <h4 class="text-base font-bold text-white">TRANSPAIS®</h4>
+            <p class="text-xs text-transpais-blueLight mt-1">Conectando a México</p>
+          </div>
+        `;
+        if (tagBadge) tagBadge.innerText = 'TRANSPAIS AVISOS';
+        return;
+      }
 
-const aq=[]; let playing=false;
-function enqueueAudio(k,m){aq.push([k,m]); if(!playing)runQueue();}
-async function runQueue(){
-  playing=true;
-  setVoiceIndicator(true);
-  while(aq.length){
-    const item=aq.shift();
-    await playOne(item[0],item[1]);
-  }
-  playing=false;
-  setVoiceIndicator(false);
-}
+      if (activePromoIndex >= activePromos.length) {
+        activePromoIndex = 0;
+      }
 
-function playOne(key,mode){
-  return new Promise(async function(res){
-    if(muted)return res();
-    const vol=+$('music-vol').value;
-    if(bg&&!bg.paused)bg.volume=vol*0.15;
-    await chime();
-    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
-    currentVoiceAudio=a;
-    let done=false;
-    const end=function(){
-      if(done)return; done=true; clearTimeout(to);
-      currentVoiceAudio=null;
-      if(bg)bg.volume=aq.length?vol*.15:vol;
-      res();
-    };
-    const to=setTimeout(end,60000);
-    a.onended=end;
-    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end();};
-    a.play().catch(end);
-  });
-}
+      const promo = activePromos[activePromoIndex];
+      if (tagBadge) tagBadge.innerText = promo.tag;
 
-window.unlockAudio=function(){
-  const overlay=$('audio-start-overlay');
-  if(overlay)overlay.style.display='none';
-  try{ctx();}catch(e){}
-};
+      // Generate HTML for High-Fidelity Glassmorphism Offer Poster
+      container.innerHTML = `
+        <div class="w-full h-full flex flex-col justify-between p-4 rounded-xl bg-gradient-to-b ${promo.bgGradient} relative overflow-hidden border border-transpais-blueBorder/40 shadow-inner">
+          
+          <!-- Background Subtle Pattern & Overlay -->
+          <div class="absolute inset-0 bg-pattern opacity-30 pointer-events-none"></div>
 
-function panicStop(){
-  aq.length=0;
-  if(currentVoiceAudio){
-    try{currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0;}catch(e){}
-    currentVoiceAudio=null;
-  }
-  playing=false;
-  setVoiceIndicator(false);
-  const vol=+$('music-vol').value;
-  if(bg&&!bg.paused)bg.volume=vol;
-}
+          <!-- Top Brand Header -->
+          <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-2">
+            <div class="bg-white px-2.5 py-1 rounded-md shadow">
+              <span class="text-xs font-black italic tracking-tighter text-[#002A66]">TRANSPAIS®</span>
+            </div>
+            <span class="text-[9px] font-bold text-transpais-greenBright tracking-wider">MATAMOROS</span>
+          </div>
 
-function updateMuteUI(){
-  const b=$('btn-mute-local'); if(!b)return;
-  b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
-  b.className=muted?'btn btn-dark btn-red':'btn btn-green';
-}
+          <!-- Middle Image Card -->
+          <div class="relative z-10 my-2 flex-1 max-h-[190px] rounded-xl overflow-hidden border border-white/10 shadow-lg group">
+            <img src="${promo.bannerImage}" alt="${promo.title}" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80'" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#000B18] via-transparent to-transparent opacity-80"></div>
+          </div>
 
-/* ============ MÚSICA AMBIENTAL ============ */
-let playlist=[], track=0, objUrl=null;
-function playTrack(i){
-  if(!playlist.length)return;
-  if(objUrl)URL.revokeObjectURL(objUrl);
-  const f=playlist[i]; objUrl=URL.createObjectURL(f); bg.src=objUrl;
-  if($('song-title'))$('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');
-  if($('btn-music'))$('btn-music').disabled=false;
-  bg.play().catch(function(e){console.log('Música bloqueada:',e);});
-  if($('btn-music')){$('btn-music').textContent='⏸️'; $('btn-music').className='btn btn-green';}
-}
-const step=function(d){if(playlist.length){track=(track+d+playlist.length)%playlist.length; playTrack(track);}};
-if(bg)bg.onended=function(){step(1);};
+          <!-- Bottom Main Offer Typography & Pricing -->
+          <div class="relative z-10 text-center flex flex-col justify-center my-auto">
+            <p class="text-xs font-bold text-transpais-blueLight tracking-wide uppercase">${promo.headline}</p>
+            
+            ${promo.id === 'asiento_rosa' ? `
+              <h3 class="text-lg font-bold text-white tracking-wide mt-1">Disfruta tu espacio con</h3>
+              <div class="text-3xl font-black text-transpais-pink drop-shadow-[0_0_10px_rgba(255,105,180,0.8)] tracking-tight my-1 uppercase">
+                ASIENTO ROSA
+              </div>
+              <p class="text-[9px] text-gray-300 px-2 line-clamp-2">Servicio exclusivo para mujeres y menores que viajan solos. Solicítalo en taquilla.</p>
+            ` : promo.id === 'aqui_voy' ? `
+              <div class="bg-black/40 backdrop-blur-md p-2 rounded-xl border border-transpais-blueLight/30 my-1">
+                <span class="text-xs font-extrabold text-transpais-blueLight block"><i class="fa-solid fa-location-dot text-transpais-greenBright"></i> ¿Por dónde vas?</span>
+                <h3 class="text-sm font-black text-white">¡Que sepan por dónde vas!</h3>
+                <p class="text-[9px] text-gray-300 mt-0.5">Rastrea la ubicación de tu unidad en tiempo real desde la App Transpais.</p>
+              </div>
+            ` : promo.id === 'las_brisas' ? `
+              <h2 class="text-xl font-black text-transpais-gold my-1 tracking-tight">Las Brisas,</h2>
+              <p class="text-xs text-white font-semibold">después tu destino.</p>
+              <div class="mt-2 inline-flex items-center justify-center bg-black/60 border border-transpais-gold/50 px-3 py-1 rounded-xl text-transpais-gold font-bold text-xs shadow-md">
+                <i class="fa-solid fa-map-pin text-red-500 mr-1.5"></i> Sucursal Matamoros
+              </div>
+            ` : `
+              <div class="text-xl sm:text-2xl font-black text-transpais-blueLight tracking-wide uppercase my-0.5">
+                ${promo.destName}
+              </div>
+              <div class="text-xs text-gray-300">desde</div>
+              <div class="text-3xl font-black tracking-tight my-1 drop-shadow-md" style="color: ${promo.priceColor}">
+                ${promo.price}
+              </div>
+            `}
 
-/* ============ DATOS Y SINCRONIZACIÓN ============ */
-let refs=[];
-function attach(s){
-  try{
-    refs.forEach(function(r){r.off();}); deps={}; ready=false;
-    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'); refs=[rd,rv];
-    let lastTs=0;
-    rd.on('value',function(snap){
-      const next={};
-      snap.forEach(function(c){
-        const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
-      });
-      deps=next; ready=true; render(); autoCatalog();
-    },function(err){console.error('Lectura Firebase:',err.message);});
+            <p class="text-[8px] text-gray-400 mt-1">Consulta términos y condiciones. Aplican restricciones.</p>
+          </div>
 
-    rv.on('value',function(snap){
-      const d=snap.val();
-      if(!d||!d.timestamp||d.timestamp<=lastTs)return;
-      lastTs=d.timestamp;
-      if(Date.now()+srvOff-d.timestamp>15000)return;
-      enqueueAudio(d.key,d.mode);
-    });
-    render();
-  }catch(e){console.error('Error attach:',e);}
-}
+          <!-- Glass Pill Footer Link Button -->
+          <div class="relative z-10 text-center mt-2">
+            <div class="bg-transpais-green/90 hover:bg-transpais-green text-white font-bold text-[11px] py-1.5 px-4 rounded-full shadow-lg border border-transpais-greenBright inline-block tracking-wider">
+              transpais.com.mx
+            </div>
+          </div>
 
-let autoBusy=false;
-async function autoCatalog(){
-  if(!canWrite()||!ready||autoBusy||viewSuc()!==suc)return;
-  const today=nowParts().key;
-  if(Object.values(deps).some(function(d){return d.day===today;}))return;
-  autoBusy=true;
-  try{
-    const c=(await db.ref(suc+'/cleared').once('value')).val();
-    if(c!==today)await loadCatalog();
-  }catch(e){console.warn('Catálogo automático:',e.message);}
-  setTimeout(function(){autoBusy=false;},10000);
-}
+        </div>
+      `;
+    }
 
-function loadCatalog(){
-  const day=nowParts().key, o={};
-  Object.keys(CAT).forEach(function(k){
-    o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
-  });
-  return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
-}
+    /* Cycle Carousel Timer with Story Progress Bar */
+    function startCarousel() {
+      clearInterval(promoTimer);
+      clearInterval(progressTimer);
 
-/* ============ DETECCIÓN DE VOCEO ÚNICO ============ */
-const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
+      const activePromos = currentPromos.filter(p => p.active);
+      const progressBar = document.getElementById('storyProgressBar');
 
-function autoVoice(d,diff,n){
-  const mode={15:'etiq',5:'abord',0:'ultima'}[diff]; if(!mode)return;
-  const k=d.id+'|'+mode+'|'+(d.day||n.key);
-  if(fired.has(k))return;
-  fired.add(k);
-  localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){return x.endsWith(n.key);})));
-  enqueueAudio(d.presetKey||'p01',mode);
-}
+      if (activePromos.length === 0) {
+        if (progressBar) progressBar.style.width = '0%';
+        renderCurrentPoster();
+        return;
+      }
 
-function tick(){
-  try{
-    const n=nowParts();
-    if($('clock-time'))$('clock-time').textContent=n.time;
-    if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    if(ready){
-      Object.values(deps).forEach(function(d){
-        if(isLive(d,n)){
-          const x=diffOf(d,n);
-          if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);
+      renderCurrentPoster();
+
+      const durationMs = (activePromos[activePromoIndex]?.duration || 10) * 1000;
+      let elapsedTime = 0;
+      const intervalMs = 100;
+
+      progressTimer = setInterval(() => {
+        elapsedTime += intervalMs;
+        const pct = Math.min(100, (elapsedTime / durationMs) * 100);
+        if (progressBar) progressBar.style.width = pct + '%';
+      }, intervalMs);
+
+      promoTimer = setTimeout(() => {
+        activePromoIndex = (activePromoIndex + 1) % activePromos.length;
+        startCarousel();
+      }, durationMs);
+    }
+
+    /* Render Departure Board (70% Table) */
+    function renderDepartures() {
+      const container = document.getElementById('departuresList');
+      const opsContainer = document.getElementById('opsDeparturesList');
+
+      if (container) {
+        container.innerHTML = currentDepartures.map(dep => {
+          let badgeStyle = 'bg-gray-800 text-gray-300 border-gray-600';
+          let rowHighlight = 'border-transparent';
+
+          if (dep.status === 'EN ESPERA') {
+            badgeStyle = 'bg-transpais-navyCard text-transpais-blueLight border-transpais-blueBorder';
+          } else if (dep.status === 'ETIQUETANDO PASAJE') {
+            badgeStyle = 'bg-amber-950/80 text-transpais-gold border-transpais-gold/60 glow-gold';
+          } else if (dep.status === 'EN ABORDAJE') {
+            badgeStyle = 'bg-emerald-950/90 text-transpais-greenBright border-transpais-greenBright glow-green animate-pulse';
+            rowHighlight = 'boarding-pulse border-2';
+          } else if (dep.status === 'SALIDO') {
+            badgeStyle = 'bg-gray-900 text-gray-500 border-gray-700';
+          }
+
+          return `
+            <div class="grid grid-cols-12 gap-2 items-center p-3 rounded-xl bg-[#001026]/90 border ${rowHighlight} hover:bg-[#001838] transition shadow-md text-xs sm:text-sm">
+              <div class="col-span-2 text-center font-mono font-black text-white text-sm sm:text-base tracking-wider">
+                ${dep.time}
+              </div>
+              <div class="col-span-4">
+                <div class="font-extrabold text-white text-sm sm:text-base tracking-tight">${dep.destination}</div>
+                <div class="text-[10px] text-transpais-blueLight truncate">${dep.scales}</div>
+              </div>
+              <div class="col-span-2 text-center font-bold text-gray-300 text-xs">
+                ${dep.bus !== '---' ? `<i class="fa-solid fa-bus text-transpais-greenBright mr-1"></i>${dep.bus}` : '<span class="text-gray-600">---</span>'}
+              </div>
+              <div class="col-span-2 text-xs text-gray-300 font-medium">
+                ${dep.boardingPoint}
+              </div>
+              <div class="col-span-2 text-center">
+                <span class="inline-block px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold border ${badgeStyle}">
+                  ${dep.status}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      /* Render Operations Panel Control List */
+      if (opsContainer) {
+        opsContainer.innerHTML = currentDepartures.map(dep => `
+          <div class="p-3 glass-card rounded-xl border border-transpais-blueBorder flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-mono font-bold text-transpais-gold text-sm">${dep.time}</span>
+                <span class="font-black text-white text-sm">${dep.destination}</span>
+              </div>
+              <p class="text-[11px] text-gray-400">${dep.boardingPoint} | Bus: ${dep.bus}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button onclick="changeDepartureStatus(${dep.id}, 'EN ESPERA')" class="px-2 py-1 rounded text-[10px] font-bold ${dep.status==='EN ESPERA'?'bg-blue-600 text-white':'bg-gray-800 text-gray-400 hover:text-white'}">
+                ESPERA
+              </button>
+              <button onclick="changeDepartureStatus(${dep.id}, 'ETIQUETANDO PASAJE')" class="px-2 py-1 rounded text-[10px] font-bold ${dep.status==='ETIQUETANDO PASAJE'?'bg-amber-600 text-white':'bg-gray-800 text-gray-400 hover:text-white'}">
+                ETIQUETANDO
+              </button>
+              <button onclick="changeDepartureStatus(${dep.id}, 'EN ABORDAJE')" class="px-2 py-1 rounded text-[10px] font-bold ${dep.status==='EN ABORDAJE'?'bg-transpais-green text-white':'bg-gray-800 text-gray-400 hover:text-white'}">
+                ABORDAJE
+              </button>
+              <button onclick="changeDepartureStatus(${dep.id}, 'SALIDO')" class="px-2 py-1 rounded text-[10px] font-bold ${dep.status==='SALIDO'?'bg-gray-700 text-white':'bg-gray-800 text-gray-400 hover:text-white'}">
+                SALIDO
+              </button>
+              <button onclick="triggerDepartureVoceo(${dep.id})" class="px-2.5 py-1 bg-purple-700 hover:bg-purple-600 text-white rounded text-[10px] font-bold shadow flex items-center space-x-1" title="Voceo por altavoces">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>Vocear</span>
+              </button>
+              <button onclick="deleteDeparture(${dep.id})" class="px-2 py-1 bg-red-900/60 hover:bg-red-700 text-red-200 rounded text-[10px] font-bold">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    /* Web Audio API Synthesizer Bing-Bong Chime */
+    function playChimeSound() {
+      if (!audioEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        // Tone 1: High Bell
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(783.99, now); // G5
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.9);
+
+        // Tone 2: Lower Bell chime
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(523.25, now + 0.35); // C5
+        gain2.gain.setValueAtTime(0.4, now + 0.35);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.35);
+        osc2.stop(now + 1.4);
+      } catch (err) {
+        console.warn('Audio synthesis not supported or muted:', err);
+      }
+    }
+
+    function testChimeSound() {
+      playChimeSound();
+      showToast('Probador de Tono', 'Tono de atención FIDS reproducido con éxito.');
+    }
+
+    /* Voice Announcement (SpeechSynthesis TTS) */
+    function speakAnnouncement(text) {
+      playChimeSound();
+      if (!audioEnabled) return;
+
+      setTimeout(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'es-MX';
+          utterance.rate = 0.95;
+          utterance.pitch = 1.0;
+          window.speechSynthesis.speak(utterance);
         }
-      });
+      }, 900);
     }
-    render();
-  }catch(e){console.error('Error tick:',e);}
-}
-setInterval(tick,1000);
-setInterval(autoCatalog,30000);
 
-/* ============ RENDER TABLAS ============ */
-function badge(st){
-  if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
-  if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
-  if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&st.indexOf('DEMORADO')!==-1)return'<span class="badge-status status-demorado">'+esc(st)+'</span>';
-  if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
-  return'<span class="badge-status status-espera">EN ESPERA</span>';
-}
-const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
-
-function tvRow(d,c){
-  const sc=cleanScales(d.scales);
-  return '<td style="font-size:24px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
-  '<td><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
-  '<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
-  '<td class="c" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
-  '<td class="c">'+badge(d._st)+'</td>';
-}
-
-function adminRow(d){
-  return '<td><strong>'+esc(d.time)+'</strong></td>'+
-  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc(d.presetKey||'Sin clave')+'</div></td>'+
-  '<td class="c"><input type="text" class="inline-bus-input" value="'+esc(d.bus||'')+'" placeholder="---"></td>'+
-  '<td class="c">'+badge(d._st)+'</td>'+
-  '<td>'+
-    '<div class="flex" style="flex-direction:column;gap:2px">'+
-      '<div class="flex">'+
-        '<button class="btn btn-advance" data-act="time" data-v="-60" title="Adelantar 1 hora">-1h</button>'+
-        '<button class="btn btn-advance" data-act="time" data-v="-30" title="Adelantar 30 minutos">-30m</button>'+
-        '<button class="btn btn-advance" data-act="time" data-v="-5" title="Adelantar 5 minutos">-5m</button>'+
-      '</div>'+
-      '<div class="flex">'+
-        '<button class="btn btn-delay" data-act="time" data-v="5" title="Demorar 5 minutos">+5m</button>'+
-        '<button class="btn btn-delay" data-act="time" data-v="30" title="Demorar 30 minutos">+30m</button>'+
-        '<button class="btn btn-delay" data-act="time" data-v="60" title="Demorar 1 hora">+1h</button>'+
-      '</div>'+
-    '</div>'+
-  '</td>'+
-  '<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>'+
-  '<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>';
-}
-
-function syncRows(tb,list,html){
-  const sigOf=function(d){return JSON.stringify([d.time,d.destination,d.scales,d.bus,d._st,d.presetKey]);};
-  const rows=new Map(Array.from(tb.children).map(function(r){return [r.dataset.id,r];}));
-  list.forEach(function(d){
-    let r=rows.get(d.id); const s=sigOf(d);
-    if(!r){
-      r=document.createElement('tr'); r.dataset.id=d.id; r.innerHTML=html(d); r._s=s; tb.appendChild(r); return;
+    function stopVoceoPánico() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      showToast('Pánico / Voceo', 'Todos los voceos e indicaciones de audio fueron detenidos.');
     }
-    rows.delete(d.id); if(r._s===s)return;
-    const f=document.activeElement, typing=f&&r.contains(f)&&f.classList.contains('inline-bus-input');
-    const val=typing?f.value:null, pos=typing?f.selectionStart:0;
-    r.innerHTML=html(d); r._s=s;
-    if(typing){
-      const ni=r.querySelector('.inline-bus-input'); ni.value=val; ni.focus(); ni.setSelectionRange(pos,pos);
+
+    function toggleAudioCompu() {
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('btnAudioState');
+      if (audioEnabled) {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-transpais-green text-white shadow-lg flex items-center space-x-1 transition';
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i><span>AUDIO COMPU: ACTIVADO</span>`;
+        showToast('Audio', 'Audio del sistema activado');
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-gray-700 text-gray-300 shadow-lg flex items-center space-x-1 transition';
+        btn.innerHTML = `<i class="fa-solid fa-volume-xmark"></i><span>AUDIO COMPU: DESACTIVADO</span>`;
+        showToast('Audio', 'Audio del sistema silenciado');
+      }
     }
-  });
-  rows.forEach(function(r){r.remove();});
-}
 
-function render(){
-  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body');
-  if(!ready){
-    if(fb)fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';
-    return;
-  }
-  const n=nowParts();
-  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
-    .map(function(d){
-      const obj=Object.assign({},d); obj._st=stat(d,diffOf(d,n)); return obj;
-    }).sort(function(a,b){return a.time.localeCompare(b.time);});
-  if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
-  if(canWrite()&&ab)syncRows(ab,list,adminRow);
-}
-
-/* ============ ACCIONES Y CONTROL DE TIEMPO ============ */
-const dref=function(id){return db.ref(suc+'/deps/'+id);};
-
-if($('admin-body')){
-  $('admin-body').addEventListener('click',function(e){
-    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
-    const id=b.closest('tr').dataset.id, d=deps[id]; if(!d)return;
-    const act=b.dataset.act;
-    if(act==='voz')db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
-    else if(act==='time')adjustTime(d,+b.dataset.v);
-    else if(act==='edit')editDeparture(d);
-    else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
-  });
-
-  $('admin-body').addEventListener('change',function(e){
-    if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
-    dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
-  });
-}
-
-function adjustTime(d,deltaMinutes){
-  const parts=d.time.split(':').map(Number);
-  let totalMins=parts[0]*60+parts[1]+deltaMinutes;
-  if(totalMins<0)totalMins+=1440;
-  if(totalMins>=1440)totalMins%=1440;
-
-  const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
-  const newM=String(totalMins%60).padStart(2,'0');
-  const newTime=newH+':'+newM;
-
-  let updates={time:newTime};
-  let newDelay=(d.delay||0)+deltaMinutes;
-  if(newDelay<0)newDelay=0;
-  updates.delay=newDelay;
-
-  if(deltaMinutes>0){
-    updates.status='DEMORADO (+'+newDelay+'m)';
-  }else{
-    if(newDelay===0&&d.status&&d.status.indexOf('DEMORADO')===0){
-      updates.status='EN ESPERA';
+    function triggerDepartureVoceo(depId) {
+      const dep = currentDepartures.find(d => d.id === depId);
+      if (!dep) return;
+      const msg = `Atención pasajeros de la corrida con destino a ${dep.destination}, horario de ${dep.time}. Se encuentra en estatus de ${dep.status}. Favor de dirigirse al punto de abordaje ${dep.boardingPoint}. Transpais les desea un excelente viaje.`;
+      speakAnnouncement(msg);
+      showToast('Voceo Emitido', `Voceando corrida a ${dep.destination}`);
     }
-  }
 
-  dref(d.id).update(updates).catch(fail);
-}
+    /* Change Departure Status */
+    function changeDepartureStatus(depId, newStatus) {
+      const dep = currentDepartures.find(d => d.id === depId);
+      if (dep) {
+        dep.status = newStatus;
+        saveDepartures();
+        renderDepartures();
 
-function editDeparture(d){
-  $('dep-id').value=d.id; $('dep-preset-key').value=d.presetKey||'p01';
-  $('dep-time').value=d.time; $('dep-destination').value=d.destination;
-  $('dep-scales').value=d.scales||''; $('dep-bus').value=d.bus||'';
-  const sel=$('dep-status'); sel.value=Array.from(sel.options).some(function(o){return o.value===d.status;})?d.status:'DEMORADO';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function resetForm(){
-  if($('departure-form'))$('departure-form').reset();
-  if($('dep-id'))$('dep-id').value='';
-  if($('dep-preset-key'))$('dep-preset-key').value='';
-  if($('preset-selector'))$('preset-selector').value='';
-}
-
-if($('departure-form')){
-  $('departure-form').addEventListener('submit',function(e){
-    e.preventDefault(); if(!canWrite())return;
-    const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
-    let status=$('dep-status').value;
-    if(status==='DEMORADO'&&old&&old.status&&old.status.indexOf('DEMORADO')===0)status=old.status;
-    dref(id).set({
-      presetKey:$('dep-preset-key').value||'p01',
-      time:$('dep-time').value,
-      destination:$('dep-destination').value.trim(),
-      scales:cleanScales($('dep-scales').value),
-      bus:$('dep-bus').value.trim(),
-      status:status,
-      sucursal:suc,
-      day:old?.day||nowParts().key,
-      delay:old?.delay||0
-    }).then(resetForm).catch(fail);
-  });
-}
-
-if($('preset-selector')){
-  $('preset-selector').addEventListener('change',function(e){
-    const k=e.target.value; if(!CAT[k])return;
-    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=CAT[k][0];
-    $('dep-destination').value=CAT[k][1]; $('dep-scales').value=CAT[k][2];
-    $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
-  });
-}
-
-if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
-if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
-  if(!canWrite()||!confirm('¿Deseas borrar todas las corridas de esta sucursal?'))return;
-  Promise.all([db.ref(suc+'/deps').remove(),db.ref(suc+'/cleared').set(nowParts().key)]).catch(fail);
-};
-if($('btn-reset'))$('btn-reset').onclick=resetForm;
-
-/* ============ LOGIN, CERRAR SESIÓN Y VISTAS ============ */
-const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
-
-auth.onAuthStateChanged(function(u){
-  const prev=viewSuc(); 
-  suc=(u&&!isTV)?sucFromEmail(u.email):null;
-  
-  if($('btn-logout')){
-    $('btn-logout').classList.toggle('hidden', !u || isTV);
-  }
-  
-  if(viewSuc()!==prev)attach(viewSuc());
-  updateHeaderTitles(); render(); autoCatalog();
-});
-
-function switchTab(tab){
-  if(tab==='admin'&&!canWrite())return;
-  if($('view-screen'))$('view-screen').classList.toggle('hidden',tab!=='screen');
-  if($('view-admin'))$('view-admin').classList.toggle('hidden',tab!=='admin');
-  if($('btn-tab-screen'))$('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');
-  if($('btn-tab-admin'))$('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
-  render();
-}
-
-function openPin(){
-  if(canWrite())return switchTab('admin');
-  if($('login-user-input'))$('login-user-input').value='';
-  if($('login-pass-input'))$('login-pass-input').value='';
-  if($('pin-error-msg'))$('pin-error-msg').classList.add('hidden');
-  if($('pin-modal-overlay'))$('pin-modal-overlay').classList.remove('hidden');
-  if($('login-user-input'))$('login-user-input').focus();
-}
-
-function doLogin(){
-  const u=$('login-user-input').value.trim().toLowerCase(), p=$('login-pass-input').value.trim();
-  let em=u;
-  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com'; if(u==='terminalof2')em='terminalof2@transpais.com';}
-  auth.signInWithEmailAndPassword(em,p).then(function(){
-    suc=sucFromEmail(em);
-    if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
-    attach(viewSuc()); updateHeaderTitles(); switchTab('admin');
-  }).catch(function(err){console.error('Auth:',err.message); if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
-}
-
-function doLogout(){
-  if(confirm('¿Deseas cerrar la sesión de taquilla?')){
-    auth.signOut().then(function(){
-      suc=null;
-      switchTab('screen');
-      attach(viewSuc());
-      updateHeaderTitles();
-    }).catch(fail);
-  }
-}
-
-/* ============ ATAJOS DE TECLADO (MÓDULO 2C) ============ */
-document.addEventListener('keydown',function(e){
-  const tag=document.activeElement?document.activeElement.tagName.toLowerCase():'';
-  const isInput=tag==='input'||tag==='textarea'||tag==='select'||document.activeElement.isContentEditable;
-
-  if((e.code==='Space'||e.key===' ')&&!isInput){
-    e.preventDefault();
-    panicStop();
-  }
-
-  if(e.altKey&&!isInput){
-    if(e.key==='1'){ e.preventDefault(); triggerTopVoice('etiq'); }
-    else if(e.key==='2'){ e.preventDefault(); triggerTopVoice('abord'); }
-    else if(e.key==='3'){ e.preventDefault(); triggerTopVoice('ultima'); }
-  }
-});
-
-function triggerTopVoice(mode){
-  if(!canWrite())return;
-  const n=nowParts();
-  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
-    .sort(function(a,b){return a.time.localeCompare(b.time);});
-  if(list.length>0){
-    const topDep=list[0];
-    db.ref(suc+'/voice').set({
-      key:topDep.presetKey||'p01',
-      mode:mode,
-      timestamp:firebase.database.ServerValue.TIMESTAMP
-    }).catch(fail);
-  }
-}
-
-/* ============ AUTO-SCROLL (MÓDULO 1B) ============ */
-function autoScrollFids(){
-  const card=$('view-screen');
-  if(!card||card.classList.contains('hidden'))return;
-  if(card.scrollHeight>card.clientHeight){
-    if(card.scrollTop+card.clientHeight>=card.scrollHeight-5){
-      card.scrollTo({top:0,behavior:'smooth'});
-    }else{
-      card.scrollBy({top:120,behavior:'smooth'});
+        if (newStatus === 'EN ABORDAJE') {
+          triggerDepartureVoceo(depId);
+        } else {
+          showToast('Estatus Actualizado', `Corrida a ${dep.destination} cambió a ${newStatus}`);
+        }
+      }
     }
-  }
-}
-setInterval(autoScrollFids,8000);
 
-/* ============ QR DINÁMICO (EXCLUSIVO TV) ============ */
-let qrGenerated=false;
-function initQR(){
-  const box=$('qrcode-box'); if(!box)return;
-  box.innerHTML='';
-  if(window.QRCode){
-    new QRCode(box,{
-      text:window.location.href,
-      width:120,
-      height:120,
-      colorDark:"#000000",
-      colorLight:"#ffffff",
-      correctLevel:QRCode.CorrectLevel.M
+    function deleteDeparture(depId) {
+      currentDepartures = currentDepartures.filter(d => d.id !== depId);
+      saveDepartures();
+      renderDepartures();
+      showToast('Corrida Eliminada', 'Se removió la corrida de la programación.');
+    }
+
+    /* Render Ops Promos List Control */
+    function renderOpsPromos() {
+      const container = document.getElementById('opsPromosList');
+      if (!container) return;
+
+      container.innerHTML = currentPromos.map((p, idx) => `
+        <div class="p-3 glass-card rounded-xl border border-transpais-blueBorder flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg overflow-hidden border border-transpais-greenBright flex-shrink-0">
+              <img src="${p.bannerImage}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80'">
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">${p.title}</h4>
+              <span class="text-[10px] text-transpais-greenBright font-semibold">${p.tag}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <!-- Duration Selector -->
+            <select onchange="updatePromoDuration('${p.id}', this.value)" class="bg-[#000814] text-xs font-mono text-transpais-gold border border-gray-700 rounded-lg p-1 outline-none">
+              <option value="5" ${p.duration===5?'selected':''}>5s</option>
+              <option value="10" ${p.duration===10?'selected':''}>10s</option>
+              <option value="15" ${p.duration===15?'selected':''}>15s</option>
+            </select>
+
+            <!-- Toggle Switch -->
+            <button onclick="togglePromoActive('${p.id}')" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${p.active ? 'bg-transpais-green' : 'bg-gray-700'}">
+              <span class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${p.active ? 'translate-x-6' : 'translate-x-1'}"></span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function togglePromoActive(id) {
+      const p = currentPromos.find(item => item.id === id);
+      if (p) {
+        p.active = !p.active;
+        savePromos();
+        renderOpsPromos();
+        startCarousel();
+        showToast('Oferta Actualizada', `${p.title} está ahora ${p.active ? 'ACTIVA en TV' : 'INACTIVA'}`);
+      }
+    }
+
+    function updatePromoDuration(id, seconds) {
+      const p = currentPromos.find(item => item.id === id);
+      if (p) {
+        p.duration = parseInt(seconds, 10);
+        savePromos();
+        startCarousel();
+        showToast('Tiempo Ajustado', `Tiempo de ${p.title} cambiado a ${p.duration}s`);
+      }
+    }
+
+    function publishToTvAlert() {
+      savePromos();
+      saveDepartures();
+      startCarousel();
+      renderDepartures();
+      showToast('Publicado en TV', 'Todos los cambios se han transmitido en tiempo real a la TV.');
+    }
+
+    /* Save to LocalStorage for Syncing Across Tabs */
+    function savePromos() {
+      localStorage.setItem('fids_promos', JSON.stringify(currentPromos));
+    }
+    function saveDepartures() {
+      localStorage.setItem('fids_departures', JSON.stringify(currentDepartures));
+    }
+
+    /* Cross-Tab Synchronization Listener */
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'fids_promos') {
+        currentPromos = JSON.parse(e.newValue);
+        startCarousel();
+        renderOpsPromos();
+      }
+      if (e.key === 'fids_departures') {
+        currentDepartures = JSON.parse(e.newValue);
+        renderDepartures();
+      }
     });
-    qrGenerated=true;
-  }
-}
 
-function cycleQR(){
-  const qrCard=$('qr-card'); if(!qrCard)return;
-  
-  if(!isTV){
-    qrCard.classList.remove('show');
-    return;
-  }
+    /* View Switcher Logic */
+    function switchMainView(mode) {
+      const tvSec = document.getElementById('viewTvSection');
+      const opsSec = document.getElementById('viewOpsSection');
 
-  if(!qrGenerated)initQR();
-  qrCard.classList.add('show');
-  setTimeout(function(){
-    qrCard.classList.remove('show');
-  },25000);
-}
+      const btnTv = document.getElementById('btnViewTv');
+      const btnOps = document.getElementById('btnViewOps');
+      const btnSplit = document.getElementById('btnViewSplit');
 
-if(isTV){
-  setTimeout(function(){
-    cycleQR();
-    setInterval(cycleQR,150000);
-  },10000);
-}
+      // Reset Styles
+      [btnTv, btnOps, btnSplit].forEach(btn => {
+        if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-gray-400 hover:text-white hover:bg-gray-800';
+      });
 
-/* ============ EVENTOS BINDING ============ */
-document.body.addEventListener('click',function(){ctx();});
-if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
-if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
-if($('btn-logout'))$('btn-logout').onclick=doLogout;
-if($('btn-login-cancel'))$('btn-login-cancel').onclick=function(){$('pin-modal-overlay').classList.add('hidden');};
-if($('btn-login-ok'))$('btn-login-ok').onclick=doLogin;
-if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-if($('btn-chime'))$('btn-chime').onclick=function(){chime();};
-if($('btn-panic'))$('btn-panic').onclick=panicStop;
-if($('btn-mute-local'))$('btn-mute-local').onclick=function(){muted=!muted; localStorage.setItem('transpais_local_muted',muted); updateMuteUI();};
-if($('btn-folder'))$('btn-folder').onclick=function(){$('folder-input').click();};
+      if (mode === 'tv') {
+        tvSec.classList.remove('hidden');
+        tvSec.classList.add('flex-1', 'flex');
+        opsSec.classList.add('hidden');
+        btnTv.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-transpais-green text-white shadow-lg';
+      } else if (mode === 'ops') {
+        tvSec.classList.add('hidden');
+        opsSec.classList.remove('hidden');
+        opsSec.classList.add('flex-1', 'flex');
+        btnOps.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-transpais-green text-white shadow-lg';
+      } else if (mode === 'split') {
+        tvSec.classList.remove('hidden');
+        opsSec.classList.remove('hidden');
+        tvSec.classList.add('flex-1');
+        opsSec.classList.add('flex-1');
+        btnSplit.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-transpais-green text-white shadow-lg';
+      }
+    }
 
-if($('folder-input')){
-  $('folder-input').onchange=function(e){
-    playlist=Array.from(e.target.files).filter(function(f){return f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name);});
-    if(playlist.length){track=0; playTrack(0);}else alert('No se encontraron archivos de audio MP3.');
-  };
-}
+    /* Modal New Departure Controls */
+    function openNewDepartureModal() {
+      document.getElementById('newDepartureModal').classList.remove('hidden');
+    }
+    function closeNewDepartureModal() {
+      document.getElementById('newDepartureModal').classList.add('hidden');
+    }
 
-if($('btn-prev'))$('btn-prev').onclick=function(){step(-1);};
-if($('btn-next'))$('btn-next').onclick=function(){step(1);};
-if($('btn-music')){
-  $('btn-music').onclick=function(){
-    var b=$('btn-music');
-    if(bg.paused){bg.play(); b.textContent='⏸️'; b.className='btn btn-green';}
-    else{bg.pause(); b.textContent='▶️'; b.className='btn btn-dark';}
-  };
-}
-if($('music-vol'))$('music-vol').oninput=function(e){if(bg)bg.volume=+e.target.value;};
+    function handleCreateDeparture(e) {
+      e.preventDefault();
+      const hora = document.getElementById('inputHora').value;
+      const destino = document.getElementById('inputDestino').value;
+      const escalas = document.getElementById('inputEscalas').value || 'Sin escalas';
+      const autobus = document.getElementById('inputAutobus').value || '---';
+      const punto = document.getElementById('inputPunto').value || 'Oficina Pedro Cárdenas';
 
-if(isTV&&$('control-bar'))$('control-bar').style.display='none';
+      const newDep = {
+        id: Date.now(),
+        time: hora,
+        destination: destino,
+        scales: escalas,
+        bus: autobus,
+        boardingPoint: punto,
+        status: 'EN ESPERA'
+      };
 
-updateMuteUI();
-updateHeaderTitles();
-attach(viewSuc());
-tick();
-</script>
+      currentDepartures.push(newDep);
+      saveDepartures();
+      renderDepartures();
+      closeNewDepartureModal();
+      showToast('Nueva Corrida', `Se programó salida a ${destino} a las ${hora}`);
+      document.getElementById('formNewDeparture').reset();
+    }
+
+    /* Toast Notification Helper */
+    function showToast(title, message) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastTitle').innerText = title;
+      document.getElementById('toastMessage').innerText = message;
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    /* Application Initialization */
+    window.onload = function() {
+      renderDepartures();
+      renderOpsPromos();
+      startCarousel();
+    };
+  </script>
 </body>
 </html>
