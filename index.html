@@ -15,7 +15,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;mi
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
 .btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
-.btn-red{background:rgba(230,57,70,.3);color:#f87171}
+.btn-red{background:rgba(230,57,70,.3);color:#f87171}.btn-red:hover{background:rgba(230,57,70,.5)}
 .btn-panic{background:#e11d48;color:#fff;font-weight:900;box-shadow:0 0 10px rgba(225,29,72,.5)}.btn-panic:hover{background:#be123c}
 .btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
 .btn-arrive{background:#d97706;color:#fff;font-weight:900}
@@ -120,9 +120,10 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </header>
 
 <div class="control-bar" id="control-bar">
-  <div style="display:flex;gap:10px">
+  <div style="display:flex;gap:10px;align-items:center">
     <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
     <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
+    <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
   </div>
   <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1)">
     <label class="lbl" style="font-weight:800">🎵 MÚSICA AMBIENTAL:</label>
@@ -645,10 +646,17 @@ if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
 };
 if($('btn-reset'))$('btn-reset').onclick=resetForm;
 
-/* ============ LOGIN Y PESTAÑAS ============ */
+/* ============ LOGIN, CERRAR SESIÓN Y VISTAS ============ */
 const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
+
 auth.onAuthStateChanged(function(u){
-  const prev=viewSuc(); suc=(u&&!isTV)?sucFromEmail(u.email):null;
+  const prev=viewSuc(); 
+  suc=(u&&!isTV)?sucFromEmail(u.email):null;
+  
+  if($('btn-logout')){
+    $('btn-logout').classList.toggle('hidden', !u || isTV);
+  }
+  
   if(viewSuc()!==prev)attach(viewSuc());
   updateHeaderTitles(); render(); autoCatalog();
 });
@@ -680,6 +688,17 @@ function doLogin(){
     if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
     attach(viewSuc()); updateHeaderTitles(); switchTab('admin');
   }).catch(function(err){console.error('Auth:',err.message); if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
+}
+
+function doLogout(){
+  if(confirm('¿Deseas cerrar la sesión de taquilla?')){
+    auth.signOut().then(function(){
+      suc=null;
+      switchTab('screen');
+      attach(viewSuc());
+      updateHeaderTitles();
+    }).catch(fail);
+  }
 }
 
 /* ============ ATAJOS DE TECLADO (MÓDULO 2C) ============ */
@@ -749,7 +768,6 @@ function initQR(){
 function cycleQR(){
   const qrCard=$('qr-card'); if(!qrCard)return;
   
-  // RESTRICCIÓN ESTRICTA: NUNCA MOSTRAR EN TAQUILLA
   if(!isTV){
     qrCard.classList.remove('show');
     return;
@@ -773,6 +791,7 @@ if(isTV){
 document.body.addEventListener('click',function(){ctx();});
 if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
 if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
+if($('btn-logout'))$('btn-logout').onclick=doLogout;
 if($('btn-login-cancel'))$('btn-login-cancel').onclick=function(){$('pin-modal-overlay').classList.add('hidden');};
 if($('btn-login-ok'))$('btn-login-ok').onclick=doLogin;
 if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
