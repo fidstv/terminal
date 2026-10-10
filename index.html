@@ -49,13 +49,13 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* ============ WIDGET QR Y VOCEO (MÓDULOS 1A y 1C) ============ */
-.qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 30px rgba(0,168,89,.4);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
+/* ============ WIDGET QR Y VOCEO ============ */
+.qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
 .qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
 .qr-text{max-width:180px}
 .qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
 .qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
-#qrcode-box{background:#fff;padding:6px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+#qrcode-box{background:#fff;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 
 .voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
 .voice-indicator.active{transform:translateY(0);opacity:1}
@@ -92,13 +92,11 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
   </div>
 </div>
 
-<!-- WIDGET VOCEO ACTIVO (Módulo 1C) -->
 <div id="voice-indicator" class="voice-indicator">
   <span class="speaker-pulse" style="font-size:18px">📢</span>
   <span>VOCEO EN REPRODUCCIÓN...</span>
 </div>
 
-<!-- WIDGET QR FLOTANTE (Módulo 1A) -->
 <div id="qr-card" class="qr-card">
   <div id="qrcode-box"></div>
   <div class="qr-text">
@@ -288,7 +286,7 @@ function updateHeaderTitles(){
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO + INDICADOR VISUAL (MÓDULOS 1C Y 2C) ============ */
+/* ============ AUDIO ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
 const bg=$('bg-music'); if(bg)bg.volume=0.2;
@@ -730,7 +728,7 @@ function autoScrollFids(){
 }
 setInterval(autoScrollFids,8000);
 
-/* ============ QR DINÁMICO (MÓDULO 1A) ============ */
+/* ============ QR DINÁMICO (EXCLUSIVO TV) ============ */
 let qrGenerated=false;
 function initQR(){
   const box=$('qrcode-box'); if(!box)return;
@@ -738,11 +736,11 @@ function initQR(){
   if(window.QRCode){
     new QRCode(box,{
       text:window.location.href,
-      width:85,
-      height:85,
-      colorDark:"#00142D",
+      width:120,
+      height:120,
+      colorDark:"#000000",
       colorLight:"#ffffff",
-      correctLevel:QRCode.CorrectLevel.H
+      correctLevel:QRCode.CorrectLevel.M
     });
     qrGenerated=true;
   }
@@ -750,16 +748,26 @@ function initQR(){
 
 function cycleQR(){
   const qrCard=$('qr-card'); if(!qrCard)return;
+  
+  // RESTRICCIÓN ESTRICTA: NUNCA MOSTRAR EN TAQUILLA
+  if(!isTV){
+    qrCard.classList.remove('show');
+    return;
+  }
+
   if(!qrGenerated)initQR();
   qrCard.classList.add('show');
   setTimeout(function(){
     qrCard.classList.remove('show');
   },25000);
 }
-setTimeout(function(){
-  cycleQR();
-  setInterval(cycleQR,150000);
-},10000);
+
+if(isTV){
+  setTimeout(function(){
+    cycleQR();
+    setInterval(cycleQR,150000);
+  },10000);
+}
 
 /* ============ EVENTOS BINDING ============ */
 document.body.addEventListener('click',function(){ctx();});
