@@ -183,12 +183,13 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </footer>
 
 <script>
-/* ============ CONFIG ============ */
+/* ============ CONFIG & HELPERS ============ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
 const db=firebase.database(),auth=firebase.auth();
 const TZ='America/Matamoros';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
 let suc=null,deps={},ready=false,srvOff=0;
@@ -233,7 +234,7 @@ function updateHeaderTitles(){
   $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
 }
 
-/* ============ MOTOR DE AUDIO MP3 (INTERRUPCIÓN Y GESTIÓN DE COLA) ============ */
+/* ============ MOTOR DE AUDIO MP3 ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 const bg=$('bg-music');bg.volume=0.2;
 let currentAudio=null;
@@ -263,7 +264,7 @@ function chime(){return new Promise(res=>{
 
 function enqueueAudio(k,m,isManual=false){
   if(isManual){
-    stopAllAudio(); // Si es una orden manual de taquilla, interrumpe el audio actual de inmediato
+    stopAllAudio();
   }
   aq.push([k,m]);
   if(!playing)runQueue();
@@ -276,13 +277,13 @@ async function runQueue(){
     await playOne(k,m);
   }
   playing=false;
-  bg.volume=+$('music-vol').value; // Restablece volumen al terminar la cola
+  bg.volume=+$('music-vol').value;
 }
 
 function playOne(key,mode){return new Promise(async res=>{
   if(muted)return res();
   const vol=+$('music-vol').value;
-  if(!bg.paused)bg.volume=vol*0.15; // Ducking de música de fondo
+  if(!bg.paused)bg.volume=vol*0.15;
   await chime();
   
   const a=new Audio(`audios/${key}_${mode}.mp3`);
@@ -339,7 +340,7 @@ function attach(s){
     if(!d||!d.timestamp||d.timestamp<=lastTs)return;
     lastTs=d.timestamp;
     if(Date.now()+srvOff-d.timestamp>15000)return;
-    enqueueAudio(d.key,d.mode,true); // Interrupción prioritaria al recibir orden remota de taquilla
+    enqueueAudio(d.key,d.mode,true);
   });
   render();
 }
@@ -365,7 +366,6 @@ function loadCatalog(){
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 function autoVoice(d,diff,n){
   const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
-  // Corrección clave del bucle: usa ID de corrida + Fecha + Modo
   const k=`${n.key}|${d.id}|${mode}`;if(fired.has(k))return;
   fired.add(k);localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.startsWith(n.key))));
   enqueueAudio(d.presetKey||'p01',mode,false);
