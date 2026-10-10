@@ -58,7 +58,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <div style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="this.closest('.overlay').remove(); if(typeof ctx==='function') ctx();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -183,7 +183,6 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </footer>
 
 <script>
-/* ============ BÁSICOS / HELPERS ============ */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -200,21 +199,20 @@ function ctx(){
   return actx;
 }
 
-function unlockAudio(){
-  const ov=$('audio-start-overlay');
-  if(ov) ov.style.setProperty('display','none','important');
-  ctx();
-}
+/* ============ FIREBASE ============ */
+let db=null, auth=null;
+try {
+  firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
+  db=firebase.database();
+  auth=firebase.auth();
+} catch(e) { console.warn("Firebase Error:", e); }
 
-/* ============ FIREBASE CONFIG ============ */
-firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
-const db=firebase.database(),auth=firebase.auth();
 const TZ='America/Matamoros';
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
 let suc=null,deps={},ready=false,srvOff=0;
 const viewSuc=()=>vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));
-const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc;
+const canWrite=()=>!isTV&&!!auth&&!!auth.currentUser&&!!suc;
 const fail=e=>{console.error(e.message);alert('No se pudo guardar: '+e.message);};
 
 const CAT={
@@ -232,8 +230,8 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* ============ FECHA / HORA ============ */
-db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
+/* ============ FECHA / RELOJ ============ */
+if(db) db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
 const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 function keyAt(ms){const p={};dtf.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return {key:`${p.year}-${p.month}-${p.day}`,min:+p.hour*60+ +p.minute,time:`${p.hour}:${p.minute}:${p.second}`};}
 const nowParts=()=>keyAt(Date.now()+srvOff);
@@ -253,8 +251,8 @@ function updateHeaderTitles(){
   $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
 }
 
-/* ============ AUDIO MOTOR ============ */
-const bg=$('bg-music');bg.volume=0.2;
+/* ============ AUDIO ============ */
+const bg=$('bg-music');if(bg) bg.volume=0.2;
 
 function stopAllAudio(){
   aq.length=0;
@@ -263,7 +261,7 @@ function stopAllAudio(){
     currentAudio=null;
   }
   playing=false;
-  if($('music-vol'))bg.volume=+$('music-vol').value;
+  if($('music-vol')&&bg)bg.volume=+$('music-vol').value;
 }
 
 function chime(){return new Promise(res=>{
@@ -289,13 +287,13 @@ async function runQueue(){
     await playOne(k,m);
   }
   playing=false;
-  if($('music-vol'))bg.volume=+$('music-vol').value;
+  if($('music-vol')&&bg)bg.volume=+$('music-vol').value;
 }
 
 function playOne(key,mode){return new Promise(async res=>{
   if(muted)return res();
   const vol=+$('music-vol').value;
-  if(!bg.paused)bg.volume=vol*0.15;
+  if(bg&&!bg.paused)bg.volume=vol*0.15;
   await chime();
   
   const a=new Audio(`audios/${key}_${mode}.mp3`);
@@ -322,7 +320,7 @@ function updateMuteUI(){
 /* ============ MÚSICA ============ */
 let playlist=[],track=0,objUrl=null;
 function playTrack(i){
-  if(!playlist.length)return;
+  if(!playlist.length||!bg)return;
   if(objUrl)URL.revokeObjectURL(objUrl);
   const f=playlist[i];objUrl=URL.createObjectURL(f);bg.src=objUrl;
   $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');$('btn-music').disabled=false;
@@ -330,11 +328,12 @@ function playTrack(i){
   $('btn-music').textContent='⏸️';$('btn-music').className='btn btn-green';
 }
 const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
-bg.onended=()=>step(1);
+if(bg) bg.onended=()=>step(1);
 
 /* ============ DATOS ============ */
 let refs=[];
 function attach(s){
+  if(!db) return;
   refs.forEach(r=>r.off());deps={};ready=false;
   const rd=db.ref(s+'/deps'),rv=db.ref(s+'/voice');refs=[rd,rv];
   let lastTs=0;
@@ -365,6 +364,7 @@ async function autoCatalog(){
 }
 
 function loadCatalog(){
+  if(!db) return Promise.resolve();
   const day=nowParts().key,o={};
   Object.keys(CAT).forEach(k=>o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day,delay:0});
   return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
@@ -503,11 +503,13 @@ $('btn-reset').onclick=resetForm;
 
 /* ============ AUTH ============ */
 const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
-auth.onAuthStateChanged(u=>{
-  const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
-  if(viewSuc()!==prev)attach(viewSuc());
-  updateHeaderTitles();render();autoCatalog();
-});
+if(auth){
+  auth.onAuthStateChanged(u=>{
+    const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
+    if(viewSuc()!==prev)attach(viewSuc());
+    updateHeaderTitles();render();autoCatalog();
+  });
+}
 
 function switchTab(tab){
   if(tab==='admin'&&!canWrite())return;
@@ -526,15 +528,16 @@ function doLogin(){
   const u=$('login-user-input').value.trim().toLowerCase(),p=$('login-pass-input').value.trim();
   let em=u;
   if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com';if(u==='terminalof2')em='terminalof2@transpais.com';}
-  auth.signInWithEmailAndPassword(em,p).then(()=>{
-    suc=sucFromEmail(em);
-    $('pin-modal-overlay').classList.add('hidden');
-    attach(viewSuc());updateHeaderTitles();switchTab('admin');
-  }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
+  if(auth){
+    auth.signInWithEmailAndPassword(em,p).then(()=>{
+      suc=sucFromEmail(em);
+      $('pin-modal-overlay').classList.add('hidden');
+      attach(viewSuc());updateHeaderTitles();switchTab('admin');
+    }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
+  }
 }
 
 /* ============ LISTENERS ============ */
-$('btn-unlock').onclick=unlockAudio;
 document.body.addEventListener('click',()=>ctx());
 $('btn-tab-screen').onclick=()=>switchTab('screen');$('btn-tab-admin').onclick=openPin;
 $('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');$('btn-login-ok').onclick=doLogin;
@@ -547,10 +550,10 @@ $('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_lo
 $('btn-prev').onclick=()=>step(-1);
 $('btn-next').onclick=()=>step(1);$('btn-music').onclick=()=>{
   const b=$('btn-music');
-  if(bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
-  else{bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
+  if(bg&&bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
+  else if(bg){bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
 };
-$('music-vol').oninput=e=>{bg.volume=+e.target.value;};
+if($('music-vol'))$('music-vol').oninput=e=>{if(bg) bg.volume=+e.target.value;};
 
 if(isTV)$('control-bar').style.display='none';
 updateMuteUI();updateHeaderTitles();attach(viewSuc());tick();
