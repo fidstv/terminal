@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transpais FIDS - Sistema Multi-Terminal</title>
+  <title>Transpais FIDS - Sistema de Información a Pasajeros</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
     
@@ -65,7 +65,7 @@
     }
 
     .btn {
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-weight: 800;
       font-size: 11px;
@@ -73,6 +73,9 @@
       cursor: pointer;
       border: none;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .btn-green { background: #00A859; color: #ffffff; }
@@ -82,6 +85,8 @@
     .btn-blue { background: #002A5C; color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
     .btn-arrive { background: #d97706; color: #ffffff; font-weight: 900; }
     .btn-arrive:hover { background: #b45309; }
+    .btn-delay { background: #dc2626; color: #ffffff; font-weight: 800; padding: 5px 8px; font-size: 10px; }
+    .btn-delay:hover { background: #991b1b; }
 
     table { width: 100%; border-collapse: collapse; text-align: left; }
 
@@ -110,6 +115,7 @@
     .status-etiq { background: #FFB800; color: #000; animation: pulseGlow 1.4s infinite ease-in-out; }
     .status-abordaje { background: #00D974; color: #000; animation: pulseGlow 1.0s infinite ease-in-out; }
     .status-ultima { background: #e11d48; color: #fff; animation: pulseGlowRed 0.8s infinite ease-in-out; }
+    .status-demorado { background: #dc2626; color: #fff; font-weight: 900; }
     .status-salido { background: rgba(255, 255, 255, 0.05); color: #888; }
 
     @keyframes pulseGlow {
@@ -183,7 +189,6 @@
       100% { transform: translate3d(-100%, 0, 0); }
     }
 
-    /* OVERLAY / MODALES */
     .audio-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -240,12 +245,12 @@
   <div id="audio-start-overlay" class="audio-overlay">
     <div class="audio-overlay-card">
       <div style="font-size: 48px; margin-bottom: 15px;">🔊</div>
-      <h2 style="font-size: 24px; font-weight: 900; color: #00D974; margin-bottom: 10px;">ACTIVACIÓN DE SISTEMA FIDS</h2>
+      <h2 style="font-size: 24px; font-weight: 900; color: #00D974; margin-bottom: 10px;">SISTEMA FIDS TRANSPAIS</h2>
       <p style="font-size: 14px; color: #93c5fd; margin-bottom: 25px;">
-        Toca la pantalla o presiona el botón para habilitar las alertas de voz y sonidos automáticos en la TV.
+        Haz clic para habilitar el motor de audios MP3 en este navegador.
       </p>
       <button class="btn btn-green" style="padding: 15px 30px; font-size: 14px; border-radius: 12px; width: 100%;" onclick="enableTVAudioUnlock()">
-        ▶️ ACTIVAR AUDIO DE LA TERMINAL
+        ▶️ ACTIVAR SISTEMA DE VOCEO
       </button>
     </div>
   </div>
@@ -294,11 +299,11 @@
       <button id="btn-tab-admin" class="btn btn-dark" onclick="openPinModal()">Panel Taquilla / Operaciones</button>
     </div>
 
-    <!-- REPRODUCTOR DE MÚSICA POR CARPETA -->
+    <!-- REPRODUCTOR DE MÚSICA CON DUCKING -->
     <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-      <label style="font-size: 11px; color: #93c5fd; font-weight: 800;">🎵 MÚSICA:</label>
+      <label style="font-size: 11px; color: #93c5fd; font-weight: 800;">🎵 MÚSICA AMBIENTAL:</label>
       <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" onchange="loadMusicFolder(event)" style="display: none;">
-      <button class="btn btn-blue" onclick="document.getElementById('folder-input').click()" title="Seleccionar carpeta con música MP3">📁 Carpeta</button>
+      <button class="btn btn-blue" onclick="document.getElementById('folder-input').click()" title="Seleccionar carpeta con MP3">📁 Carpeta</button>
       <button class="btn btn-dark" onclick="prevSong()" title="Anterior">⏮️</button>
       <button id="btn-music" class="btn btn-dark" onclick="toggleMusic()" disabled>▶️</button>
       <button class="btn btn-dark" onclick="nextSong()" title="Siguiente">⏭️</button>
@@ -308,11 +313,11 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
-      <button id="btn-mute-local" class="btn btn-dark" onclick="toggleLocalMute()" title="Controlar audio en este dispositivo">🔊 AUDIO COMPU: ON</button>
+      <button id="btn-mute-local" class="btn btn-green" onclick="toggleLocalMute()">🔊 AUDIO COMPU: ACTIVADO</button>
       <div id="audio-badge" style="background: rgba(0,168,89,0.2); color: #00D974; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid rgba(0,217,116,0.3);">
-        ✓ VOCEO AUTOMÁTICO ACTIVO
+        ✓ REPRODUCTOR MP3 NUBE
       </div>
-      <button class="btn btn-blue" onclick="testChimeSound()">Probador Voceo</button>
+      <button class="btn btn-blue" onclick="testChimeSound()">Probador Tono</button>
     </div>
   </div>
 
@@ -335,72 +340,44 @@
   <!-- VISTA 2: PANEL DE CONTROL TAQUILLA -->
   <main id="view-admin" class="glass-card hidden">
     
-    <!-- CONFIGURACIÓN DE PLANTILLA DE VOCEO Y SELECTOR DE VOZ -->
-    <div style="margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-      <h3 style="color: #FFB800; font-size: 13px; font-weight: 800; margin-bottom: 6px;">🎙️ PLANTILLAS DE VOCEO Y CONFIGURACIÓN DE VOZ</h3>
-      
-      <div style="margin-bottom: 12px; background: rgba(0, 168, 89, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 217, 116, 0.3);">
-        <label style="font-size: 11px; color: #00D974; font-weight: 800; display: block; margin-bottom: 4px;">🗣️ SELECCIONAR MODO DE VOZ (API Web Nube / Local):</label>
-        <select id="voice-selector" style="font-size: 12px;" onchange="saveSelectedVoice()">
-          <option value="WEB_API_ONLINE">🌐 Voz HD por API Web (Nube - Recomendada para TV)</option>
-        </select>
-      </div>
-
-      <p style="font-size: 11px; color: #93c5fd; margin-bottom: 8px;">
-        Variables automáticas disponibles: <strong>{DESTINO}</strong>, <strong>{ESCALAS}</strong> y <strong>{AUTOBUS}</strong>.
-      </p>
-      
-      <div style="display: grid; gap: 10px;">
-        <div>
-          <label style="font-size: 11px; color: #FFB800; font-weight: 700;">Mensaje de Etiquetado (-15 min):</label>
-          <textarea id="template-etiq" rows="2" onchange="saveSpeechTemplates()"></textarea>
-        </div>
-        <div>
-          <label style="font-size: 11px; color: #00D974; font-weight: 700;">Mensaje de Abordaje (-5 min o Botón Instantáneo):</label>
-          <textarea id="template-abord" rows="2" onchange="saveSpeechTemplates()"></textarea>
-        </div>
-        <div>
-          <label style="font-size: 11px; color: #f43f5e; font-weight: 700;">Mensaje de Última Llamada (Minuto 0):</label>
-          <textarea id="template-ultima" rows="2" onchange="saveSpeechTemplates()"></textarea>
-        </div>
-      </div>
-    </div>
-
     <!-- BOTONES DE CARGA Y SELECTOR DE ITINERARIOS -->
-    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+    <div style="padding-top: 5px;">
       
       <!-- CARGA MASIVA DEL DÍA -->
       <div style="background: rgba(0,168,89,0.15); border: 1px solid #00D974; padding: 14px 18px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h3 style="color: #00D974; font-size: 14px; font-weight: 900; margin-bottom: 2px;">⚡ CARGA RÁPIDA DE ITINERARIO DIARIO</h3>
-          <p style="font-size: 11px; color: #93c5fd;">Carga las corridas fijas del día con sus escalas exactas (unidades vacías).</p>
+          <h3 style="color: #00D974; font-size: 14px; font-weight: 900; margin-bottom: 2px;">⚡ ITINERARIO GENERAL DEL DÍA</h3>
+          <p style="font-size: 11px; color: #93c5fd;">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
         </div>
-        <button class="btn btn-green" onclick="loadAllPresetDepartures()">🚀 CARGAR TODAS LAS SALIDAS PREDETERMINADAS</button>
+        <button class="btn btn-green" onclick="loadAllPresetDepartures()">🚀 CARGAR TODAS LAS SALIDAS</button>
       </div>
 
-      <!-- SELECTOR INDIVIDUAL -->
+      <!-- SELECTOR INDIVIDUAL DE RUTAS -->
       <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
-        <label style="font-size: 11px; font-weight: 800; color: #FFB800; display: block; margin-bottom: 5px;">Cargar Corrida Individual al Formulario:</label>
+        <label style="font-size: 11px; font-weight: 800; color: #FFB800; display: block; margin-bottom: 5px;">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
         <select id="preset-selector" onchange="loadPresetDeparture(this.value)">
-          <option value="">-- Seleccionar salida individual del catálogo --</option>
-          <option value="p01">05:15 - San Luis Potosí</option>
-          <option value="p02">07:35 - Tampico - Madero</option>
-          <option value="p03">08:00 - Ciudad Valles</option>
-          <option value="p04">09:15 - Ciudad Valles</option>
-          <option value="p05">10:00 - Tampico - Madero</option>
-          <option value="p06">10:45 - San Luis Potosí</option>
-          <option value="p07">11:45 - Ciudad Valles</option>
-          <option value="p08">13:30 - San Luis Potosí</option>
-          <option value="p09">13:45 - Tampico - Madero</option>
+          <option value="">-- Seleccionar ruta del catálogo --</option>
+          <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
+          <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
+          <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
+          <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
+          <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
+          <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
+          <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+          <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
+          <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
           <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
-          <option value="p11">22:45 - Ciudad Valles</option>
-          <option value="p12">23:15 - Tampico - Madero</option>
+          <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
+          <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
+          <option value="p13">15:00 - Ciudad Valles Completa</option>
         </select>
       </div>
 
-      <!-- FORMULARIO DE EDICIÓN Y CAPTURA MANUAL -->
+      <!-- FORMULARIO DE CAPTURA/EDICIÓN -->
       <form id="departure-form" onsubmit="saveDeparture(event)">
         <input type="hidden" id="dep-id">
+        <input type="hidden" id="dep-preset-key">
+
         <div class="grid-form">
           <div>
             <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Hora Programada</label>
@@ -411,8 +388,8 @@
             <input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required>
           </div>
           <div>
-            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Escalas (separadas por coma)</label>
-            <input type="text" id="dep-scales" placeholder="Ej. San Fernando, Ciudad Victoria">
+            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Escalas Principales</label>
+            <input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante">
           </div>
           <div>
             <label style="font-size: 11px; font-weight: 700; color: #FFB800;">No. Autobús</label>
@@ -425,6 +402,7 @@
               <option value="ETIQUETANDO PASAJE">ETIQUETANDO PASAJE</option>
               <option value="EN ABORDAJE">EN ABORDAJE</option>
               <option value="ÚLTIMA LLAMADA">ÚLTIMA LLAMADA</option>
+              <option value="DEMORADO">DEMORADO</option>
               <option value="SALIDO">SALIDO</option>
             </select>
           </div>
@@ -440,17 +418,19 @@
       </form>
     </div>
 
-    <!-- TABLA DE CONTROL OPERATIVO -->
+    <!-- TABLA DE CONTROL OPERATIVO PARA TAQUILLA -->
     <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
       <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 12px;">CORRIDAS ACTIVAS EN PANTALLA</h3>
       <table>
         <thead>
           <tr>
             <th>Hora</th>
-            <th>Destino</th>
-            <th style="text-align: center;">Unidad (Edición)</th>
+            <th>Destino / Ruta</th>
+            <th style="text-align: center;">Unidad</th>
             <th style="text-align: center;">Estatus</th>
-            <th style="text-align: center;">Acciones Rápidas de Taquilla</th>
+            <th style="text-align: center;">Demoras (1 Clic)</th>
+            <th style="text-align: center;">Voceo MP3 Manual</th>
+            <th style="text-align: center;">Acciones</th>
           </tr>
         </thead>
         <tbody id="admin-body"></tbody>
@@ -483,7 +463,6 @@
     const auth = firebase.auth();
     const urlParams = new URLSearchParams(window.location.search);
 
-    // CONFIGURACIÓN Y MULTI-SUCURSAL EN BASE A PARAMETROS URL
     let currentVista = urlParams.get('vista') || 'screen';
     let loggedSucursal = null;
 
@@ -511,44 +490,32 @@
       }
     }
 
-    const defaultEtiqTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. Favor de pasar con el equipajero a documentar y etiquetar su equipaje. Muchas gracias.";
-    const defaultAbordTemplate = "Atención pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. La unidad ha llegado a nuestra oficina. Favor de preparar su equipaje de mano y tener su boleto listo para abordar.";
-    const defaultUltimaTemplate = "Última llamada a los pasajeros con destino a {DESTINO},{ESCALAS}{AUTOBUS}. El autobús está a punto de partir, favor de abordar inmediatamente.";
-
+    // CATÁLOGO COMPLETO DE RUTAS P01 - P13 (ASIGNACIÓN AUTOMÁTICA DE MP3)
     const presetCatalog = {
-      p01: { time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
-      p02: { time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
-      p03: { time: "08:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p04: { time: "09:15", destination: "Ciudad Valles", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p05: { time: "10:00", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
-      p06: { time: "10:45", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
-      p07: { time: "11:45", destination: "Ciudad Valles", scales: "San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p08: { time: "13:30", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
-      p09: { time: "13:45", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Puente Altamira Las Piñas" },
-      p10: { time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico - Madero" },
-      p11: { time: "22:45", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
-      p12: { time: "23:15", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" }
+      p01: { key: "p01", time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
+      p02: { key: "p02", time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira" },
+      p03: { key: "p03", time: "08:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p04: { key: "p04", time: "09:15", destination: "Ciudad Valles", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p05: { key: "p05", time: "10:00", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira" },
+      p06: { key: "p06", time: "10:45", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
+      p07: { key: "p07", time: "11:45", destination: "Ciudad Valles", scales: "San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
+      p08: { key: "p08", time: "13:30", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
+      p09: { key: "p09", time: "13:45", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira" },
+      p10: { key: "p10", time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico" },
+      p11: { key: "p11", time: "22:45", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
+      p12: { key: "p12", time: "23:15", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" },
+      p13: { key: "p13", time: "15:00", destination: "Ciudad Valles Completa", scales: "San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos" }
     };
 
     let departures = [];
-    let templateEtiq = localStorage.getItem("transpais_template_etiq") || defaultEtiqTemplate;
-    let templateAbord = localStorage.getItem("transpais_template_abord") || defaultAbordTemplate;
-    let templateUltima = localStorage.getItem("transpais_template_ultima") || defaultUltimaTemplate;
-    let selectedVoiceURI = localStorage.getItem("transpais_selected_voice") || "WEB_API_ONLINE";
     let isLocalMuted = localStorage.getItem("transpais_local_muted") === "true";
     let audioSystemReady = false;
-    let availableVoices = [];
 
     function enableTVAudioUnlock() {
       const overlay = document.getElementById('audio-start-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-        overlay.style.display = 'none';
-      }
+      if (overlay) overlay.style.display = 'none';
 
-      try {
-        startOfficeAudioSystem();
-      } catch(e) {}
+      try { startOfficeAudioSystem(); } catch(e) {}
 
       setInterval(() => {
         try {
@@ -587,40 +554,7 @@
       updateMuteButtonUI();
     }
 
-    function populateVoiceList() {
-      const voiceSelector = document.getElementById('voice-selector');
-      if (!voiceSelector) return;
-
-      voiceSelector.innerHTML = '<option value="WEB_API_ONLINE">🌐 Voz HD por API Web (Nube - Recomendada para TV)</option>';
-
-      if ('speechSynthesis' in window) {
-        availableVoices = window.speechSynthesis.getVoices();
-        const spanishVoices = availableVoices.filter(v => v.lang.includes('es'));
-        spanishVoices.forEach(voice => {
-          const option = document.createElement('option');
-          option.value = voice.voiceURI;
-          option.textContent = `💻 Local: ${voice.name} (${voice.lang})`;
-          if (voice.voiceURI === selectedVoiceURI) option.selected = true;
-          voiceSelector.appendChild(option);
-        });
-      }
-    }
-
-    if ('speechSynthesis' in window) {
-      populateVoiceList();
-      if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = populateVoiceList;
-      }
-    }
-
-    function saveSelectedVoice() {
-      const voiceSelector = document.getElementById('voice-selector');
-      if (voiceSelector) {
-        selectedVoiceURI = voiceSelector.value;
-        localStorage.setItem("transpais_selected_voice", selectedVoiceURI);
-      }
-    }
-
+    // REPRODUCTOR DE MÚSICA Y DUCKING
     let playlist = [];
     let currentTrackIndex = 0;
     let currentObjectUrl = null;
@@ -634,15 +568,13 @@
         currentTrackIndex = 0;
         playTrack(currentTrackIndex);
       } else {
-        alert('No se encontraron archivos de audio en la carpeta elegida.');
+        alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
       }
     }
 
     function playTrack(index) {
       if (playlist.length === 0) return;
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-      }
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
 
       const file = playlist[index];
       currentObjectUrl = URL.createObjectURL(file);
@@ -651,7 +583,7 @@
       document.getElementById('song-title').textContent = file.name.replace(/\.[^/.]+$/, "");
       document.getElementById('btn-music').disabled = false;
 
-      bgMusic.play().catch(e => console.log("Music play blocked", e));
+      bgMusic.play().catch(e => console.log("Música pausada por política de navegador", e));
       document.getElementById('btn-music').textContent = '⏸️';
       document.getElementById('btn-music').className = 'btn btn-green';
     }
@@ -697,11 +629,12 @@
 
     function loadAllPresetDepartures(confirmUser = true) {
       const sucursalTarget = loggedSucursal || 'of2';
-      if (!confirmUser || confirm('¿Cargar las salidas predeterminadas a la pantalla de esta sucursal?')) {
+      if (!confirmUser || confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?')) {
         const newPresets = Object.keys(presetCatalog).map(key => {
           const item = presetCatalog[key];
           return {
             id: 'mat-' + key + '-' + Date.now(),
+            presetKey: item.key,
             time: item.time,
             destination: item.destination,
             scales: item.scales,
@@ -724,6 +657,7 @@
       const preset = presetCatalog[key];
       
       document.getElementById('dep-id').value = '';
+      document.getElementById('dep-preset-key').value = preset.key;
       document.getElementById('dep-time').value = preset.time;
       document.getElementById('dep-destination').value = preset.destination;
       document.getElementById('dep-scales').value = preset.scales;
@@ -737,7 +671,6 @@
     function startOfficeAudioSystem() {
       if (audioSystemReady) return;
       try {
-        if ('speechSynthesis' in window) window.speechSynthesis.resume();
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (AudioCtx) {
           const ctx = new AudioCtx();
@@ -745,15 +678,6 @@
         }
         audioSystemReady = true;
       } catch(e) {}
-    }
-
-    function saveSpeechTemplates() {
-      templateEtiq = document.getElementById('template-etiq').value;
-      templateAbord = document.getElementById('template-abord').value;
-      templateUltima = document.getElementById('template-ultima').value;
-      localStorage.setItem("transpais_template_etiq", templateEtiq);
-      localStorage.setItem("transpais_template_abord", templateAbord);
-      localStorage.setItem("transpais_template_ultima", templateUltima);
     }
 
     function cleanScalesFormat(scalesStr) {
@@ -769,6 +693,30 @@
       }
     }
 
+    // APLICAR DEMORAS A 1 CLIC (+10m, +15m, +30m, +60m)
+    function addDelay(id, minutesToAdd) {
+      const dep = departures.find(d => d.id === id);
+      if (!dep) return;
+
+      let [h, m] = dep.time.split(':').map(Number);
+      let totalMins = h * 60 + m + minutesToAdd;
+      if (totalMins >= 1440) totalMins %= 1440;
+
+      let newH = Math.floor(totalMins / 60).toString().padStart(2, '0');
+      let newM = (totalMins % 60).toString().padStart(2, '0');
+
+      dep.time = `${newH}:${newM}`;
+      dep.status = `DEMORADO (+${minutesToAdd}m)`;
+      
+      // Reiniciar alertas para que el MP3 suene respecto a la nueva hora
+      dep.notified15 = false;
+      dep.notified5 = false;
+      dep.notified0 = false;
+
+      persistData();
+    }
+
+    // RELOJ INTERNO Y DISPARO AUTOMÁTICO DE AUDIOS MP3
     function updateClock() {
       const now = new Date();
       document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-MX', { hour12: false });
@@ -795,32 +743,32 @@
           }
         } 
         else if (diffMinutes === 0) {
-          if (dep.status !== "ÚLTIMA LLAMADA") {
+          if (!dep.status.includes("DEMORADO") && dep.status !== "ÚLTIMA LLAMADA") {
             dep.status = "ÚLTIMA LLAMADA";
             updated = true;
           }
           if (!dep.notified0) {
-            triggerVoice(dep.id, "ULTIMA");
+            triggerMP3Voice(dep.id, "ultima");
             dep.notified0 = true;
           }
         }
         else if (diffMinutes <= 5 && diffMinutes > 0) {
-          if (dep.status !== "EN ABORDAJE") {
+          if (!dep.status.includes("DEMORADO") && dep.status !== "EN ABORDAJE") {
             dep.status = "EN ABORDAJE";
             updated = true;
           }
           if (diffMinutes === 5 && !dep.notified5) {
-            triggerVoice(dep.id, "ABORDAJE");
+            triggerMP3Voice(dep.id, "abord");
             dep.notified5 = true;
           }
         }
         else if (diffMinutes <= 15 && diffMinutes > 5) {
-          if (dep.status !== "ETIQUETANDO PASAJE") {
+          if (!dep.status.includes("DEMORADO") && dep.status !== "ETIQUETANDO PASAJE") {
             dep.status = "ETIQUETANDO PASAJE";
             updated = true;
           }
           if (diffMinutes === 15 && !dep.notified15) {
-            triggerVoice(dep.id, "ETIQUETADO");
+            triggerMP3Voice(dep.id, "etiq");
             dep.notified15 = true;
           }
         }
@@ -855,9 +803,8 @@
         if (user === 'terminalof2') fullEmail = 'terminalof2@transpais.com';
       }
 
-      // Autenticación segura mediante Firebase Auth (Sin contraseñas en código duro)
       auth.signInWithEmailAndPassword(fullEmail, pass)
-        .then((userCredential) => {
+        .then(() => {
           loggedSucursal = (fullEmail === 'ofcentral@transpais.com') ? 'central' : 'of2';
           closePinModal();
           updateHeaderTitles();
@@ -915,6 +862,8 @@
           statusMarkup = `<span class="badge-status status-abordaje">EN ABORDAJE</span>`;
         } else if (dep.status === 'ÚLTIMA LLAMADA') {
           statusMarkup = `<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>`;
+        } else if (dep.status.includes('DEMORADO')) {
+          statusMarkup = `<span class="badge-status status-demorado">${dep.status}</span>`;
         } else if (dep.status === 'SALIDO') {
           statusMarkup = `<span class="badge-status status-salido">SALIDO</span>`;
         } else {
@@ -941,15 +890,31 @@
         adminBody.innerHTML += `
           <tr>
             <td><strong>${dep.time}</strong></td>
-            <td>${dep.destination}</td>
+            <td>
+              <div><strong>${dep.destination}</strong></div>
+              <div style="font-size: 10px; color: #93c5fd;">MP3: ${dep.presetKey || 'Sin clave'}</div>
+            </td>
             <td style="text-align: center;">
               <input type="text" class="inline-bus-input" value="${dep.bus || ''}" placeholder="---" onchange="updateInlineBus('${dep.id}', this.value)">
             </td>
             <td style="text-align: center;">${statusMarkup}</td>
-            <td style="text-align: center; display: flex; gap: 5px; justify-content: center;">
-              <button onclick="busArrivedNow('${dep.id}')" class="btn btn-arrive" title="Presionar al ver el autobús afuera">🚌 LLEGANDO YA</button>
-              <button onclick="editDeparture('${dep.id}')" class="btn btn-dark">✏️ Editar</button>
-              <button onclick="triggerVoice('${dep.id}', 'ETIQUETADO')" class="btn btn-blue">🎙️ Vocear</button>
+            <td style="text-align: center;">
+              <div style="display: flex; gap: 3px; justify-content: center;">
+                <button onclick="addDelay('${dep.id}', 10)" class="btn btn-delay">+10m</button>
+                <button onclick="addDelay('${dep.id}', 15)" class="btn btn-delay">+15m</button>
+                <button onclick="addDelay('${dep.id}', 30)" class="btn btn-delay">+30m</button>
+                <button onclick="addDelay('${dep.id}', 60)" class="btn btn-delay">+1h</button>
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: flex; gap: 4px; justify-content: center;">
+                <button onclick="triggerMP3Voice('${dep.id}', 'etiq')" class="btn btn-blue" title="Vocear Etiquetado">🏷️</button>
+                <button onclick="triggerMP3Voice('${dep.id}', 'abord')" class="btn btn-green" title="Vocear Abordaje">🚌</button>
+                <button onclick="triggerMP3Voice('${dep.id}', 'ultima')" class="btn btn-arrive" title="Vocear Última Llamada">📢</button>
+              </div>
+            </td>
+            <td style="text-align: center; display: flex; gap: 4px; justify-content: center;">
+              <button onclick="editDeparture('${dep.id}')" class="btn btn-dark">✏️</button>
               <button onclick="deleteDeparture('${dep.id}')" class="btn btn-dark" style="background: rgba(230,57,70,0.3); color: #f87171;">🗑️</button>
             </td>
           </tr>
@@ -957,19 +922,11 @@
       });
     }
 
-    function busArrivedNow(id) {
-      const dep = departures.find(d => d.id === id);
-      if (dep) {
-        dep.status = "EN ABORDAJE";
-        triggerVoice(id, "ABORDAJE");
-        persistData();
-      }
-    }
-
     function editDeparture(id) {
       const dep = departures.find(d => d.id === id);
       if (!dep) return;
       document.getElementById('dep-id').value = dep.id;
+      document.getElementById('dep-preset-key').value = dep.presetKey || 'p01';
       document.getElementById('dep-time').value = dep.time;
       document.getElementById('dep-destination').value = dep.destination;
       document.getElementById('dep-scales').value = dep.scales || '';
@@ -981,6 +938,7 @@
     function saveDeparture(e) {
       e.preventDefault();
       const id = document.getElementById('dep-id').value || 'mat-' + Date.now();
+      const presetKey = document.getElementById('dep-preset-key').value || 'p01';
       const time = document.getElementById('dep-time').value;
       const destination = document.getElementById('dep-destination').value;
       const scales = document.getElementById('dep-scales').value;
@@ -989,7 +947,19 @@
       const sucursalTarget = loggedSucursal || 'of2';
 
       const existingIndex = departures.findIndex(d => d.id === id);
-      const newObj = { id, time, destination, scales: cleanScalesFormat(scales), bus, status, sucursal: sucursalTarget };
+      const newObj = { 
+        id, 
+        presetKey, 
+        time, 
+        destination, 
+        scales: cleanScalesFormat(scales), 
+        bus, 
+        status, 
+        sucursal: sucursalTarget,
+        notified15: false,
+        notified5: false,
+        notified0: false
+      };
 
       if (existingIndex >= 0) departures[existingIndex] = newObj;
       else departures.push(newObj);
@@ -1016,6 +986,7 @@
     function resetForm() {
       document.getElementById('departure-form').reset();
       document.getElementById('dep-id').value = '';
+      document.getElementById('dep-preset-key').value = '';
       document.getElementById('preset-selector').value = "";
     }
 
@@ -1051,9 +1022,7 @@
         osc1.stop(now + 2.0);
         osc2.stop(now + 2.0);
 
-        setTimeout(() => {
-          if (onComplete) onComplete();
-        }, 1800);
+        setTimeout(() => { if (onComplete) onComplete(); }, 1800);
       } catch (err) {
         if (onComplete) onComplete();
       }
@@ -1061,51 +1030,36 @@
 
     function testChimeSound() {
       startOfficeAudioSystem();
-      if (departures.length > 0) {
-        triggerVoice(departures[0].id, "ETIQUETADO");
-      } else {
-        playTerminalChime(() => {});
-      }
+      playTerminalChime(() => {});
     }
 
-    function triggerVoice(id, mode) {
-      const dep = departures.find(d => d.id === id);
-      if (!dep) return;
+    // MOTOR PRINCIPAL DE VOCEO POR ARCHIVO MP3
+    function triggerMP3Voice(idOrKey, mode) {
+      const dep = departures.find(d => d.id === idOrKey);
+      const key = dep ? (dep.presetKey || 'p01') : idOrKey;
 
-      // Emitir señal en Firebase para reproducción instantánea remota (TV)
       try {
         db.ref('lastVoiceTrigger').set({
-          id: id,
+          key: key,
           mode: mode,
           timestamp: Date.now()
         });
       } catch (err) {
-        console.error("Error al enviar señal de voceo a Firebase:", err);
+        console.error("Error al emitir señal a Firebase:", err);
       }
 
-      playLocalVoiceScript(dep, mode);
+      playMP3Audio(key, mode);
     }
 
-    function playLocalVoiceScript(dep, mode) {
+    function playMP3Audio(presetKey, mode) {
       startOfficeAudioSystem();
 
+      const audioPath = `audios/${presetKey}_${mode}.mp3`;
       const originalVol = bgMusic.volume;
+
       if (!bgMusic.paused) {
-        bgMusic.volume = originalVol * 0.15;
+        bgMusic.volume = originalVol * 0.15; // Atenuación de música (Ducking)
       }
-
-      const cleanScales = cleanScalesFormat(dep.scales);
-      const scalesText = (cleanScales && cleanScales.trim() !== "") ? ` pasando por ${cleanScales},` : "";
-      const busText = dep.bus ? ` autobús número ${dep.bus}` : " su autobús";
-
-      let baseTemplate = templateEtiq;
-      if (mode === "ABORDAJE") baseTemplate = templateAbord;
-      if (mode === "ULTIMA") baseTemplate = templateUltima;
-
-      let script = baseTemplate
-        .replace('{DESTINO}', dep.destination)
-        .replace('{ESCALAS}', scalesText)
-        .replace('{AUTOBUS}', busText);
 
       playTerminalChime(() => {
         if (isLocalMuted) {
@@ -1113,53 +1067,24 @@
           return;
         }
 
-        if (selectedVoiceURI === "WEB_API_ONLINE") {
-          const encodedText = encodeURIComponent(script);
-          const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=es&client=tw-ob`;
-          
-          const ttsAudio = new Audio(ttsUrl);
-          ttsAudio.volume = 1.0;
+        const audio = new Audio(audioPath);
+        audio.volume = 1.0;
 
-          ttsAudio.onended = () => {
-            if (!bgMusic.paused) bgMusic.volume = originalVol;
-          };
-
-          ttsAudio.onerror = () => {
-            speakWithLocalTTS(script, originalVol);
-          };
-
-          ttsAudio.play().catch(err => {
-            speakWithLocalTTS(script, originalVol);
-          });
-        } else {
-          speakWithLocalTTS(script, originalVol);
-        }
-      });
-    }
-
-    function speakWithLocalTTS(script, originalVol) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(script);
-        
-        if (availableVoices.length === 0) availableVoices = window.speechSynthesis.getVoices();
-        const chosenVoice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
-        if (chosenVoice) {
-          utterance.voice = chosenVoice;
-        } else {
-          utterance.lang = 'es-MX';
-        }
-
-        utterance.rate = 0.88;
-
-        utterance.onend = () => {
+        const restoreMusic = () => {
           if (!bgMusic.paused) bgMusic.volume = originalVol;
         };
 
-        window.speechSynthesis.speak(utterance);
-      } else {
-        if (!bgMusic.paused) bgMusic.volume = originalVol;
-      }
+        audio.onended = restoreMusic;
+        audio.onerror = (e) => {
+          console.warn(`No se encontró el archivo de audio MP3 en: ${audioPath}`, e);
+          restoreMusic();
+        };
+
+        audio.play().catch(err => {
+          console.error("Error al reproducir audio MP3:", err);
+          restoreMusic();
+        });
+      });
     }
 
     async function loadFromCloud() {
@@ -1175,11 +1100,11 @@
       try {
         await db.ref('departures').set(departures);
       } catch (err) {
-        console.error("Error al guardar en Firebase Realtime Database:", err);
+        console.error("Error al guardar en Firebase:", err);
       }
     }
 
-    // ESCUCHAR CAMBIOS EN TIEMPO REAL DESDE FIREBASE
+    // ESCUCHAR TIEMPO REAL DESDE FIREBASE
     db.ref('departures').on('value', (snapshot) => {
       const data = snapshot.val();
       if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(departures)) {
@@ -1189,7 +1114,6 @@
       }
     });
 
-    // ESCUCHAR SEÑAL DE VOCEO INSTANTÁNEO EN TIEMPO REAL
     let lastHandledVoiceTimestamp = 0;
 
     db.ref('lastVoiceTrigger').on('value', (snapshot) => {
@@ -1200,17 +1124,11 @@
         lastHandledVoiceTimestamp = data.timestamp;
 
         if (Date.now() - data.timestamp < 10000) {
-          const dep = departures.find(d => d.id === data.id);
-          if (dep) {
-            playLocalVoiceScript(dep, data.mode);
-          }
+          playMP3Audio(data.key, data.mode);
         }
       }
     });
 
-    document.getElementById('template-etiq').value = templateEtiq;
-    document.getElementById('template-abord').value = templateAbord;
-    document.getElementById('template-ultima').value = templateUltima;
     updateMuteButtonUI();
     updateHeaderTitles();
     loadFromCloud();
