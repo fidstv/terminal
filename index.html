@@ -258,7 +258,7 @@ async function runQueue(){playing=true;while(aq.length){const[k,m]=aq.shift();aw
 function playOne(key,mode){return new Promise(async res=>{
   if(muted)return res();
   const vol=+$('music-vol').value;
-  if(!bg.paused)bg.volume=vol*0.15; // Atenuación automática (Ducking)
+  if(!bg.paused)bg.volume=vol*0.15;
   await chime();
   const a=new Audio(`audios/${key}_${mode}.mp3`);
   currentVoiceAudio=a;
@@ -266,7 +266,7 @@ function playOne(key,mode){return new Promise(async res=>{
   const end=()=>{
     if(done)return;done=true;clearTimeout(to);
     currentVoiceAudio=null;
-    bg.volume=aq.length?vol*.15:vol; // Restauración de volumen
+    bg.volume=aq.length?vol*.15:vol;
     res();
   };
   const to=setTimeout(end,60000);
@@ -275,7 +275,6 @@ function playOne(key,mode){return new Promise(async res=>{
   a.play().catch(end);
 });}
 
-/* BOTÓN PÁNICO: Detiene inmediatamente audio actual y limpia la cola */
 function panicStop(){
   aq.length=0;
   if(currentVoiceAudio){
@@ -354,7 +353,6 @@ const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 
 function autoVoice(d,diff,n){
   const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
-  // Registro único basado en ID de la corrida y fecha (no en la hora recalculada)
   const k=`${d.id}|${mode}|${d.day||n.key}`;
   if(fired.has(k))return;
   fired.add(k);
@@ -456,7 +454,6 @@ $('admin-body').addEventListener('change',e=>{
   dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
 });
 
-/* RECALCULA HORA, MANEJA DEMORAS/ADELANTOS Y REORGANIZA EN FIREBASE */
 function adjustTime(d,deltaMinutes){
   const[h,m]=d.time.split(':').map(Number);
   let totalMins=h*60+m+deltaMinutes;
@@ -552,8 +549,8 @@ $('btn-unlock').onclick=unlockAudio;
 document.body.addEventListener('click',()=>ctx());
 $('btn-tab-screen').onclick=()=>switchTab('screen');$('btn-tab-admin').onclick=openPin;
 $('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');$('btn-login-ok').onclick=doLogin;
-$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-$('btn-chime').onclick=()=>chime();$('btn-panic').onclick=panicStop;
+$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});$('btn-chime').onclick=()=>chime();
+if($('btn-panic'))$('btn-panic').onclick=panicStop;
 $('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};$('btn-folder').onclick=()=>$('folder-input').click();$('folder-input').onchange=e=>{
   playlist=[...e.target.files].filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name));
   if(playlist.length){track=0;playTrack(0);}else alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
