@@ -58,7 +58,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <div style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="unlockAudio()">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -183,18 +183,30 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </footer>
 
 <script>
+/* ============ BÁSICOS / HELPERS ============ */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-/* ============ ACCIÓN DIRECTA PARA QUITAR LA VENTANA EMBERGENTE ============ */
-function unlockAudio(){
-  const overlay = $('audio-start-overlay');
-  if(overlay){
-    overlay.style.setProperty('display', 'none', 'important');
+let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+let currentAudio=null;
+const aq=[];let playing=false;
+
+function ctx(){
+  if(!actx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C)actx=new C();
   }
+  if(actx&&actx.state==='suspended')actx.resume();
+  return actx;
+}
+
+function unlockAudio(){
+  const ov=$('audio-start-overlay');
+  if(ov) ov.style.setProperty('display','none','important');
   ctx();
 }
 
+/* ============ FIREBASE CONFIG ============ */
 firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
 const db=firebase.database(),auth=firebase.auth();
 const TZ='America/Matamoros';
@@ -220,7 +232,7 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* ============ HORA DE MATAMOROS ============ */
+/* ============ FECHA / HORA ============ */
 db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
 const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 function keyAt(ms){const p={};dtf.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return {key:`${p.year}-${p.month}-${p.day}`,min:+p.hour*60+ +p.minute,time:`${p.hour}:${p.minute}:${p.second}`};}
@@ -241,13 +253,8 @@ function updateHeaderTitles(){
   $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
 }
 
-/* ============ AUDIO ============ */
-let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+/* ============ AUDIO MOTOR ============ */
 const bg=$('bg-music');bg.volume=0.2;
-let currentAudio=null;
-const aq=[];let playing=false;
-
-function ctx(){if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}if(actx&&actx.state==='suspended')actx.resume();return actx;}
 
 function stopAllAudio(){
   aq.length=0;
@@ -312,7 +319,7 @@ function updateMuteUI(){
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
-/* ============ MÚSICA AMBIENTAL ============ */
+/* ============ MÚSICA ============ */
 let playlist=[],track=0,objUrl=null;
 function playTrack(i){
   if(!playlist.length)return;
@@ -325,7 +332,7 @@ function playTrack(i){
 const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
 bg.onended=()=>step(1);
 
-/* ============ DATOS FIREBASE ============ */
+/* ============ DATOS ============ */
 let refs=[];
 function attach(s){
   refs.forEach(r=>r.off());deps={};ready=false;
@@ -363,7 +370,7 @@ function loadCatalog(){
   return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
 }
 
-/* ============ RELOJ Y VOCEOS ============ */
+/* ============ RELOJ ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 function autoVoice(d,diff,n){
   const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
@@ -382,7 +389,7 @@ function tick(){
 setInterval(tick,1000);
 setInterval(autoCatalog,30000);
 
-/* ============ RENDERIZADO ============ */
+/* ============ RENDER ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
@@ -438,7 +445,7 @@ function render(){
   if(canWrite())syncRows(ab,list,adminRow);
 }
 
-/* ============ EVENTOS TAQUILLA ============ */
+/* ============ ACCIONES ============ */
 const dref=id=>db.ref(`${suc}/deps/${id}`);
 $('admin-body').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||!canWrite())return;
@@ -494,7 +501,7 @@ $('btn-clear-all').onclick=()=>{
 };
 $('btn-reset').onclick=resetForm;
 
-/* ============ LOGIN Y VISTAS ============ */
+/* ============ AUTH ============ */
 const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
 auth.onAuthStateChanged(u=>{
   const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
@@ -526,7 +533,8 @@ function doLogin(){
   }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
 }
 
-/* ============ BINDINGS ============ */
+/* ============ LISTENERS ============ */
+$('btn-unlock').onclick=unlockAudio;
 document.body.addEventListener('click',()=>ctx());
 $('btn-tab-screen').onclick=()=>switchTab('screen');$('btn-tab-admin').onclick=openPin;
 $('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');$('btn-login-ok').onclick=doLogin;
