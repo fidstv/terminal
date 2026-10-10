@@ -10,7 +10,7 @@
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
-.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-x:auto}
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
 .control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
@@ -48,10 +48,24 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
+
+/* ============ WIDGET QR Y VOCEO (MÓDULOS 1A y 1C) ============ */
+.qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 30px rgba(0,168,89,.4);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
+.qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.qr-text{max-width:180px}
+.qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
+.qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
+#qrcode-box{background:#fff;padding:6px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+
+.voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
+.voice-indicator.active{transform:translateY(0);opacity:1}
+.speaker-pulse{animation:sp 1s infinite alternate}
+@keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -75,6 +89,21 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
       <button class="btn btn-green" style="flex:1;justify-content:center" id="btn-login-ok">Acceder</button>
     </div>
     <div id="pin-error-msg" style="color:#f43f5e;font-size:11px;margin-top:10px;font-weight:700" class="hidden">❌ Credenciales Incorrectas</div>
+  </div>
+</div>
+
+<!-- WIDGET VOCEO ACTIVO (Módulo 1C) -->
+<div id="voice-indicator" class="voice-indicator">
+  <span class="speaker-pulse" style="font-size:18px">📢</span>
+  <span>VOCEO EN REPRODUCCIÓN...</span>
+</div>
+
+<!-- WIDGET QR FLOTANTE (Módulo 1A) -->
+<div id="qr-card" class="qr-card">
+  <div id="qrcode-box"></div>
+  <div class="qr-text">
+    <h4>📱 LLEVA EL ITINERARIO EN TU CELULAR</h4>
+    <p>Escanea este código para ver el estatus en tiempo real desde tu teléfono.</p>
   </div>
 </div>
 
@@ -109,7 +138,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <audio id="bg-music"></audio>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
+    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente (Barra Espaciadora)">🛑 PÁNICO / DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
     <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
@@ -259,10 +288,15 @@ function updateHeaderTitles(){
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO (PÁNICO Y DUCKING) ============ */
+/* ============ AUDIO + INDICADOR VISUAL (MÓDULOS 1C Y 2C) ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
 const bg=$('bg-music'); if(bg)bg.volume=0.2;
+
+function setVoiceIndicator(show){
+  const vi=$('voice-indicator');
+  if(vi)vi.classList.toggle('active',!!show);
+}
 
 function ctx(){
   if(!actx){
@@ -292,11 +326,13 @@ const aq=[]; let playing=false;
 function enqueueAudio(k,m){aq.push([k,m]); if(!playing)runQueue();}
 async function runQueue(){
   playing=true;
+  setVoiceIndicator(true);
   while(aq.length){
     const item=aq.shift();
     await playOne(item[0],item[1]);
   }
   playing=false;
+  setVoiceIndicator(false);
 }
 
 function playOne(key,mode){
@@ -334,6 +370,7 @@ function panicStop(){
     currentVoiceAudio=null;
   }
   playing=false;
+  setVoiceIndicator(false);
   const vol=+$('music-vol').value;
   if(bg&&!bg.paused)bg.volume=vol;
 }
@@ -646,6 +683,83 @@ function doLogin(){
     attach(viewSuc()); updateHeaderTitles(); switchTab('admin');
   }).catch(function(err){console.error('Auth:',err.message); if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
 }
+
+/* ============ ATAJOS DE TECLADO (MÓDULO 2C) ============ */
+document.addEventListener('keydown',function(e){
+  const tag=document.activeElement?document.activeElement.tagName.toLowerCase():'';
+  const isInput=tag==='input'||tag==='textarea'||tag==='select'||document.activeElement.isContentEditable;
+
+  if((e.code==='Space'||e.key===' ')&&!isInput){
+    e.preventDefault();
+    panicStop();
+  }
+
+  if(e.altKey&&!isInput){
+    if(e.key==='1'){ e.preventDefault(); triggerTopVoice('etiq'); }
+    else if(e.key==='2'){ e.preventDefault(); triggerTopVoice('abord'); }
+    else if(e.key==='3'){ e.preventDefault(); triggerTopVoice('ultima'); }
+  }
+});
+
+function triggerTopVoice(mode){
+  if(!canWrite())return;
+  const n=nowParts();
+  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
+    .sort(function(a,b){return a.time.localeCompare(b.time);});
+  if(list.length>0){
+    const topDep=list[0];
+    db.ref(suc+'/voice').set({
+      key:topDep.presetKey||'p01',
+      mode:mode,
+      timestamp:firebase.database.ServerValue.TIMESTAMP
+    }).catch(fail);
+  }
+}
+
+/* ============ AUTO-SCROLL (MÓDULO 1B) ============ */
+function autoScrollFids(){
+  const card=$('view-screen');
+  if(!card||card.classList.contains('hidden'))return;
+  if(card.scrollHeight>card.clientHeight){
+    if(card.scrollTop+card.clientHeight>=card.scrollHeight-5){
+      card.scrollTo({top:0,behavior:'smooth'});
+    }else{
+      card.scrollBy({top:120,behavior:'smooth'});
+    }
+  }
+}
+setInterval(autoScrollFids,8000);
+
+/* ============ QR DINÁMICO (MÓDULO 1A) ============ */
+let qrGenerated=false;
+function initQR(){
+  const box=$('qrcode-box'); if(!box)return;
+  box.innerHTML='';
+  if(window.QRCode){
+    new QRCode(box,{
+      text:window.location.href,
+      width:85,
+      height:85,
+      colorDark:"#00142D",
+      colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.H
+    });
+    qrGenerated=true;
+  }
+}
+
+function cycleQR(){
+  const qrCard=$('qr-card'); if(!qrCard)return;
+  if(!qrGenerated)initQR();
+  qrCard.classList.add('show');
+  setTimeout(function(){
+    qrCard.classList.remove('show');
+  },25000);
+}
+setTimeout(function(){
+  cycleQR();
+  setInterval(cycleQR,150000);
+},10000);
 
 /* ============ EVENTOS BINDING ============ */
 document.body.addEventListener('click',function(){ctx();});
