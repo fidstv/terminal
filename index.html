@@ -490,7 +490,7 @@
       }
     }
 
-    // CATÁLOGO COMPLETO DE RUTAS P01 - P13 (ASIGNACIÓN AUTOMÁTICA DE MP3)
+    // CATÁLOGO COMPLETO DE RUTAS P01 - P13
     const presetCatalog = {
       p01: { key: "p01", time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
       p02: { key: "p02", time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira" },
@@ -693,7 +693,6 @@
       }
     }
 
-    // APLICAR DEMORAS A 1 CLIC (+10m, +15m, +30m, +60m)
     function addDelay(id, minutesToAdd) {
       const dep = departures.find(d => d.id === id);
       if (!dep) return;
@@ -708,7 +707,6 @@
       dep.time = `${newH}:${newM}`;
       dep.status = `DEMORADO (+${minutesToAdd}m)`;
       
-      // Reiniciar alertas para que el MP3 suene respecto a la nueva hora
       dep.notified15 = false;
       dep.notified5 = false;
       dep.notified0 = false;
@@ -716,7 +714,7 @@
       persistData();
     }
 
-    // RELOJ INTERNO Y DISPARO AUTOMÁTICO DE AUDIOS MP3
+    // RELOJ INTERNO DE SEGUIMIENTO (ÚNICAMENTE CENTRALIZADO)
     function updateClock() {
       const now = new Date();
       document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-MX', { hour12: false });
@@ -748,8 +746,9 @@
             updated = true;
           }
           if (!dep.notified0) {
-            triggerMP3Voice(dep.id, "ultima");
             dep.notified0 = true;
+            updated = true;
+            triggerMP3Voice(dep.id, "ultima");
           }
         }
         else if (diffMinutes <= 5 && diffMinutes > 0) {
@@ -758,8 +757,9 @@
             updated = true;
           }
           if (diffMinutes === 5 && !dep.notified5) {
-            triggerMP3Voice(dep.id, "abord");
             dep.notified5 = true;
+            updated = true;
+            triggerMP3Voice(dep.id, "abord");
           }
         }
         else if (diffMinutes <= 15 && diffMinutes > 5) {
@@ -768,8 +768,9 @@
             updated = true;
           }
           if (diffMinutes === 15 && !dep.notified15) {
-            triggerMP3Voice(dep.id, "etiq");
             dep.notified15 = true;
+            updated = true;
+            triggerMP3Voice(dep.id, "etiq");
           }
         }
 
@@ -1033,7 +1034,7 @@
       playTerminalChime(() => {});
     }
 
-    // MOTOR PRINCIPAL DE VOCEO POR ARCHIVO MP3
+    // DISPARO CENTRALIZADO MEDIANTE FIREBASE (EVITA MULTI-REPRODUCCIONES)
     function triggerMP3Voice(idOrKey, mode) {
       const dep = departures.find(d => d.id === idOrKey);
       const key = dep ? (dep.presetKey || 'p01') : idOrKey;
@@ -1046,11 +1047,11 @@
         });
       } catch (err) {
         console.error("Error al emitir señal a Firebase:", err);
+        playMP3Audio(key, mode);
       }
-
-      playMP3Audio(key, mode);
     }
 
+    // REPRODUCCIÓN ÚNICA EN CADA DISPOSITIVO CONECTADO
     function playMP3Audio(presetKey, mode) {
       startOfficeAudioSystem();
 
@@ -1058,7 +1059,7 @@
       const originalVol = bgMusic.volume;
 
       if (!bgMusic.paused) {
-        bgMusic.volume = originalVol * 0.15; // Atenuación de música (Ducking)
+        bgMusic.volume = originalVol * 0.15;
       }
 
       playTerminalChime(() => {
@@ -1104,7 +1105,6 @@
       }
     }
 
-    // ESCUCHAR TIEMPO REAL DESDE FIREBASE
     db.ref('departures').on('value', (snapshot) => {
       const data = snapshot.val();
       if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(departures)) {
@@ -1116,6 +1116,7 @@
 
     let lastHandledVoiceTimestamp = 0;
 
+    // RECEPTOR ÚNICO DE SEÑAL
     db.ref('lastVoiceTrigger').on('value', (snapshot) => {
       const data = snapshot.val();
       if (!data || !data.timestamp) return;
