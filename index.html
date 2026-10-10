@@ -60,7 +60,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <div style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="unlockAudio()">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="document.getElementById('audio-start-overlay').style.display='none'; if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -189,14 +189,14 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
 const db=firebase.database(),auth=firebase.auth();
 const TZ='America/Matamoros';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=function(id){return document.getElementById(id);};
+const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
 let suc=null,deps={},ready=false,srvOff=0;
-const viewSuc=()=>vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));
-const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc;
-const fail=e=>{console.error(e.message);alert('No se pudo guardar: '+e.message);};
+const viewSuc=function(){return vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));};
+const canWrite=function(){return !isTV&&!!auth.currentUser&&!!suc;};
+const fail=function(e){console.error(e.message);alert('No se pudo guardar: '+e.message);};
 
 const CAT={
 p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -213,8 +213,8 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* ============ HORA ULTRA-ROBUSTA (CON FALLBACK) ============ */
-db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
+/* ============ HORA ANTI-ERRORES ============ */
+db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
 
 let dtf=null;
 try{ dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){}
@@ -223,20 +223,25 @@ function nowParts(){
   const now=new Date(Date.now()+srvOff);
   if(dtf){
     try{
-      const p={};dtf.formatToParts(now).forEach(x=>p[x.type]=x.value);
+      const p={}; dtf.formatToParts(now).forEach(function(x){p[x.type]=x.value;});
       if(p.year&&p.month&&p.day&&p.hour!==undefined){
-        const h=+p.hour%24,m=+p.minute,s=+(p.second||0);
-        return {key:`${p.year}-${p.month}-${p.day}`,min:h*60+m,time:`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`};
+        const h=+p.hour%24, m=+p.minute, s=+(p.second||0);
+        return {key:p.year+'-'+p.month+'-'+p.day,min:h*60+m,time:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
       }
     }catch(e){}
   }
-  const y=now.getFullYear(),mo=String(now.getMonth()+1).padStart(2,'0'),da=String(now.getDate()).padStart(2,'0');
-  const ho=now.getHours(),mi=now.getMinutes(),se=now.getSeconds();
-  return {key:`${y}-${mo}-${da}`,min:ho*60+mi,time:`${String(ho).padStart(2,'0')}:${String(mi).padStart(2,'0')}:${String(se).padStart(2,'0')}`};
+  const y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,'0'), da=String(now.getDate()).padStart(2,'0');
+  const ho=now.getHours(), mi=now.getMinutes(), se=now.getSeconds();
+  return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:String(ho).padStart(2,'0')+':'+String(mi).padStart(2,'0')+':'+String(se).padStart(2,'0')};
 }
 
-function diffOf(d,n){const[h,m]=d.time.split(':').map(Number);let x=h*60+m-n.min;if(x<-1200)x+=1440;if(x>1200)x-=1440;return x;}
-const isLive=(d,n)=>d.day===n.key||(n.min<360&&d.day===nowParts().key);
+function diffOf(d,n){
+  const parts=d.time.split(':').map(Number);
+  let x=parts[0]*60+parts[1]-n.min;
+  if(x<-1200)x+=1440; if(x>1200)x-=1440;
+  return x;
+}
+const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===nowParts().key);};
 
 function stat(d,diff){
   if(d.status==='SALIDO'||diff<0)return'SALIDO';
@@ -251,49 +256,70 @@ function updateHeaderTitles(){
   const c=viewSuc()==='central';
   if($('header-terminal-title'))$('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
   if($('header-terminal-sub'))$('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';
-  if($('ticker-text-content'))$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
+  if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO (contexto único + cola + ducking + pánico) ============ */
+/* ============ AUDIO (PÁNICO Y DUCKING) ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
-const bg=$('bg-music');if(bg)bg.volume=0.2;
+const bg=$('bg-music'); if(bg)bg.volume=0.2;
 
-function ctx(){if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}if(actx&&actx.state==='suspended')actx.resume();return actx;}
+function ctx(){
+  if(!actx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C)actx=new C();
+  }
+  if(actx&&actx.state==='suspended')actx.resume();
+  return actx;
+}
 
-function chime(){return new Promise(res=>{
-  if(muted)return res();
-  try{const c=ctx();if(!c)return res();
-    const t=c.currentTime,o1=c.createOscillator(),o2=c.createOscillator(),g=c.createGain();
-    o1.frequency.setValueAtTime(587.33,t);o2.frequency.setValueAtTime(880,t+.18);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+2);
-    o1.connect(g);o2.connect(g);g.connect(c.destination);o1.start(t);o2.start(t+.18);o1.stop(t+2);o2.stop(t+2);
-    setTimeout(res,1800);}catch(e){res();}
-});}
+function chime(){
+  return new Promise(function(res){
+    if(muted)return res();
+    try{
+      const c=ctx(); if(!c)return res();
+      const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
+      o1.frequency.setValueAtTime(587.33,t); o2.frequency.setValueAtTime(880,t+.18);
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.05); g.gain.exponentialRampToValueAtTime(.0001,t+2);
+      o1.connect(g); o2.connect(g); g.connect(c.destination);
+      o1.start(t); o2.start(t+.18); o1.stop(t+2); o2.stop(t+2);
+      setTimeout(res,1800);
+    }catch(e){res();}
+  });
+}
 
-const aq=[];let playing=false;
-function enqueueAudio(k,m){aq.push([k,m]);if(!playing)runQueue();}
-async function runQueue(){playing=true;while(aq.length){const[k,m]=aq.shift();await playOne(k,m);}playing=false;}
+const aq=[]; let playing=false;
+function enqueueAudio(k,m){aq.push([k,m]); if(!playing)runQueue();}
+async function runQueue(){
+  playing=true;
+  while(aq.length){
+    const item=aq.shift();
+    await playOne(item[0],item[1]);
+  }
+  playing=false;
+}
 
-function playOne(key,mode){return new Promise(async res=>{
-  if(muted)return res();
-  const vol=+$('music-vol').value;
-  if(bg&&!bg.paused)bg.volume=vol*0.15;
-  await chime();
-  const a=new Audio(`audios/${key}_${mode}.mp3`);
-  currentVoiceAudio=a;
-  let done=false;
-  const end=()=>{
-    if(done)return;done=true;clearTimeout(to);
-    currentVoiceAudio=null;
-    if(bg)bg.volume=aq.length?vol*.15:vol;
-    res();
-  };
-  const to=setTimeout(end,60000);
-  a.onended=end;
-  a.onerror=()=>{console.warn('MP3 no encontrado:',a.src);end();};
-  a.play().catch(end);
-});}
+function playOne(key,mode){
+  return new Promise(async function(res){
+    if(muted)return res();
+    const vol=+$('music-vol').value;
+    if(bg&&!bg.paused)bg.volume=vol*0.15;
+    await chime();
+    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
+    currentVoiceAudio=a;
+    let done=false;
+    const end=function(){
+      if(done)return; done=true; clearTimeout(to);
+      currentVoiceAudio=null;
+      if(bg)bg.volume=aq.length?vol*.15:vol;
+      res();
+    };
+    const to=setTimeout(end,60000);
+    a.onended=end;
+    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end();};
+    a.play().catch(end);
+  });
+}
 
 window.unlockAudio=function(){
   const overlay=$('audio-start-overlay');
@@ -304,8 +330,7 @@ window.unlockAudio=function(){
 function panicStop(){
   aq.length=0;
   if(currentVoiceAudio){
-    currentVoiceAudio.pause();
-    currentVoiceAudio.currentTime=0;
+    try{currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0;}catch(e){}
     currentVoiceAudio=null;
   }
   playing=false;
@@ -314,36 +339,41 @@ function panicStop(){
 }
 
 function updateMuteUI(){
-  const b=$('btn-mute-local');if(!b)return;
+  const b=$('btn-mute-local'); if(!b)return;
   b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
 /* ============ MÚSICA AMBIENTAL ============ */
-let playlist=[],track=0,objUrl=null;
+let playlist=[], track=0, objUrl=null;
 function playTrack(i){
   if(!playlist.length)return;
   if(objUrl)URL.revokeObjectURL(objUrl);
-  const f=playlist[i];objUrl=URL.createObjectURL(f);bg.src=objUrl;
-  $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');$('btn-music').disabled=false;
-  bg.play().catch(e=>console.log('Música bloqueada por el navegador',e));
-  $('btn-music').textContent='⏸️';$('btn-music').className='btn btn-green';
+  const f=playlist[i]; objUrl=URL.createObjectURL(f); bg.src=objUrl;
+  if($('song-title'))$('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');
+  if($('btn-music'))$('btn-music').disabled=false;
+  bg.play().catch(function(e){console.log('Música bloqueada:',e);});
+  if($('btn-music')){$('btn-music').textContent='⏸️'; $('btn-music').className='btn btn-green';}
 }
-const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
-if(bg)bg.onended=()=>step(1);
+const step=function(d){if(playlist.length){track=(track+d+playlist.length)%playlist.length; playTrack(track);}};
+if(bg)bg.onended=function(){step(1);};
 
 /* ============ DATOS Y SINCRONIZACIÓN ============ */
 let refs=[];
 function attach(s){
   try{
-    refs.forEach(r=>r.off());deps={};ready=false;
-    const rd=db.ref(s+'/deps'),rv=db.ref(s+'/voice');refs=[rd,rv];
+    refs.forEach(function(r){r.off();}); deps={}; ready=false;
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'); refs=[rd,rv];
     let lastTs=0;
-    rd.on('value',snap=>{
-      const next={};snap.forEach(c=>{const v=c.val();if(v&&typeof v==='object'){v.id=c.key;next[c.key]=v;}});
-      deps=next;ready=true;render();autoCatalog();
-    },err=>console.error('Lectura Firebase:',err.message));
-    rv.on('value',snap=>{
+    rd.on('value',function(snap){
+      const next={};
+      snap.forEach(function(c){
+        const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+      });
+      deps=next; ready=true; render(); autoCatalog();
+    },function(err){console.error('Lectura Firebase:',err.message);});
+
+    rv.on('value',function(snap){
       const d=snap.val();
       if(!d||!d.timestamp||d.timestamp<=lastTs)return;
       lastTs=d.timestamp;
@@ -358,28 +388,32 @@ let autoBusy=false;
 async function autoCatalog(){
   if(!canWrite()||!ready||autoBusy||viewSuc()!==suc)return;
   const today=nowParts().key;
-  if(Object.values(deps).some(d=>d.day===today))return;
+  if(Object.values(deps).some(function(d){return d.day===today;}))return;
   autoBusy=true;
-  try{const c=(await db.ref(suc+'/cleared').once('value')).val();if(c!==today)await loadCatalog();}
-  catch(e){console.warn('Catálogo automático:',e.message);}
-  setTimeout(()=>autoBusy=false,10000);
+  try{
+    const c=(await db.ref(suc+'/cleared').once('value')).val();
+    if(c!==today)await loadCatalog();
+  }catch(e){console.warn('Catálogo automático:',e.message);}
+  setTimeout(function(){autoBusy=false;},10000);
 }
 
 function loadCatalog(){
-  const day=nowParts().key,o={};
-  Object.keys(CAT).forEach(k=>o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day,delay:0});
-  return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
+  const day=nowParts().key, o={};
+  Object.keys(CAT).forEach(function(k){
+    o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+  });
+  return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ RELOJ & DETECCIÓN DE VOCEO ============ */
+/* ============ DETECCIÓN DE VOCEO ÚNICO ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 
 function autoVoice(d,diff,n){
-  const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
-  const k=`${d.id}|${mode}|${d.day||n.key}`;
+  const mode={15:'etiq',5:'abord',0:'ultima'}[diff]; if(!mode)return;
+  const k=d.id+'|'+mode+'|'+(d.day||n.key);
   if(fired.has(k))return;
   fired.add(k);
-  localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.endsWith(n.key))));
+  localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){return x.endsWith(n.key);})));
   enqueueAudio(d.presetKey||'p01',mode);
 }
 
@@ -388,87 +422,104 @@ function tick(){
     const n=nowParts();
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    if(ready)Object.values(deps).forEach(d=>{if(isLive(d,n)){const x=diffOf(d,n);if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);}});
+    if(ready){
+      Object.values(deps).forEach(function(d){
+        if(isLive(d,n)){
+          const x=diffOf(d,n);
+          if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);
+        }
+      });
+    }
     render();
   }catch(e){console.error('Error tick:',e);}
 }
 setInterval(tick,1000);
 setInterval(autoCatalog,30000);
 
-/* ============ RENDER ============ */
+/* ============ RENDER TABLAS ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
   if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&st.includes('DEMORADO'))return`<span class="badge-status status-demorado">${esc(st)}</span>`;
+  if(st&&st.indexOf('DEMORADO')!==-1)return'<span class="badge-status status-demorado">'+esc(st)+'</span>';
   if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
-const cleanScales=s=>(s||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');
+const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
 
-function tvRow(d,c){const sc=cleanScales(d.scales);return`<td style="font-size:24px;font-weight:900;font-family:monospace">${esc(d.time)}</td>
-<td><div style="font-size:20px;font-weight:900">${esc(d.destination)}</div>${sc?`<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: ${esc(sc)}</div>`:''}</td>
-<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">${esc(d.bus||'---')}</td>
-<td class="c" style="font-size:16px;font-weight:800;color:#00D974">${c?'Central de Autobuses':'Oficina Pedro Cárdenas'}</td>
-<td class="c">${badge(d._st)}</td>`;}
+function tvRow(d,c){
+  const sc=cleanScales(d.scales);
+  return '<td style="font-size:24px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
+  '<td><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
+  '<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
+  '<td class="c" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
+  '<td class="c">'+badge(d._st)+'</td>';
+}
 
-function adminRow(d){return`<td><strong>${esc(d.time)}</strong></td>
-<td><div><strong>${esc(d.destination)}</strong></div><div style="font-size:10px;color:#93c5fd">MP3: ${esc(d.presetKey||'Sin clave')}</div></td>
-<td class="c"><input type="text" class="inline-bus-input" value="${esc(d.bus||'')}" placeholder="---"></td>
-<td class="c">${badge(d._st)}</td>
-<td>
-  <div class="flex" style="flex-direction:column;gap:2px">
-    <div class="flex">
-      <button class="btn btn-advance" data-act="time" data-v="-60" title="Adelantar 1 hora">-1h</button>
-      <button class="btn btn-advance" data-act="time" data-v="-30" title="Adelantar 30 minutos">-30m</button>
-      <button class="btn btn-advance" data-act="time" data-v="-5" title="Adelantar 5 minutos">-5m</button>
-    </div>
-    <div class="flex">
-      <button class="btn btn-delay" data-act="time" data-v="5" title="Demorar 5 minutos">+5m</button>
-      <button class="btn btn-delay" data-act="time" data-v="30" title="Demorar 30 minutos">+30m</button>
-      <button class="btn btn-delay" data-act="time" data-v="60" title="Demorar 1 hora">+1h</button>
-    </div>
-  </div>
-</td>
-<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>
-<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>`;}
+function adminRow(d){
+  return '<td><strong>'+esc(d.time)+'</strong></td>'+
+  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc(d.presetKey||'Sin clave')+'</div></td>'+
+  '<td class="c"><input type="text" class="inline-bus-input" value="'+esc(d.bus||'')+'" placeholder="---"></td>'+
+  '<td class="c">'+badge(d._st)+'</td>'+
+  '<td>'+
+    '<div class="flex" style="flex-direction:column;gap:2px">'+
+      '<div class="flex">'+
+        '<button class="btn btn-advance" data-act="time" data-v="-60" title="Adelantar 1 hora">-1h</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-30" title="Adelantar 30 minutos">-30m</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-5" title="Adelantar 5 minutos">-5m</button>'+
+      '</div>'+
+      '<div class="flex">'+
+        '<button class="btn btn-delay" data-act="time" data-v="5" title="Demorar 5 minutos">+5m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="30" title="Demorar 30 minutos">+30m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="60" title="Demorar 1 hora">+1h</button>'+
+      '</div>'+
+    '</div>'+
+  '</td>'+
+  '<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>'+
+  '<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>';
+}
 
 function syncRows(tb,list,html){
-  const sigOf=d=>JSON.stringify([d.time,d.destination,d.scales,d.bus,d._st,d.presetKey]);
-  const rows=new Map([...tb.children].map(r=>[r.dataset.id,r]));
-  list.forEach(d=>{
-    let r=rows.get(d.id);const s=sigOf(d);
-    if(!r){r=document.createElement('tr');r.dataset.id=d.id;r.innerHTML=html(d);r._s=s;tb.appendChild(r);return;}
-    rows.delete(d.id);if(r._s===s)return;
-    const f=document.activeElement,typing=f&&r.contains(f)&&f.classList.contains('inline-bus-input');
-    const val=typing?f.value:null,pos=typing?f.selectionStart:0;
-    r.innerHTML=html(d);r._s=s;
-    if(typing){const ni=r.querySelector('.inline-bus-input');ni.value=val;ni.focus();ni.setSelectionRange(pos,pos);}
+  const sigOf=function(d){return JSON.stringify([d.time,d.destination,d.scales,d.bus,d._st,d.presetKey]);};
+  const rows=new Map(Array.from(tb.children).map(function(r){return [r.dataset.id,r];}));
+  list.forEach(function(d){
+    let r=rows.get(d.id); const s=sigOf(d);
+    if(!r){
+      r=document.createElement('tr'); r.dataset.id=d.id; r.innerHTML=html(d); r._s=s; tb.appendChild(r); return;
+    }
+    rows.delete(d.id); if(r._s===s)return;
+    const f=document.activeElement, typing=f&&r.contains(f)&&f.classList.contains('inline-bus-input');
+    const val=typing?f.value:null, pos=typing?f.selectionStart:0;
+    r.innerHTML=html(d); r._s=s;
+    if(typing){
+      const ni=r.querySelector('.inline-bus-input'); ni.value=val; ni.focus(); ni.setSelectionRange(pos,pos);
+    }
   });
-  rows.forEach(r=>r.remove());
-  const want=list.map(d=>d.id).join(),have=[...tb.children].map(r=>r.dataset.id).join();
-  if(want!==have&&!tb.contains(document.activeElement))list.forEach(d=>tb.appendChild(tb.querySelector(`[data-id="${CSS.escape(d.id)}"]`)));
+  rows.forEach(function(r){r.remove();});
 }
 
 function render(){
-  const c=viewSuc()==='central',fb=$('fids-body'),ab=$('admin-body');
+  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body');
   if(!ready){
     if(fb)fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';
     return;
   }
   const n=nowParts();
-  const list=Object.values(deps).filter(d=>isLive(d,n)&&diffOf(d,n)>-15)
-    .map(d=>({...d,_st:stat(d,diffOf(d,n))})).sort((a,b)=>a.time.localeCompare(b.time));
-  if(fb)syncRows(fb,list,d=>tvRow(d,c));
+  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
+    .map(function(d){
+      const obj=Object.assign({},d); obj._st=stat(d,diffOf(d,n)); return obj;
+    }).sort(function(a,b){return a.time.localeCompare(b.time);});
+  if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
   if(canWrite()&&ab)syncRows(ab,list,adminRow);
 }
 
-/* ============ ACCIONES DEL USUARIO ============ */
-const dref=id=>db.ref(`${suc}/deps/${id}`);
+/* ============ ACCIONES Y CONTROL DE TIEMPO ============ */
+const dref=function(id){return db.ref(suc+'/deps/'+id);};
 
-if($('admin-body')){$('admin-body').addEventListener('click',e=>{
-    const b=e.target.closest('[data-act]');if(!b||!canWrite())return;
-    const id=b.closest('tr').dataset.id,d=deps[id];if(!d)return;
+if($('admin-body')){
+  $('admin-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
+    const id=b.closest('tr').dataset.id, d=deps[id]; if(!d)return;
     const act=b.dataset.act;
     if(act==='voz')db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
     else if(act==='time')adjustTime(d,+b.dataset.v);
@@ -476,21 +527,21 @@ if($('admin-body')){$('admin-body').addEventListener('click',e=>{
     else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
   });
 
-  $('admin-body').addEventListener('change',e=>{
+  $('admin-body').addEventListener('change',function(e){
     if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
     dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
   });
 }
 
 function adjustTime(d,deltaMinutes){
-  const[h,m]=d.time.split(':').map(Number);
-  let totalMins=h*60+m+deltaMinutes;
+  const parts=d.time.split(':').map(Number);
+  let totalMins=parts[0]*60+parts[1]+deltaMinutes;
   if(totalMins<0)totalMins+=1440;
   if(totalMins>=1440)totalMins%=1440;
 
   const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
   const newM=String(totalMins%60).padStart(2,'0');
-  const newTime=`${newH}:${newM}`;
+  const newTime=newH+':'+newM;
 
   let updates={time:newTime};
   let newDelay=(d.delay||0)+deltaMinutes;
@@ -498,9 +549,9 @@ function adjustTime(d,deltaMinutes){
   updates.delay=newDelay;
 
   if(deltaMinutes>0){
-    updates.status=`DEMORADO (+${newDelay}m)`;
+    updates.status='DEMORADO (+'+newDelay+'m)';
   }else{
-    if(newDelay===0&&d.status&&d.status.startsWith('DEMORADO')){
+    if(newDelay===0&&d.status&&d.status.indexOf('DEMORADO')===0){
       updates.status='EN ESPERA';
     }
   }
@@ -509,45 +560,62 @@ function adjustTime(d,deltaMinutes){
 }
 
 function editDeparture(d){
-  $('dep-id').value=d.id;$('dep-preset-key').value=d.presetKey||'p01';
-  $('dep-time').value=d.time;$('dep-destination').value=d.destination;
-  $('dep-scales').value=d.scales\vert{}\vert{}'';$('dep-bus').value=d.bus||'';
-  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'DEMORADO';
+  $('dep-id').value=d.id; $('dep-preset-key').value=d.presetKey||'p01';
+  $('dep-time').value=d.time; $('dep-destination').value=d.destination;
+  $('dep-scales').value=d.scales||''; $('dep-bus').value=d.bus||'';
+  const sel=$('dep-status'); sel.value=Array.from(sel.options).some(function(o){return o.value===d.status;})?d.status:'DEMORADO';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function resetForm(){if($('departure-form'))$('departure-form').reset();if($('dep-id'))$('dep-id').value='';if($('dep-preset-key'))$('dep-preset-key').value='';if($('preset-selector'))$('preset-selector').value='';}
+function resetForm(){
+  if($('departure-form'))$('departure-form').reset();
+  if($('dep-id'))$('dep-id').value='';
+  if($('dep-preset-key'))$('dep-preset-key').value='';
+  if($('preset-selector'))$('preset-selector').value='';
+}
 
-if($('departure-form')){$('departure-form').addEventListener('submit',e=>{
-    e.preventDefault();if(!canWrite())return;
-    const id=$('dep-id').value||('c'+Date.now()),old=deps[id];
+if($('departure-form')){
+  $('departure-form').addEventListener('submit',function(e){
+    e.preventDefault(); if(!canWrite())return;
+    const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
     let status=$('dep-status').value;
-    if(status==='DEMORADO'&&old&&old.status&&old.status.startsWith('DEMORADO'))status=old.status;
-    dref(id).set({presetKey:$('dep-preset-key').value||'p01',time:$('dep-time').value,destination:$('dep-destination').value.trim(),
-      scales:cleanScales($('dep-scales').value),bus:$('dep-bus').value.trim(),status,sucursal:suc,
-      day:old?.day||nowParts().key,delay:old?.delay||0}).then(resetForm).catch(fail);
+    if(status==='DEMORADO'&&old&&old.status&&old.status.indexOf('DEMORADO')===0)status=old.status;
+    dref(id).set({
+      presetKey:$('dep-preset-key').value||'p01',
+      time:$('dep-time').value,
+      destination:$('dep-destination').value.trim(),
+      scales:cleanScales($('dep-scales').value),
+      bus:$('dep-bus').value.trim(),
+      status:status,
+      sucursal:suc,
+      day:old?.day||nowParts().key,
+      delay:old?.delay||0
+    }).then(resetForm).catch(fail);
   });
 }
 
-if($('preset-selector')){$('preset-selector').addEventListener('change',e=>{
-    const k=e.target.value;if(!CAT[k])return;
-    $('dep-id').value='';$('dep-preset-key').value=k;$('dep-time').value=CAT[k][0];$('dep-destination').value=CAT[k][1];$('dep-scales').value=CAT[k][2];$('dep-status').value='EN ESPERA';$('dep-bus').value='';$('dep-bus').focus();
+if($('preset-selector')){
+  $('preset-selector').addEventListener('change',function(e){
+    const k=e.target.value; if(!CAT[k])return;
+    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=CAT[k][0];
+    $('dep-destination').value=CAT[k][1]; $('dep-scales').value=CAT[k][2];
+    $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
   });
 }
 
-if($('btn-load-all'))$('btn-load-all').onclick=()=>{if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
-if($('btn-clear-all'))$('btn-clear-all').onclick=()=>{
+if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
+if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
   if(!canWrite()||!confirm('¿Deseas borrar todas las corridas de esta sucursal?'))return;
   Promise.all([db.ref(suc+'/deps').remove(),db.ref(suc+'/cleared').set(nowParts().key)]).catch(fail);
 };
 if($('btn-reset'))$('btn-reset').onclick=resetForm;
 
-/* ============ LOGIN / VISTAS ============ */
-const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
-auth.onAuthStateChanged(u=>{
-  const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
+/* ============ LOGIN Y PESTAÑAS ============ */
+const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
+auth.onAuthStateChanged(function(u){
+  const prev=viewSuc(); suc=(u&&!isTV)?sucFromEmail(u.email):null;
   if(viewSuc()!==prev)attach(viewSuc());
-  updateHeaderTitles();render();autoCatalog();
+  updateHeaderTitles(); render(); autoCatalog();
 });
 
 function switchTab(tab){
@@ -569,42 +637,52 @@ function openPin(){
 }
 
 function doLogin(){
-  const u=$('login-user-input').value.trim().toLowerCase(),p=$('login-pass-input').value.trim();
+  const u=$('login-user-input').value.trim().toLowerCase(), p=$('login-pass-input').value.trim();
   let em=u;
-  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com';if(u==='terminalof2')em='terminalof2@transpais.com';}
-  auth.signInWithEmailAndPassword(em,p).then(()=>{
+  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com'; if(u==='terminalof2')em='terminalof2@transpais.com';}
+  auth.signInWithEmailAndPassword(em,p).then(function(){
     suc=sucFromEmail(em);
     if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
-    attach(viewSuc());updateHeaderTitles();switchTab('admin');
-  }).catch(err=>{console.error('Auth:',err.message);if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
+    attach(viewSuc()); updateHeaderTitles(); switchTab('admin');
+  }).catch(function(err){console.error('Auth:',err.message); if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
 }
 
 /* ============ EVENTOS BINDING ============ */
-document.body.addEventListener('click',()=>ctx());
-if($('btn-tab-screen'))$('btn-tab-screen').onclick=()=>switchTab('screen');
+document.body.addEventListener('click',function(){ctx();});
+if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
 if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
-if($('btn-login-cancel'))$('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');
+if($('btn-login-cancel'))$('btn-login-cancel').onclick=function(){$('pin-modal-overlay').classList.add('hidden');};
 if($('btn-login-ok'))$('btn-login-ok').onclick=doLogin;
-if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-if($('btn-chime'))$('btn-chime').onclick=()=>chime();
+if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+if($('btn-chime'))$('btn-chime').onclick=function(){chime();};
 if($('btn-panic'))$('btn-panic').onclick=panicStop;
-if($('btn-mute-local'))$('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};
-if($('btn-folder'))$('btn-folder').onclick=()=>$('folder-input').click();
-if($('folder-input'))$('folder-input').onchange=e=>{
-  playlist=[...e.target.files].filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name));
-  if(playlist.length){track=0;playTrack(0);}else alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
-};
-if($('btn-prev'))$('btn-prev').onclick=()=>step(-1);
-if($('btn-next'))$('btn-next').onclick=()=>step(1);
-if($('btn-music'))$('btn-music').onclick=()=>{
-  const b=$('btn-music');
-  if(bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
-  else{bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
-};
-if($('music-vol'))$('music-vol').oninput=e=>{if(bg)bg.volume=+e.target.value;};
+if($('btn-mute-local'))$('btn-mute-local').onclick=function(){muted=!muted; localStorage.setItem('transpais_local_muted',muted); updateMuteUI();};
+if($('btn-folder'))$('btn-folder').onclick=function(){$('folder-input').click();};
+
+if($('folder-input')){
+  $('folder-input').onchange=function(e){
+    playlist=Array.from(e.target.files).filter(function(f){return f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name);});
+    if(playlist.length){track=0; playTrack(0);}else alert('No se encontraron archivos de audio MP3.');
+  };
+}
+
+if($('btn-prev'))$('btn-prev').onclick=function(){step(-1);};
+if($('btn-next'))$('btn-next').onclick=function(){step(1);};
+if($('btn-music')){
+  $('btn-music').onclick=function(){
+    var b=$('btn-music');
+    if(bg.paused){bg.play(); b.textContent='⏸️'; b.className='btn btn-green';}
+    else{bg.pause(); b.textContent='▶️'; b.className='btn btn-dark';}
+  };
+}
+if($('music-vol'))$('music-vol').oninput=function(e){if(bg)bg.volume=+e.target.value;};
 
 if(isTV&&$('control-bar'))$('control-bar').style.display='none';
-updateMuteUI();updateHeaderTitles();attach(viewSuc());tick();
+
+updateMuteUI();
+updateHeaderTitles();
+attach(viewSuc());
+tick();
 </script>
 </body>
 </html>
