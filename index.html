@@ -15,10 +15,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;mi
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
 .btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
-.btn-red{background:rgba(230,57,70,.8);color:#fff}.btn-red:hover{background:#dc2626}
+.btn-red{background:rgba(230,57,70,.3);color:#f87171}
+.btn-panic{background:#e11d48;color:#fff;font-weight:900;box-shadow:0 0 10px rgba(225,29,72,.5)}.btn-panic:hover{background:#be123c}
 .btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
 .btn-arrive{background:#d97706;color:#fff;font-weight:900}
-.btn-delay{background:rgba(255,255,255,.1);color:#93c5fd;padding:4px 6px;font-size:10px;border:1px solid rgba(147,197,253,.3)}.btn-delay:hover{background:#00A859;color:#fff}
+.btn-delay{background:#dc2626;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-delay:hover{background:#991b1b}
+.btn-advance{background:#2563eb;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-advance:hover{background:#1d4ed8}
 table{width:100%;border-collapse:collapse;text-align:left}
 th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
 td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -28,7 +30,7 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
 .status-etiq{background:#FFB800;color:#000;animation:pg 1.4s infinite ease-in-out}
 .status-abordaje{background:#00D974;color:#000;animation:pg 1s infinite ease-in-out}
 .status-ultima{background:#e11d48;color:#fff;animation:pr .8s infinite ease-in-out}
-.status-reprogramado{background:#d97706;color:#fff;border:1px solid #f59e0b}
+.status-demorado{background:#dc2626;color:#fff}
 .status-salido{background:rgba(255,255,255,.05);color:#888}
 @keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
 @keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
@@ -58,7 +60,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <div style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="this.closest('.overlay').remove(); if(typeof ctx==='function') ctx();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -107,7 +109,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <audio id="bg-music"></audio>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-stop-audio" class="btn btn-red" style="font-weight:900">🛑 DETENER VOCEO</button>
+    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
     <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
@@ -132,21 +134,21 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
   <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;margin-bottom:15px">
     <label style="font-size:11px;font-weight:800;color:#FFB800;display:block;margin-bottom:5px">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
     <select id="preset-selector">
-<option value="">-- Seleccionar ruta del catálogo --</option>
-<option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
-<option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
-<option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
-<option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
-<option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
-<option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
-<option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
-<option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
-<option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
-<option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
-<option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
-<option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
-<option value="p13">15:00 - Ciudad Valles Completa</option>
-</select>
+      <option value="">-- Seleccionar ruta del catálogo --</option>
+      <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
+      <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
+      <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
+      <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
+      <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
+      <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
+      <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+      <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
+      <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
+      <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
+      <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
+      <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
+      <option value="p13">15:00 - Ciudad Valles Completa</option>
+    </select>
   </div>
   <form id="departure-form">
     <input type="hidden" id="dep-id"><input type="hidden" id="dep-preset-key">
@@ -157,7 +159,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
       <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
       <div><label class="lbl">Estatus Manual</label>
         <select id="dep-status">
-          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>REPROGRAMADO</option><option>SALIDO</option>
+          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
         </select></div>
     </div>
     <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
@@ -171,7 +173,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
   <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
     <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
     <table>
-      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajustar Hora (Adelanto / Postergación)</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
+      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
       <tbody id="admin-body"></tbody>
     </table>
   </div>
@@ -183,36 +185,17 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </footer>
 
 <script>
+/* ============ CONFIG ============ */
+firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
+const db=firebase.database(),auth=firebase.auth();
+const TZ='America/Matamoros';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
-let currentAudio=null;
-const aq=[];let playing=false;
-
-function ctx(){
-  if(!actx){
-    const C=window.AudioContext||window.webkitAudioContext;
-    if(C)actx=new C();
-  }
-  if(actx&&actx.state==='suspended')actx.resume();
-  return actx;
-}
-
-/* ============ FIREBASE ============ */
-let db=null, auth=null;
-try {
-  firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
-  db=firebase.database();
-  auth=firebase.auth();
-} catch(e) { console.warn("Firebase Error:", e); }
-
-const TZ='America/Matamoros';
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
 let suc=null,deps={},ready=false,srvOff=0;
 const viewSuc=()=>vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));
-const canWrite=()=>!isTV&&!!auth&&!!auth.currentUser&&!!suc;
+const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc;
 const fail=e=>{console.error(e.message);alert('No se pudo guardar: '+e.message);};
 
 const CAT={
@@ -230,8 +213,8 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* ============ FECHA / RELOJ ============ */
-if(db) db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
+/* ============ HORA DE MATAMOROS ============ */
+db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
 const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 function keyAt(ms){const p={};dtf.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return {key:`${p.year}-${p.month}-${p.day}`,min:+p.hour*60+ +p.minute,time:`${p.hour}:${p.minute}:${p.second}`};}
 const nowParts=()=>keyAt(Date.now()+srvOff);
@@ -245,25 +228,19 @@ function stat(d,diff){
   return d.status||'EN ESPERA';
 }
 
+/* ============ TÍTULOS ============ */
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
   $('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
   $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
 }
 
-/* ============ AUDIO ============ */
-const bg=$('bg-music');if(bg) bg.volume=0.2;
+/* ============ AUDIO (contexto único + cola + ducking + pánico) ============ */
+let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+let currentVoiceAudio=null;
+const bg=$('bg-music');bg.volume=0.2;
 
-function stopAllAudio(){
-  aq.length=0;
-  if(currentAudio){
-    try{currentAudio.pause();currentAudio.currentTime=0;}catch(e){}
-    currentAudio=null;
-  }
-  playing=false;
-  if($('music-vol')&&bg)bg.volume=+$('music-vol').value;
-}
-
+function ctx(){if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}if(actx&&actx.state==='suspended')actx.resume();return actx;}
 function chime(){return new Promise(res=>{
   if(muted)return res();
   try{const c=ctx();if(!c)return res();
@@ -274,34 +251,22 @@ function chime(){return new Promise(res=>{
     setTimeout(res,1800);}catch(e){res();}
 });}
 
-function enqueueAudio(k,m,isManual=false){
-  if(isManual) stopAllAudio();
-  aq.push([k,m]);
-  if(!playing)runQueue();
-}
-
-async function runQueue(){
-  playing=true;
-  while(aq.length){
-    const[k,m]=aq.shift();
-    await playOne(k,m);
-  }
-  playing=false;
-  if($('music-vol')&&bg)bg.volume=+$('music-vol').value;
-}
+const aq=[];let playing=false;
+function enqueueAudio(k,m){aq.push([k,m]);if(!playing)runQueue();}
+async function runQueue(){playing=true;while(aq.length){const[k,m]=aq.shift();await playOne(k,m);}playing=false;}
 
 function playOne(key,mode){return new Promise(async res=>{
   if(muted)return res();
   const vol=+$('music-vol').value;
-  if(bg&&!bg.paused)bg.volume=vol*0.15;
+  if(!bg.paused)bg.volume=vol*0.15; // Atenuación automática (Ducking)
   await chime();
-  
   const a=new Audio(`audios/${key}_${mode}.mp3`);
-  currentAudio=a;
+  currentVoiceAudio=a;
   let done=false;
   const end=()=>{
     if(done)return;done=true;clearTimeout(to);
-    currentAudio=null;
+    currentVoiceAudio=null;
+    bg.volume=aq.length?vol*.15:vol; // Restauración de volumen
     res();
   };
   const to=setTimeout(end,60000);
@@ -310,17 +275,34 @@ function playOne(key,mode){return new Promise(async res=>{
   a.play().catch(end);
 });}
 
+/* BOTÓN PÁNICO: Detiene inmediatamente audio actual y limpia la cola */
+function panicStop(){
+  aq.length=0;
+  if(currentVoiceAudio){
+    currentVoiceAudio.pause();
+    currentVoiceAudio.currentTime=0;
+    currentVoiceAudio=null;
+  }
+  playing=false;
+  const vol=+$('music-vol').value;
+  if(!bg.paused)bg.volume=vol;
+}
+
+function unlockAudio(){
+  $('audio-start-overlay').style.display='none';ctx();
+  setInterval(()=>{try{const c=ctx(),o=c.createOscillator(),g=c.createGain();g.gain.value=.0001;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.1);}catch(e){}},240000);
+}
+
 function updateMuteUI(){
   const b=$('btn-mute-local');
-  if(!b)return;
   b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
-/* ============ MÚSICA ============ */
+/* ============ MÚSICA AMBIENTAL ============ */
 let playlist=[],track=0,objUrl=null;
 function playTrack(i){
-  if(!playlist.length||!bg)return;
+  if(!playlist.length)return;
   if(objUrl)URL.revokeObjectURL(objUrl);
   const f=playlist[i];objUrl=URL.createObjectURL(f);bg.src=objUrl;
   $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');$('btn-music').disabled=false;
@@ -328,12 +310,11 @@ function playTrack(i){
   $('btn-music').textContent='⏸️';$('btn-music').className='btn btn-green';
 }
 const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
-if(bg) bg.onended=()=>step(1);
+bg.onended=()=>step(1);
 
-/* ============ DATOS ============ */
+/* ============ DATOS Y SINCRONIZACIÓN ============ */
 let refs=[];
 function attach(s){
-  if(!db) return;
   refs.forEach(r=>r.off());deps={};ready=false;
   const rd=db.ref(s+'/deps'),rv=db.ref(s+'/voice');refs=[rd,rv];
   let lastTs=0;
@@ -341,13 +322,12 @@ function attach(s){
     const next={};snap.forEach(c=>{const v=c.val();if(v&&typeof v==='object'){v.id=c.key;next[c.key]=v;}});
     deps=next;ready=true;render();autoCatalog();
   },err=>console.error('Lectura Firebase:',err.message));
-  
   rv.on('value',snap=>{
     const d=snap.val();
     if(!d||!d.timestamp||d.timestamp<=lastTs)return;
     lastTs=d.timestamp;
     if(Date.now()+srvOff-d.timestamp>15000)return;
-    enqueueAudio(d.key,d.mode,true);
+    enqueueAudio(d.key,d.mode);
   });
   render();
 }
@@ -364,19 +344,22 @@ async function autoCatalog(){
 }
 
 function loadCatalog(){
-  if(!db) return Promise.resolve();
   const day=nowParts().key,o={};
   Object.keys(CAT).forEach(k=>o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day,delay:0});
   return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
 }
 
-/* ============ RELOJ ============ */
+/* ============ RELOJ & DETECCIÓN DE VOCEO (FIRED POR ID) ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
+
 function autoVoice(d,diff,n){
   const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
-  const k=`${n.key}|${d.id}|${mode}`;if(fired.has(k))return;
-  fired.add(k);localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.startsWith(n.key))));
-  enqueueAudio(d.presetKey||'p01',mode,false);
+  // Registro único basado en ID de la corrida y fecha (no en la hora recalculada)
+  const k=`${d.id}|${mode}|${d.day||n.key}`;
+  if(fired.has(k))return;
+  fired.add(k);
+  localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.endsWith(n.key))));
+  enqueueAudio(d.presetKey||'p01',mode);
 }
 
 function tick(){
@@ -394,11 +377,10 @@ function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
   if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&st.includes('REPROGRAMADO'))return`<span class="badge-status status-reprogramado">${esc(st)}</span>`;
+  if(st&&st.includes('DEMORADO'))return`<span class="badge-status status-demorado">${esc(st)}</span>`;
   if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
-
 const cleanScales=s=>(s||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');
 
 function tvRow(d,c){const sc=cleanScales(d.scales);return`<td style="font-size:24px;font-weight:900;font-family:monospace">${esc(d.time)}</td>
@@ -411,9 +393,20 @@ function adminRow(d){return`<td><strong>${esc(d.time)}</strong></td>
 <td><div><strong>${esc(d.destination)}</strong></div><div style="font-size:10px;color:#93c5fd">MP3: ${esc(d.presetKey||'Sin clave')}</div></td>
 <td class="c"><input type="text" class="inline-bus-input" value="${esc(d.bus||'')}" placeholder="---"></td>
 <td class="c">${badge(d._st)}</td>
-<td><div class="flex">
-  ${[-60,-30,-5,5,30,60].map(v=>`<button class="btn btn-delay" data-act="timeshift" data-v="${v}">${v<0?v+'m':'+'+v+'m'}</button>`).join('')}
-</div></td>
+<td>
+  <div class="flex" style="flex-direction:column;gap:2px">
+    <div class="flex">
+      <button class="btn btn-advance" data-act="time" data-v="-60" title="Adelantar 1 hora">-1h</button>
+      <button class="btn btn-advance" data-act="time" data-v="-30" title="Adelantar 30 minutos">-30m</button>
+      <button class="btn btn-advance" data-act="time" data-v="-5" title="Adelantar 5 minutos">-5m</button>
+    </div>
+    <div class="flex">
+      <button class="btn btn-delay" data-act="time" data-v="5" title="Demorar 5 minutos">+5m</button>
+      <button class="btn btn-delay" data-act="time" data-v="30" title="Demorar 30 minutos">+30m</button>
+      <button class="btn btn-delay" data-act="time" data-v="60" title="Demorar 1 hora">+1h</button>
+    </div>
+  </div>
+</td>
 <td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>
 <td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>`;}
 
@@ -445,14 +438,15 @@ function render(){
   if(canWrite())syncRows(ab,list,adminRow);
 }
 
-/* ============ ACCIONES ============ */
+/* ============ ACCIONES DEL USUARIO ============ */
 const dref=id=>db.ref(`${suc}/deps/${id}`);
+
 $('admin-body').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||!canWrite())return;
   const id=b.closest('tr').dataset.id,d=deps[id];if(!d)return;
   const act=b.dataset.act;
   if(act==='voz')db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
-  else if(act==='timeshift')shiftDepartureTime(d,+b.dataset.v);
+  else if(act==='time')adjustTime(d,+b.dataset.v);
   else if(act==='edit')editDeparture(d);
   else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
 });
@@ -462,28 +456,48 @@ $('admin-body').addEventListener('change',e=>{
   dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
 });
 
-function shiftDepartureTime(d,addMinutes){
+/* RECALCULA HORA, MANEJA DEMORAS/ADELANTOS Y REORGANIZA EN FIREBASE */
+function adjustTime(d,deltaMinutes){
   const[h,m]=d.time.split(':').map(Number);
-  let totalMin=h*60+m+addMinutes;
-  if(totalMin<0)totalMin+=1440;
-  totalMin%=1440;
-  const newTime=`${String(Math.floor(totalMin/60)).padStart(2,'0')}:${String(totalMin%60).padStart(2,'0')}`;
-  const newStatus=addMinutes>0?'REPROGRAMADO':'EN ESPERA';
-  dref(d.id).update({time:newTime,status:newStatus}).catch(fail);
+  let totalMins=h*60+m+deltaMinutes;
+  if(totalMins<0)totalMins+=1440;
+  if(totalMins>=1440)totalMins%=1440;
+
+  const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
+  const newM=String(totalMins%60).padStart(2,'0');
+  const newTime=`${newH}:${newM}`;
+
+  let updates={time:newTime};
+  let newDelay=(d.delay||0)+deltaMinutes;
+  if(newDelay<0)newDelay=0;
+  updates.delay=newDelay;
+
+  if(deltaMinutes>0){
+    updates.status=`DEMORADO (+${newDelay}m)`;
+  }else{
+    if(newDelay===0&&d.status&&d.status.startsWith('DEMORADO')){
+      updates.status='EN ESPERA';
+    }
+  }
+
+  dref(d.id).update(updates).catch(fail);
 }
 
 function editDeparture(d){
   $('dep-id').value=d.id;$('dep-preset-key').value=d.presetKey||'p01';
   $('dep-time').value=d.time;$('dep-destination').value=d.destination;
   $('dep-scales').value=d.scales\vert{}\vert{}'';$('dep-bus').value=d.bus||'';
-  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'REPROGRAMADO';
+  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'DEMORADO';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function resetForm(){$('departure-form').reset();$('dep-id').value='';$('dep-preset-key').value='';$('preset-selector').value='';}$('departure-form').addEventListener('submit',e=>{
+function resetForm(){$('departure-form').reset();$('dep-id').value='';$('dep-preset-key').value='';$('preset-selector').value='';}
+
+$('departure-form').addEventListener('submit',e=>{
   e.preventDefault();if(!canWrite())return;
   const id=$('dep-id').value||('c'+Date.now()),old=deps[id];
   let status=$('dep-status').value;
+  if(status==='DEMORADO'&&old&&old.status&&old.status.startsWith('DEMORADO'))status=old.status;
   dref(id).set({presetKey:$('dep-preset-key').value||'p01',time:$('dep-time').value,destination:$('dep-destination').value.trim(),
     scales:cleanScales($('dep-scales').value),bus:$('dep-bus').value.trim(),status,sucursal:suc,
     day:old?.day||nowParts().key,delay:old?.delay||0}).then(resetForm).catch(fail);
@@ -501,15 +515,13 @@ $('btn-clear-all').onclick=()=>{
 };
 $('btn-reset').onclick=resetForm;
 
-/* ============ AUTH ============ */
+/* ============ LOGIN / VISTAS ============ */
 const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
-if(auth){
-  auth.onAuthStateChanged(u=>{
-    const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
-    if(viewSuc()!==prev)attach(viewSuc());
-    updateHeaderTitles();render();autoCatalog();
-  });
-}
+auth.onAuthStateChanged(u=>{
+  const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
+  if(viewSuc()!==prev)attach(viewSuc());
+  updateHeaderTitles();render();autoCatalog();
+});
 
 function switchTab(tab){
   if(tab==='admin'&&!canWrite())return;
@@ -528,21 +540,20 @@ function doLogin(){
   const u=$('login-user-input').value.trim().toLowerCase(),p=$('login-pass-input').value.trim();
   let em=u;
   if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com';if(u==='terminalof2')em='terminalof2@transpais.com';}
-  if(auth){
-    auth.signInWithEmailAndPassword(em,p).then(()=>{
-      suc=sucFromEmail(em);
-      $('pin-modal-overlay').classList.add('hidden');
-      attach(viewSuc());updateHeaderTitles();switchTab('admin');
-    }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
-  }
+  auth.signInWithEmailAndPassword(em,p).then(()=>{
+    suc=sucFromEmail(em);
+    $('pin-modal-overlay').classList.add('hidden');
+    attach(viewSuc());updateHeaderTitles();switchTab('admin');
+  }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
 }
 
-/* ============ LISTENERS ============ */
+/* ============ EVENTOS ============ */
+$('btn-unlock').onclick=unlockAudio;
 document.body.addEventListener('click',()=>ctx());
 $('btn-tab-screen').onclick=()=>switchTab('screen');$('btn-tab-admin').onclick=openPin;
 $('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');$('btn-login-ok').onclick=doLogin;
-$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});$('btn-chime').onclick=()=>chime();
-if($('btn-stop-audio'))$('btn-stop-audio').onclick=stopAllAudio;
+$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('btn-chime').onclick=()=>chime();$('btn-panic').onclick=panicStop;
 $('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};$('btn-folder').onclick=()=>$('folder-input').click();$('folder-input').onchange=e=>{
   playlist=[...e.target.files].filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name));
   if(playlist.length){track=0;playTrack(0);}else alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
@@ -550,10 +561,10 @@ $('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_lo
 $('btn-prev').onclick=()=>step(-1);
 $('btn-next').onclick=()=>step(1);$('btn-music').onclick=()=>{
   const b=$('btn-music');
-  if(bg&&bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
-  else if(bg){bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
+  if(bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
+  else{bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
 };
-if($('music-vol'))$('music-vol').oninput=e=>{if(bg) bg.volume=+e.target.value;};
+$('music-vol').oninput=e=>{bg.volume=+e.target.value;};
 
 if(isTV)$('control-bar').style.display='none';
 updateMuteUI();updateHeaderTitles();attach(viewSuc());tick();
