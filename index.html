@@ -1,1139 +1,498 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transpais FIDS - Sistema de Información a Pasajeros</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #000B18;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      user-select: none;
-      overflow-x: hidden;
-    }
-
-    .glass-header {
-      background: rgba(0, 20, 45, 0.95);
-      border-bottom: 3px solid #00A859;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    .brand-logo {
-      background: #ffffff;
-      padding: 8px 20px;
-      border-radius: 12px;
-      font-weight: 900;
-      font-style: italic;
-      font-size: 28px;
-      color: #002A5C;
-      letter-spacing: -1px;
-    }
-
-    .glass-card {
-      background: rgba(0, 30, 68, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      margin: 20px 30px;
-      flex-grow: 1;
-      overflow-x: auto;
-    }
-
-    .control-bar {
-      background: rgba(0, 0, 0, 0.4);
-      padding: 12px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 11px;
-      text-transform: uppercase;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .btn-green { background: #00A859; color: #ffffff; }
-    .btn-green:hover { background: #008f4b; }
-    .btn-dark { background: rgba(255, 255, 255, 0.1); color: #cccccc; }
-    .btn-dark:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
-    .btn-blue { background: #002A5C; color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
-    .btn-arrive { background: #d97706; color: #ffffff; font-weight: 900; }
-    .btn-arrive:hover { background: #b45309; }
-    .btn-delay { background: #dc2626; color: #ffffff; font-weight: 800; padding: 5px 8px; font-size: 10px; }
-    .btn-delay:hover { background: #991b1b; }
-
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-
-    th {
-      background: rgba(0, 20, 45, 0.9);
-      color: #93c5fd;
-      padding: 14px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-
-    .badge-status {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 900;
-      text-transform: uppercase;
-      display: inline-block;
-    }
-
-    .status-espera { background: rgba(23, 162, 184, 0.2); color: #17a2b8; border: 1px solid rgba(23, 162, 184, 0.4); }
-    .status-etiq { background: #FFB800; color: #000; animation: pulseGlow 1.4s infinite ease-in-out; }
-    .status-abordaje { background: #00D974; color: #000; animation: pulseGlow 1.0s infinite ease-in-out; }
-    .status-ultima { background: #e11d48; color: #fff; animation: pulseGlowRed 0.8s infinite ease-in-out; }
-    .status-demorado { background: #dc2626; color: #fff; font-weight: 900; }
-    .status-salido { background: rgba(255, 255, 255, 0.05); color: #888; }
-
-    @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 184, 0, 0.6); }
-      50% { transform: scale(0.96); box-shadow: 0 0 2px rgba(255, 184, 0, 0.2); }
-    }
-
-    @keyframes pulseGlowRed {
-      0%, 100% { transform: scale(1.03); box-shadow: 0 0 15px rgba(225, 29, 72, 0.9); }
-      50% { transform: scale(0.96); box-shadow: 0 0 2px rgba(225, 29, 72, 0.3); }
-    }
-
-    input, select, textarea {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 10px;
-      color: #fff;
-      font-family: inherit;
-      width: 100%;
-    }
-
-    .inline-bus-input {
-      background: rgba(255, 184, 0, 0.15);
-      border: 1px solid #FFB800;
-      color: #fff;
-      font-weight: 800;
-      text-align: center;
-      width: 80px;
-      padding: 5px;
-      border-radius: 6px;
-    }
-
-    .grid-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .ticker-footer {
-      background: #00142D;
-      border-top: 2px solid #00A859;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .ticker-title {
-      background: #00A859;
-      color: #fff;
-      padding: 0 20px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      font-weight: 900;
-      font-size: 11px;
-      white-space: nowrap;
-    }
-
-    .ticker-content {
-      white-space: nowrap;
-      animation: tickerAnimation 30s linear infinite;
-      font-size: 12px;
-      color: #93c5fd;
-    }
-
-    @keyframes tickerAnimation {
-      0% { transform: translate3d(100%, 0, 0); }
-      100% { transform: translate3d(-100%, 0, 0); }
-    }
-
-    .audio-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 11, 24, 0.92);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .audio-overlay-card {
-      background: rgba(0, 30, 68, 0.9);
-      border: 2px solid #00A859;
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 500px;
-      box-shadow: 0 0 50px rgba(0, 168, 89, 0.4);
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 9998;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-card {
-      background: #00142D;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 16px;
-      padding: 30px;
-      width: 360px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-    }
-
-    .hidden { display: none !important; }
-  </style>
-
-  <!-- FIREBASE SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transpais FIDS - Sistema de Información a Pasajeros</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
+.glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-x:auto}
+.control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
+.btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
+.btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
+.btn-red{background:rgba(230,57,70,.3);color:#f87171}
+.btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
+.btn-arrive{background:#d97706;color:#fff;font-weight:900}
+.btn-delay{background:#dc2626;color:#fff;padding:5px 8px;font-size:10px}.btn-delay:hover{background:#991b1b}
+table{width:100%;border-collapse:collapse;text-align:left}
+th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
+td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.c{text-align:center}
+.badge-status{padding:6px 12px;border-radius:20px;font-size:10px;font-weight:900;text-transform:uppercase;display:inline-block}
+.status-espera{background:rgba(23,162,184,.2);color:#17a2b8;border:1px solid rgba(23,162,184,.4)}
+.status-etiq{background:#FFB800;color:#000;animation:pg 1.4s infinite ease-in-out}
+.status-abordaje{background:#00D974;color:#000;animation:pg 1s infinite ease-in-out}
+.status-ultima{background:#e11d48;color:#fff;animation:pr .8s infinite ease-in-out}
+.status-demorado{background:#dc2626;color:#fff}
+.status-salido{background:rgba(255,255,255,.05);color:#888}
+@keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
+@keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
+input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px;color:#fff;font-family:inherit;width:100%}
+.inline-bus-input{background:rgba(255,184,0,.15);border:1px solid #FFB800;font-weight:800;text-align:center;width:80px;padding:5px;border-radius:6px}
+.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
+.lbl{font-size:11px;font-weight:700;color:#93c5fd}
+.flex{display:flex;gap:4px;justify-content:center}
+.ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden}
+.ticker-title{background:#00A859;padding:0 20px;height:100%;display:flex;align-items:center;font-weight:900;font-size:11px;white-space:nowrap}
+.ticker-content{white-space:nowrap;animation:tk 30s linear infinite;font-size:12px;color:#93c5fd}
+@keyframes tk{0%{transform:translate3d(100%,0,0)}100%{transform:translate3d(-100%,0,0)}}
+.overlay{position:fixed;inset:0;background:rgba(0,11,24,.92);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}
+.modal-overlay{z-index:9998;background:rgba(0,0,0,.85)}
+.card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
+.modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
+.hidden{display:none!important}
+</style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body onclick="startOfficeAudioSystem()">
+<body>
 
-  <!-- MODAL DE ACTIVACIÓN INICIAL DE AUDIO PARA TV -->
-  <div id="audio-start-overlay" class="audio-overlay">
-    <div class="audio-overlay-card">
-      <div style="font-size: 48px; margin-bottom: 15px;">🔊</div>
-      <h2 style="font-size: 24px; font-weight: 900; color: #00D974; margin-bottom: 10px;">SISTEMA FIDS TRANSPAIS</h2>
-      <p style="font-size: 14px; color: #93c5fd; margin-bottom: 25px;">
-        Haz clic para habilitar el motor de audios MP3 en este navegador.
-      </p>
-      <button class="btn btn-green" style="padding: 15px 30px; font-size: 14px; border-radius: 12px; width: 100%;" onclick="enableTVAudioUnlock()">
-        ▶️ ACTIVAR SISTEMA DE VOCEO
-      </button>
+<div id="audio-start-overlay" class="overlay">
+  <div class="card">
+    <div style="font-size:48px;margin-bottom:15px">🔊</div>
+    <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
+    <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+  </div>
+</div>
+
+<div id="pin-modal-overlay" class="overlay modal-overlay hidden">
+  <div class="modal-card">
+    <h3 style="font-size:16px;font-weight:900;color:#FFB800;margin-bottom:10px">ACCESO A TAQUILLA</h3>
+    <p style="font-size:12px;color:#ccc;margin-bottom:15px">Ingrese Usuario y Contraseña:</p>
+    <input type="text" id="login-user-input" style="margin-bottom:10px" placeholder="Usuario / Correo">
+    <input type="password" id="login-pass-input" style="margin-bottom:15px" placeholder="Contraseña">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-dark" style="flex:1;justify-content:center" id="btn-login-cancel">Cancelar</button>
+      <button class="btn btn-green" style="flex:1;justify-content:center" id="btn-login-ok">Acceder</button>
+    </div>
+    <div id="pin-error-msg" style="color:#f43f5e;font-size:11px;margin-top:10px;font-weight:700" class="hidden">❌ Credenciales Incorrectas</div>
+  </div>
+</div>
+
+<header class="glass-header">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="brand-logo">TRANSPAIS®</div>
+    <div>
+      <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
+      <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
     </div>
   </div>
-
-  <!-- MODAL DE LOGIN DE TAQUILLA -->
-  <div id="pin-modal-overlay" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h3 style="font-size: 16px; font-weight: 900; color: #FFB800; margin-bottom: 10px;">ACCESO A TAQUILLA</h3>
-      <p style="font-size: 12px; color: #cccccc; margin-bottom: 15px;">Ingrese Usuario y Contraseña:</p>
-      
-      <input type="text" id="login-user-input" style="font-size: 14px; margin-bottom: 10px;" placeholder="Usuario / Correo">
-      <input type="password" id="login-pass-input" style="font-size: 14px; margin-bottom: 15px;" placeholder="Contraseña">
-      
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-dark" style="flex: 1;" onclick="closePinModal()">Cancelar</button>
-        <button class="btn btn-green" style="flex: 1;" onclick="validateUserLogin()">Acceder</button>
-      </div>
-      <div id="pin-error-msg" style="color: #f43f5e; font-size: 11px; margin-top: 10px; font-weight: 700;" class="hidden">
-        ❌ Credenciales Incorrectas
-      </div>
-    </div>
+  <div style="text-align:right;background:rgba(0,0,0,.4);padding:8px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1)">
+    <div id="clock-time" style="font-size:28px;font-weight:900;font-family:monospace">00:00:00</div>
+    <div id="clock-date" style="font-size:11px;color:#93c5fd">Cargando...</div>
   </div>
+</header>
 
-  <!-- HEADER -->
-  <header class="glass-header">
-    <div style="display: flex; align-items: center; gap: 20px;">
-      <div class="brand-logo">TRANSPAIS®</div>
-      <div>
-        <h1 id="header-terminal-title" style="font-size: 22px; font-weight: 900; letter-spacing: 1px;">TERMINAL PEDRO CÁRDENAS</h1>
-        <div id="header-terminal-sub" style="font-size: 11px; color: #00D974; font-weight: 700; margin-top: 3px;">
-          MATAMOROS – OFICINA DE PASO
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align: right; background: rgba(0,0,0,0.4); padding: 8px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-      <div id="clock-time" style="font-size: 28px; font-weight: 900; font-family: monospace;">00:00:00</div>
-      <div id="clock-date" style="font-size: 11px; color: #93c5fd;">Cargando...</div>
-    </div>
-  </header>
-
-  <!-- BARRA CONTROL DE VISTAS Y MÚSICA -->
-  <div class="control-bar">
-    <div style="display: flex; gap: 10px;">
-      <button id="btn-tab-screen" class="btn btn-green" onclick="switchTab('screen')">Pantalla Sala de Espera</button>
-      <button id="btn-tab-admin" class="btn btn-dark" onclick="openPinModal()">Panel Taquilla / Operaciones</button>
-    </div>
-
-    <!-- REPRODUCTOR DE MÚSICA CON DUCKING -->
-    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.4); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-      <label style="font-size: 11px; color: #93c5fd; font-weight: 800;">🎵 MÚSICA AMBIENTAL:</label>
-      <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" onchange="loadMusicFolder(event)" style="display: none;">
-      <button class="btn btn-blue" onclick="document.getElementById('folder-input').click()" title="Seleccionar carpeta con MP3">📁 Carpeta</button>
-      <button class="btn btn-dark" onclick="prevSong()" title="Anterior">⏮️</button>
-      <button id="btn-music" class="btn btn-dark" onclick="toggleMusic()" disabled>▶️</button>
-      <button class="btn btn-dark" onclick="nextSong()" title="Siguiente">⏭️</button>
-      <div id="song-title" style="font-size: 11px; color: #FFB800; font-weight: 700; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sin carpeta</div>
-      <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" onchange="setMusicVolume(this.value)" style="width: 60px;" title="Volumen de Música">
-      <audio id="bg-music"></audio>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <button id="btn-mute-local" class="btn btn-green" onclick="toggleLocalMute()">🔊 AUDIO COMPU: ACTIVADO</button>
-      <div id="audio-badge" style="background: rgba(0,168,89,0.2); color: #00D974; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid rgba(0,217,116,0.3);">
-        ✓ REPRODUCTOR MP3 NUBE
-      </div>
-      <button class="btn btn-blue" onclick="testChimeSound()">Probador Tono</button>
-    </div>
+<div class="control-bar" id="control-bar">
+  <div style="display:flex;gap:10px">
+    <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
+    <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
   </div>
+  <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1)">
+    <label class="lbl" style="font-weight:800">🎵 MÚSICA AMBIENTAL:</label>
+    <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" style="display:none">
+    <button class="btn btn-blue" id="btn-folder">📁 Carpeta</button>
+    <button class="btn btn-dark" id="btn-prev">⏮️</button>
+    <button id="btn-music" class="btn btn-dark" disabled>▶️</button>
+    <button class="btn btn-dark" id="btn-next">⏭️</button>
+    <div id="song-title" style="font-size:11px;color:#FFB800;font-weight:700;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sin carpeta</div>
+    <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" style="width:60px">
+    <audio id="bg-music"></audio>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
+    <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
+    <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
+  </div>
+</div>
 
-  <!-- VISTA 1: SALA DE ESPERA (PÚBLICA) -->
-  <main id="view-screen" class="glass-card">
+<main id="view-screen" class="glass-card">
+  <table>
+    <thead><tr><th>Hora</th><th>Destino / Escalas</th><th class="c">Autobús</th><th class="c">Punto de Abordaje</th><th class="c">Estatus</th></tr></thead>
+    <tbody id="fids-body"></tbody>
+  </table>
+</main>
+
+<main id="view-admin" class="glass-card hidden">
+  <div style="background:rgba(0,168,89,.15);border:1px solid #00D974;padding:14px 18px;border-radius:12px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <div>
+      <h3 style="color:#00D974;font-size:14px;font-weight:900;margin-bottom:2px">⚡ ITINERARIO GENERAL DEL DÍA</h3>
+      <p style="font-size:11px;color:#93c5fd">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
+    </div>
+    <button class="btn btn-green" id="btn-load-all">🚀 CARGAR TODAS LAS SALIDAS</button>
+  </div>
+  <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;margin-bottom:15px">
+    <label style="font-size:11px;font-weight:800;color:#FFB800;display:block;margin-bottom:5px">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
+    <select id="preset-selector">
+<option value="">-- Seleccionar ruta del catálogo --</option>
+<option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
+<option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
+<option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
+<option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
+<option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
+<option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
+<option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+<option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
+<option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
+<option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
+<option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
+<option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
+<option value="p13">15:00 - Ciudad Valles Completa</option>
+</select>
+  </div>
+  <form id="departure-form">
+    <input type="hidden" id="dep-id"><input type="hidden" id="dep-preset-key">
+    <div class="grid-form">
+      <div><label class="lbl">Hora Programada</label><input type="time" id="dep-time" required></div>
+      <div><label class="lbl">Destino Principal</label><input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required></div>
+      <div><label class="lbl">Escalas Principales</label><input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante"></div>
+      <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
+      <div><label class="lbl">Estatus Manual</label>
+        <select id="dep-status">
+          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
+        </select></div>
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+      <button type="button" class="btn btn-dark btn-red" id="btn-clear-all">Limpiar Pantalla del Día</button>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-dark" id="btn-reset">Limpiar Formulario</button>
+        <button type="submit" class="btn btn-green">Guardar / Publicar Corrida</button>
+      </div>
+    </div>
+  </form>
+  <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
+    <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
     <table>
-      <thead>
-        <tr>
-          <th>Hora</th>
-          <th>Destino / Escalas</th>
-          <th style="text-align: center;">Autobús</th>
-          <th style="text-align: center;">Punto de Abordaje</th>
-          <th style="text-align: center;">Estatus</th>
-        </tr>
-      </thead>
-      <tbody id="fids-body"></tbody>
+      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Demoras (1 Clic)</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
+      <tbody id="admin-body"></tbody>
     </table>
-  </main>
-
-  <!-- VISTA 2: PANEL DE CONTROL TAQUILLA -->
-  <main id="view-admin" class="glass-card hidden">
-    
-    <!-- BOTONES DE CARGA Y SELECTOR DE ITINERARIOS -->
-    <div style="padding-top: 5px;">
-      
-      <!-- CARGA MASIVA DEL DÍA -->
-      <div style="background: rgba(0,168,89,0.15); border: 1px solid #00D974; padding: 14px 18px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h3 style="color: #00D974; font-size: 14px; font-weight: 900; margin-bottom: 2px;">⚡ ITINERARIO GENERAL DEL DÍA</h3>
-          <p style="font-size: 11px; color: #93c5fd;">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
-        </div>
-        <button class="btn btn-green" onclick="loadAllPresetDepartures()">🚀 CARGAR TODAS LAS SALIDAS</button>
-      </div>
-
-      <!-- SELECTOR INDIVIDUAL DE RUTAS -->
-      <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
-        <label style="font-size: 11px; font-weight: 800; color: #FFB800; display: block; margin-bottom: 5px;">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
-        <select id="preset-selector" onchange="loadPresetDeparture(this.value)">
-          <option value="">-- Seleccionar ruta del catálogo --</option>
-          <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
-          <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
-          <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
-          <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
-          <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
-          <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
-          <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
-          <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
-          <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
-          <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
-          <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
-          <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
-          <option value="p13">15:00 - Ciudad Valles Completa</option>
-        </select>
-      </div>
-
-      <!-- FORMULARIO DE CAPTURA/EDICIÓN -->
-      <form id="departure-form" onsubmit="saveDeparture(event)">
-        <input type="hidden" id="dep-id">
-        <input type="hidden" id="dep-preset-key">
-
-        <div class="grid-form">
-          <div>
-            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Hora Programada</label>
-            <input type="time" id="dep-time" required>
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Destino Principal</label>
-            <input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required>
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Escalas Principales</label>
-            <input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 700; color: #FFB800;">No. Autobús</label>
-            <input type="text" id="dep-bus" placeholder="Ej. 9548" style="border: 1px solid #FFB800; background: rgba(255,184,0,0.1);">
-          </div>
-          <div>
-            <label style="font-size: 11px; font-weight: 700; color: #93c5fd;">Estatus Manual</label>
-            <select id="dep-status">
-              <option value="EN ESPERA">EN ESPERA</option>
-              <option value="ETIQUETANDO PASAJE">ETIQUETANDO PASAJE</option>
-              <option value="EN ABORDAJE">EN ABORDAJE</option>
-              <option value="ÚLTIMA LLAMADA">ÚLTIMA LLAMADA</option>
-              <option value="DEMORADO">DEMORADO</option>
-              <option value="SALIDO">SALIDO</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="margin-top: 12px; text-align: right; display: flex; justify-content: space-between; align-items: center;">
-          <button type="button" class="btn btn-dark" style="background: rgba(230,57,70,0.3); color: #f87171;" onclick="clearAllDepartures()">Limpiar Pantalla del Día</button>
-          <div style="display: flex; gap: 8px;">
-            <button type="button" class="btn btn-dark" onclick="resetForm()">Limpiar Formulario</button>
-            <button type="submit" class="btn btn-green">Guardar / Publicar Corrida</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <!-- TABLA DE CONTROL OPERATIVO PARA TAQUILLA -->
-    <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-      <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 12px;">CORRIDAS ACTIVAS EN PANTALLA</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Destino / Ruta</th>
-            <th style="text-align: center;">Unidad</th>
-            <th style="text-align: center;">Estatus</th>
-            <th style="text-align: center;">Demoras (1 Clic)</th>
-            <th style="text-align: center;">Voceo MP3 Manual</th>
-            <th style="text-align: center;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="admin-body"></tbody>
-      </table>
-    </div>
-  </main>
-
-  <!-- CINTILLO FOOTER -->
-  <footer class="ticker-footer">
-    <div class="ticker-title">AVISO DE EQUIPAJE</div>
-    <div style="overflow: hidden; width: 100%;">
-      <div id="ticker-text-content" class="ticker-content">
-        🧳 <strong>TRANSPAIS:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    // INICIALIZACIÓN DE FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
-      databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const db = firebase.database();
-    const auth = firebase.auth();
-    const urlParams = new URLSearchParams(window.location.search);
-
-    let currentVista = urlParams.get('vista') || 'screen';
-    let loggedSucursal = null;
-
-    if (currentVista.startsWith('tv')) {
-      window.addEventListener('DOMContentLoaded', () => {
-        switchTab('screen');
-        const controlBar = document.querySelector('.control-bar');
-        if (controlBar) controlBar.style.display = 'none';
-      });
-    }
-
-    function updateHeaderTitles() {
-      const mainTitle = document.getElementById('header-terminal-title');
-      const subTitle = document.getElementById('header-terminal-sub');
-      const tickerText = document.getElementById('ticker-text-content');
-
-      if (currentVista === 'tvcentral' || loggedSucursal === 'central') {
-        if (mainTitle) mainTitle.textContent = "CENTRAL DE AUTOBUSES";
-        if (subTitle) subTitle.textContent = "MATAMOROS – TERMINAL CENTRAL";
-        if (tickerText) tickerText.innerHTML = "🧳 <strong>CENTRAL DE AUTOBUSES:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.";
-      } else {
-        if (mainTitle) mainTitle.textContent = "TERMINAL PEDRO CÁRDENAS";
-        if (subTitle) subTitle.textContent = "MATAMOROS – OFICINA DE PASO";
-        if (tickerText) tickerText.innerHTML = "🧳 <strong>OFICINA PEDRO CÁRDENAS:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.";
-      }
-    }
-
-    // CATÁLOGO COMPLETO DE RUTAS P01 - P13
-    const presetCatalog = {
-      p01: { key: "p01", time: "05:15", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache" },
-      p02: { key: "p02", time: "07:35", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira" },
-      p03: { key: "p03", time: "08:00", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p04: { key: "p04", time: "09:15", destination: "Ciudad Valles", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p05: { key: "p05", time: "10:00", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira" },
-      p06: { key: "p06", time: "10:45", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
-      p07: { key: "p07", time: "11:45", destination: "Ciudad Valles", scales: "San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos" },
-      p08: { key: "p08", time: "13:30", destination: "San Luis Potosí", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula" },
-      p09: { key: "p09", time: "13:45", destination: "Tampico - Madero", scales: "San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira" },
-      p10: { key: "p10", time: "18:45", destination: "Tampico x Victoria", scales: "San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico" },
-      p11: { key: "p11", time: "22:45", destination: "Ciudad Valles", scales: "Ciudad Victoria, Ciudad Mante" },
-      p12: { key: "p12", time: "23:15", destination: "Tampico - Madero", scales: "Estación Manuel, Puente Altamira Las Piñas" },
-      p13: { key: "p13", time: "15:00", destination: "Ciudad Valles Completa", scales: "San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos" }
-    };
-
-    let departures = [];
-    let isLocalMuted = localStorage.getItem("transpais_local_muted") === "true";
-    let audioSystemReady = false;
-
-    function enableTVAudioUnlock() {
-      const overlay = document.getElementById('audio-start-overlay');
-      if (overlay) overlay.style.display = 'none';
-
-      try { startOfficeAudioSystem(); } catch(e) {}
-
-      setInterval(() => {
-        try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (AudioCtx) {
-            const dummyCtx = new AudioCtx();
-            const osc = dummyCtx.createOscillator();
-            const gain = dummyCtx.createGain();
-            gain.gain.value = 0.0001; 
-            osc.connect(gain);
-            gain.connect(dummyCtx.destination);
-            osc.start();
-            osc.stop(dummyCtx.currentTime + 0.1);
-          }
-        } catch(e) {}
-      }, 240000);
-    }
-
-    function updateMuteButtonUI() {
-      const btn = document.getElementById('btn-mute-local');
-      if (!btn) return;
-      if (isLocalMuted) {
-        btn.textContent = "🔇 AUDIO COMPU: SILENCIADO";
-        btn.className = "btn btn-dark";
-        btn.style.background = "rgba(225,29,72,0.2)";
-        btn.style.color = "#f43f5e";
-      } else {
-        btn.textContent = "🔊 AUDIO COMPU: ACTIVADO";
-        btn.className = "btn btn-green";
-      }
-    }
-
-    function toggleLocalMute() {
-      isLocalMuted = !isLocalMuted;
-      localStorage.setItem("transpais_local_muted", isLocalMuted);
-      updateMuteButtonUI();
-    }
-
-    // REPRODUCTOR DE MÚSICA Y DUCKING
-    let playlist = [];
-    let currentTrackIndex = 0;
-    let currentObjectUrl = null;
-    const bgMusic = document.getElementById('bg-music');
-
-    function loadMusicFolder(event) {
-      const files = Array.from(event.target.files);
-      playlist = files.filter(file => file.type.startsWith('audio/') || file.name.match(/\.(mp3|wav|ogg|m4a)$/i));
-
-      if (playlist.length > 0) {
-        currentTrackIndex = 0;
-        playTrack(currentTrackIndex);
-      } else {
-        alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
-      }
-    }
-
-    function playTrack(index) {
-      if (playlist.length === 0) return;
-      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
-
-      const file = playlist[index];
-      currentObjectUrl = URL.createObjectURL(file);
-      bgMusic.src = currentObjectUrl;
-
-      document.getElementById('song-title').textContent = file.name.replace(/\.[^/.]+$/, "");
-      document.getElementById('btn-music').disabled = false;
-
-      bgMusic.play().catch(e => console.log("Música pausada por política de navegador", e));
-      document.getElementById('btn-music').textContent = '⏸️';
-      document.getElementById('btn-music').className = 'btn btn-green';
-    }
-
-    bgMusic.onended = function() { nextSong(); };
-
-    function nextSong() {
-      if (playlist.length === 0) return;
-      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-      playTrack(currentTrackIndex);
-    }
-
-    function prevSong() {
-      if (playlist.length === 0) return;
-      currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
-      playTrack(currentTrackIndex);
-    }
-
-    function toggleMusic() {
-      const btn = document.getElementById('btn-music');
-      if (bgMusic.paused) {
-        bgMusic.play();
-        btn.textContent = '⏸️';
-        btn.className = 'btn btn-green';
-      } else {
-        bgMusic.pause();
-        btn.textContent = '▶️';
-        btn.className = 'btn btn-dark';
-      }
-    }
-
-    function setMusicVolume(val) { bgMusic.volume = val; }
-
-    function initAutoCatalog() {
-      const todayKey = new Date().toISOString().slice(0, 10);
-      const lastLoaded = localStorage.getItem("transpais_last_date");
-
-      if (lastLoaded !== todayKey || departures.length === 0) {
-        loadAllPresetDepartures(false);
-        localStorage.setItem("transpais_last_date", todayKey);
-      }
-    }
-
-    function loadAllPresetDepartures(confirmUser = true) {
-      const sucursalTarget = loggedSucursal || 'of2';
-      if (!confirmUser || confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?')) {
-        const newPresets = Object.keys(presetCatalog).map(key => {
-          const item = presetCatalog[key];
-          return {
-            id: 'mat-' + key + '-' + Date.now(),
-            presetKey: item.key,
-            time: item.time,
-            destination: item.destination,
-            scales: item.scales,
-            bus: "",
-            status: 'EN ESPERA',
-            sucursal: sucursalTarget,
-            notified15: false,
-            notified5: false,
-            notified0: false
-          };
-        });
-
-        departures = departures.filter(d => (d.sucursal || 'of2') !== sucursalTarget).concat(newPresets);
-        persistData();
-      }
-    }
-
-    function loadPresetDeparture(key) {
-      if (!key || !presetCatalog[key]) return;
-      const preset = presetCatalog[key];
-      
-      document.getElementById('dep-id').value = '';
-      document.getElementById('dep-preset-key').value = preset.key;
-      document.getElementById('dep-time').value = preset.time;
-      document.getElementById('dep-destination').value = preset.destination;
-      document.getElementById('dep-scales').value = preset.scales;
-      document.getElementById('dep-status').value = "EN ESPERA";
-      
-      const busInput = document.getElementById('dep-bus');
-      busInput.value = '';
-      busInput.focus();
-    }
-
-    function startOfficeAudioSystem() {
-      if (audioSystemReady) return;
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          const ctx = new AudioCtx();
-          ctx.resume();
-        }
-        audioSystemReady = true;
-      } catch(e) {}
-    }
-
-    function cleanScalesFormat(scalesStr) {
-      if (!scalesStr) return "";
-      return scalesStr.split(',').map(item => item.trim()).filter(item => item.length > 0).join(', ');
-    }
-
-    function updateInlineBus(id, value) {
-      const dep = departures.find(d => d.id === id);
-      if (dep) {
-        dep.bus = value.trim();
-        persistData();
-      }
-    }
-
-    function addDelay(id, minutesToAdd) {
-      const dep = departures.find(d => d.id === id);
-      if (!dep) return;
-
-      let [h, m] = dep.time.split(':').map(Number);
-      let totalMins = h * 60 + m + minutesToAdd;
-      if (totalMins >= 1440) totalMins %= 1440;
-
-      let newH = Math.floor(totalMins / 60).toString().padStart(2, '0');
-      let newM = (totalMins % 60).toString().padStart(2, '0');
-
-      dep.time = `${newH}:${newM}`;
-      dep.status = `DEMORADO (+${minutesToAdd}m)`;
-      
-      dep.notified15 = false;
-      dep.notified5 = false;
-      dep.notified0 = false;
-
-      persistData();
-    }
-
-    // RELOJ INTERNO DE SEGUIMIENTO (ÚNICAMENTE CENTRALIZADO)
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock-time').textContent = now.toLocaleTimeString('es-MX', { hour12: false });
-      document.getElementById('clock-date').textContent = now.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      let updated = false;
-
-      departures = departures.filter(dep => {
-        const [h, m] = dep.time.split(':').map(Number);
-        const depMinutes = h * 60 + m;
-        
-        let diffMinutes = depMinutes - currentMinutes;
-
-        if (diffMinutes < -1200) diffMinutes += 1440; 
-        if (diffMinutes > 1200) diffMinutes -= 1440;
-
-        if (diffMinutes <= -10) return false;
-
-        if (diffMinutes < 0) {
-          if (dep.status !== "SALIDO") {
-            dep.status = "SALIDO";
-            updated = true;
-          }
-        } 
-        else if (diffMinutes === 0) {
-          if (!dep.status.includes("DEMORADO") && dep.status !== "ÚLTIMA LLAMADA") {
-            dep.status = "ÚLTIMA LLAMADA";
-            updated = true;
-          }
-          if (!dep.notified0) {
-            dep.notified0 = true;
-            updated = true;
-            triggerMP3Voice(dep.id, "ultima");
-          }
-        }
-        else if (diffMinutes <= 5 && diffMinutes > 0) {
-          if (!dep.status.includes("DEMORADO") && dep.status !== "EN ABORDAJE") {
-            dep.status = "EN ABORDAJE";
-            updated = true;
-          }
-          if (diffMinutes === 5 && !dep.notified5) {
-            dep.notified5 = true;
-            updated = true;
-            triggerMP3Voice(dep.id, "abord");
-          }
-        }
-        else if (diffMinutes <= 15 && diffMinutes > 5) {
-          if (!dep.status.includes("DEMORADO") && dep.status !== "ETIQUETANDO PASAJE") {
-            dep.status = "ETIQUETANDO PASAJE";
-            updated = true;
-          }
-          if (diffMinutes === 15 && !dep.notified15) {
-            dep.notified15 = true;
-            updated = true;
-            triggerMP3Voice(dep.id, "etiq");
-          }
-        }
-
-        return true;
-      });
-
-      if (updated) persistData();
-    }
-    setInterval(updateClock, 1000);
-
-    function openPinModal() {
-      document.getElementById('login-user-input').value = '';
-      document.getElementById('login-pass-input').value = '';
-      document.getElementById('pin-error-msg').classList.add('hidden');
-      document.getElementById('pin-modal-overlay').classList.remove('hidden');
-      document.getElementById('login-user-input').focus();
-    }
-
-    function closePinModal() {
-      document.getElementById('pin-modal-overlay').classList.add('hidden');
-    }
-
-    function validateUserLogin() {
-      const user = document.getElementById('login-user-input').value.trim().toLowerCase();
-      const pass = document.getElementById('login-pass-input').value.trim();
-      const errorMsg = document.getElementById('pin-error-msg');
-
-      let fullEmail = user;
-      if (!user.includes('@')) {
-        if (user === 'ofcentral') fullEmail = 'ofcentral@transpais.com';
-        if (user === 'terminalof2') fullEmail = 'terminalof2@transpais.com';
-      }
-
-      auth.signInWithEmailAndPassword(fullEmail, pass)
-        .then(() => {
-          loggedSucursal = (fullEmail === 'ofcentral@transpais.com') ? 'central' : 'of2';
-          closePinModal();
-          updateHeaderTitles();
-          switchTab('admin');
-        })
-        .catch((err) => {
-          console.error("Error de autenticación:", err.message);
-          errorMsg.textContent = "❌ Credenciales Incorrectas";
-          errorMsg.classList.remove('hidden');
-        });
-    }
-
-    function switchTab(tab) {
-      const viewScreen = document.getElementById('view-screen');
-      const viewAdmin = document.getElementById('view-admin');
-      const btnScreen = document.getElementById('btn-tab-screen');
-      const btnAdmin = document.getElementById('btn-tab-admin');
-
-      if (tab === 'screen') {
-        viewScreen.classList.remove('hidden');
-        viewAdmin.classList.add('hidden');
-        btnScreen.className = 'btn btn-green';
-        btnAdmin.className = 'btn btn-dark';
-      } else {
-        viewScreen.classList.add('hidden');
-        viewAdmin.classList.remove('hidden');
-        btnAdmin.className = 'btn btn-green';
-        btnScreen.className = 'btn btn-dark';
-      }
-      render();
-    }
-
-    function render() {
-      const fidsBody = document.getElementById('fids-body');
-      const adminBody = document.getElementById('admin-body');
-
-      fidsBody.innerHTML = '';
-      adminBody.innerHTML = '';
-
-      departures.sort((a, b) => a.time.localeCompare(b.time));
-
-      let sucursalFilter = 'of2';
-      if (currentVista === 'tvcentral' || loggedSucursal === 'central') {
-        sucursalFilter = 'central';
-      }
-
-      departures.forEach(dep => {
-        const depSucursal = dep.sucursal || 'of2';
-        if (depSucursal !== sucursalFilter) return;
-
-        let statusMarkup = '';
-        if (dep.status === 'ETIQUETANDO PASAJE') {
-          statusMarkup = `<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>`;
-        } else if (dep.status === 'EN ABORDAJE') {
-          statusMarkup = `<span class="badge-status status-abordaje">EN ABORDAJE</span>`;
-        } else if (dep.status === 'ÚLTIMA LLAMADA') {
-          statusMarkup = `<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>`;
-        } else if (dep.status.includes('DEMORADO')) {
-          statusMarkup = `<span class="badge-status status-demorado">${dep.status}</span>`;
-        } else if (dep.status === 'SALIDO') {
-          statusMarkup = `<span class="badge-status status-salido">SALIDO</span>`;
-        } else {
-          statusMarkup = `<span class="badge-status status-espera">EN ESPERA</span>`;
-        }
-
-        const cleanScales = cleanScalesFormat(dep.scales);
-        const busDisplay = dep.bus ? dep.bus : '---';
-        const puntoAbordajeText = sucursalFilter === 'central' ? 'Central de Autobuses' : 'Oficina Pedro Cárdenas';
-
-        fidsBody.innerHTML += `
-          <tr>
-            <td style="font-size: 24px; font-weight: 900; font-family: monospace;">${dep.time}</td>
-            <td>
-              <div style="font-size: 20px; font-weight: 900;">${dep.destination}</div>
-              ${cleanScales ? `<div style="font-size: 12px; color: #93c5fd; margin-top: 4px;">Escalas: ${cleanScales}</div>` : ''}
-            </td>
-            <td style="text-align: center; font-size: 18px; font-weight: 800; font-family: monospace;">${busDisplay}</td>
-            <td style="text-align: center; font-size: 16px; font-weight: 800; color: #00D974;">${puntoAbordajeText}</td>
-            <td style="text-align: center;">${statusMarkup}</td>
-          </tr>
-        `;
-
-        adminBody.innerHTML += `
-          <tr>
-            <td><strong>${dep.time}</strong></td>
-            <td>
-              <div><strong>${dep.destination}</strong></div>
-              <div style="font-size: 10px; color: #93c5fd;">MP3: ${dep.presetKey || 'Sin clave'}</div>
-            </td>
-            <td style="text-align: center;">
-              <input type="text" class="inline-bus-input" value="${dep.bus || ''}" placeholder="---" onchange="updateInlineBus('${dep.id}', this.value)">
-            </td>
-            <td style="text-align: center;">${statusMarkup}</td>
-            <td style="text-align: center;">
-              <div style="display: flex; gap: 3px; justify-content: center;">
-                <button onclick="addDelay('${dep.id}', 10)" class="btn btn-delay">+10m</button>
-                <button onclick="addDelay('${dep.id}', 15)" class="btn btn-delay">+15m</button>
-                <button onclick="addDelay('${dep.id}', 30)" class="btn btn-delay">+30m</button>
-                <button onclick="addDelay('${dep.id}', 60)" class="btn btn-delay">+1h</button>
-              </div>
-            </td>
-            <td style="text-align: center;">
-              <div style="display: flex; gap: 4px; justify-content: center;">
-                <button onclick="triggerMP3Voice('${dep.id}', 'etiq')" class="btn btn-blue" title="Vocear Etiquetado">🏷️</button>
-                <button onclick="triggerMP3Voice('${dep.id}', 'abord')" class="btn btn-green" title="Vocear Abordaje">🚌</button>
-                <button onclick="triggerMP3Voice('${dep.id}', 'ultima')" class="btn btn-arrive" title="Vocear Última Llamada">📢</button>
-              </div>
-            </td>
-            <td style="text-align: center; display: flex; gap: 4px; justify-content: center;">
-              <button onclick="editDeparture('${dep.id}')" class="btn btn-dark">✏️</button>
-              <button onclick="deleteDeparture('${dep.id}')" class="btn btn-dark" style="background: rgba(230,57,70,0.3); color: #f87171;">🗑️</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function editDeparture(id) {
-      const dep = departures.find(d => d.id === id);
-      if (!dep) return;
-      document.getElementById('dep-id').value = dep.id;
-      document.getElementById('dep-preset-key').value = dep.presetKey || 'p01';
-      document.getElementById('dep-time').value = dep.time;
-      document.getElementById('dep-destination').value = dep.destination;
-      document.getElementById('dep-scales').value = dep.scales || '';
-      document.getElementById('dep-bus').value = dep.bus || '';
-      document.getElementById('dep-status').value = dep.status;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function saveDeparture(e) {
-      e.preventDefault();
-      const id = document.getElementById('dep-id').value || 'mat-' + Date.now();
-      const presetKey = document.getElementById('dep-preset-key').value || 'p01';
-      const time = document.getElementById('dep-time').value;
-      const destination = document.getElementById('dep-destination').value;
-      const scales = document.getElementById('dep-scales').value;
-      const bus = document.getElementById('dep-bus').value.trim();
-      const status = document.getElementById('dep-status').value;
-      const sucursalTarget = loggedSucursal || 'of2';
-
-      const existingIndex = departures.findIndex(d => d.id === id);
-      const newObj = { 
-        id, 
-        presetKey, 
-        time, 
-        destination, 
-        scales: cleanScalesFormat(scales), 
-        bus, 
-        status, 
-        sucursal: sucursalTarget,
-        notified15: false,
-        notified5: false,
-        notified0: false
-      };
-
-      if (existingIndex >= 0) departures[existingIndex] = newObj;
-      else departures.push(newObj);
-
-      persistData();
-      resetForm();
-    }
-
-    function deleteDeparture(id) {
-      if (confirm('¿Eliminar esta corrida de la pantalla?')) {
-        departures = departures.filter(d => d.id !== id);
-        persistData();
-      }
-    }
-
-    function clearAllDepartures() {
-      const sucursalTarget = loggedSucursal || 'of2';
-      if (confirm('¿Deseas borrar todas las corridas de esta sucursal?')) {
-        departures = departures.filter(d => (d.sucursal || 'of2') !== sucursalTarget);
-        persistData();
-      }
-    }
-
-    function resetForm() {
-      document.getElementById('departure-form').reset();
-      document.getElementById('dep-id').value = '';
-      document.getElementById('dep-preset-key').value = '';
-      document.getElementById('preset-selector').value = "";
-    }
-
-    function playTerminalChime(onComplete) {
-      if (isLocalMuted) {
-        if (onComplete) onComplete();
-        return;
-      }
-
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        ctx.resume();
-
-        const now = ctx.currentTime;
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc1.frequency.setValueAtTime(587.33, now);
-        osc2.frequency.setValueAtTime(880.00, now + 0.18);
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.35, now + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
-
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc1.start(now);
-        osc2.start(now + 0.18);
-        osc1.stop(now + 2.0);
-        osc2.stop(now + 2.0);
-
-        setTimeout(() => { if (onComplete) onComplete(); }, 1800);
-      } catch (err) {
-        if (onComplete) onComplete();
-      }
-    }
-
-    function testChimeSound() {
-      startOfficeAudioSystem();
-      playTerminalChime(() => {});
-    }
-
-    // DISPARO CENTRALIZADO MEDIANTE FIREBASE (EVITA MULTI-REPRODUCCIONES)
-    function triggerMP3Voice(idOrKey, mode) {
-      const dep = departures.find(d => d.id === idOrKey);
-      const key = dep ? (dep.presetKey || 'p01') : idOrKey;
-
-      try {
-        db.ref('lastVoiceTrigger').set({
-          key: key,
-          mode: mode,
-          timestamp: Date.now()
-        });
-      } catch (err) {
-        console.error("Error al emitir señal a Firebase:", err);
-        playMP3Audio(key, mode);
-      }
-    }
-
-    // REPRODUCCIÓN ÚNICA EN CADA DISPOSITIVO CONECTADO
-    function playMP3Audio(presetKey, mode) {
-      startOfficeAudioSystem();
-
-      const audioPath = `audios/${presetKey}_${mode}.mp3`;
-      const originalVol = bgMusic.volume;
-
-      if (!bgMusic.paused) {
-        bgMusic.volume = originalVol * 0.15;
-      }
-
-      playTerminalChime(() => {
-        if (isLocalMuted) {
-          if (!bgMusic.paused) bgMusic.volume = originalVol;
-          return;
-        }
-
-        const audio = new Audio(audioPath);
-        audio.volume = 1.0;
-
-        const restoreMusic = () => {
-          if (!bgMusic.paused) bgMusic.volume = originalVol;
-        };
-
-        audio.onended = restoreMusic;
-        audio.onerror = (e) => {
-          console.warn(`No se encontró el archivo de audio MP3 en: ${audioPath}`, e);
-          restoreMusic();
-        };
-
-        audio.play().catch(err => {
-          console.error("Error al reproducir audio MP3:", err);
-          restoreMusic();
-        });
-      });
-    }
-
-    async function loadFromCloud() {
-      departures = JSON.parse(localStorage.getItem("transpais_pedro_cardenas_deps")) || [];
-      initAutoCatalog();
-      render();
-    }
-
-    async function persistData() {
-      localStorage.setItem("transpais_pedro_cardenas_deps", JSON.stringify(departures));
-      render();
-
-      try {
-        await db.ref('departures').set(departures);
-      } catch (err) {
-        console.error("Error al guardar en Firebase:", err);
-      }
-    }
-
-    db.ref('departures').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(departures)) {
-        departures = data;
-        localStorage.setItem("transpais_pedro_cardenas_deps", JSON.stringify(departures));
-        render();
-      }
-    });
-
-    let lastHandledVoiceTimestamp = 0;
-
-    // RECEPTOR ÚNICO DE SEÑAL
-    db.ref('lastVoiceTrigger').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (!data || !data.timestamp) return;
-
-      if (data.timestamp > lastHandledVoiceTimestamp) {
-        lastHandledVoiceTimestamp = data.timestamp;
-
-        if (Date.now() - data.timestamp < 10000) {
-          playMP3Audio(data.key, data.mode);
-        }
-      }
-    });
-
-    updateMuteButtonUI();
-    updateHeaderTitles();
-    loadFromCloud();
-    updateClock();
-  </script>
+  </div>
+</main>
+
+<footer class="ticker-footer">
+  <div class="ticker-title">AVISO DE EQUIPAJE</div>
+  <div style="overflow:hidden;width:100%"><div id="ticker-text-content" class="ticker-content"></div></div>
+</footer>
+
+<script>
+/* ============ CONFIG ============ */
+firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
+const db=firebase.database(),auth=firebase.auth();
+const TZ='America/Matamoros';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const vista=new URLSearchParams(location.search).get('vista')||'screen';
+const isTV=vista.startsWith('tv');
+let suc=null,deps={},ready=false,srvOff=0;          // suc = sucursal del usuario con sesión
+const viewSuc=()=>vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));
+const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc; // solo el usuario escribe; la TV nunca
+const fail=e=>{console.error(e.message);alert('No se pudo guardar: '+e.message);};
+
+const CAT={
+p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
+p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
+p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+p10:["18:45","Tampico x Victoria","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
+p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
+p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
+p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
+
+/* ============ HORA DE MATAMOROS ============ */
+db.ref('.info/serverTimeOffset').on('value',s=>srvOff=s.val()||0);
+const dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+function keyAt(ms){const p={};dtf.formatToParts(new Date(ms)).forEach(x=>p[x.type]=x.value);return {key:`${p.year}-${p.month}-${p.day}`,min:+p.hour*60+ +p.minute,time:`${p.hour}:${p.minute}:${p.second}`};}
+const nowParts=()=>keyAt(Date.now()+srvOff);
+function diffOf(d,n){const[h,m]=d.time.split(':').map(Number);let x=h*60+m-n.min;if(x<-1200)x+=1440;if(x>1200)x-=1440;return x;}
+const isLive=(d,n)=>d.day===n.key||(n.min<360&&d.day===keyAt(Date.now()+srvOff-864e5).key);
+function stat(d,diff){
+  if(d.status==='SALIDO'||diff<0)return'SALIDO';
+  if(diff===0)return'ÚLTIMA LLAMADA';
+  if(diff<=5)return'EN ABORDAJE';
+  if(diff<=15)return'ETIQUETANDO PASAJE';
+  return d.status||'EN ESPERA';
+}
+
+/* ============ TÍTULOS ============ */
+function updateHeaderTitles(){
+  const c=viewSuc()==='central';
+  $('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
+  $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';
+  $('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
+}
+
+/* ============ AUDIO (contexto único + cola + ducking) ============ */
+let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+const bg=$('bg-music');bg.volume=0.2;
+function ctx(){if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}if(actx&&actx.state==='suspended')actx.resume();return actx;}
+function chime(){return new Promise(res=>{
+  if(muted)return res();
+  try{const c=ctx();if(!c)return res();
+    const t=c.currentTime,o1=c.createOscillator(),o2=c.createOscillator(),g=c.createGain();
+    o1.frequency.setValueAtTime(587.33,t);o2.frequency.setValueAtTime(880,t+.18);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+2);
+    o1.connect(g);o2.connect(g);g.connect(c.destination);o1.start(t);o2.start(t+.18);o1.stop(t+2);o2.stop(t+2);
+    setTimeout(res,1800);}catch(e){res();}
+});}
+const aq=[];let playing=false;
+function enqueueAudio(k,m){aq.push([k,m]);if(!playing)runQueue();}
+async function runQueue(){playing=true;while(aq.length){const[k,m]=aq.shift();await playOne(k,m);}playing=false;}
+function playOne(key,mode){return new Promise(async res=>{
+  if(muted)return res();
+  const vol=+$('music-vol').value;
+  if(!bg.paused)bg.volume=vol*0.15;
+  await chime();
+  const a=new Audio(`audios/${key}_${mode}.mp3`);let done=false;
+  const end=()=>{if(done)return;done=true;clearTimeout(to);bg.volume=aq.length?vol*.15:vol;res();};
+  const to=setTimeout(end,60000);
+  a.onended=end;a.onerror=()=>{console.warn('MP3 no encontrado:',a.src);end();};
+  a.play().catch(end);
+});}
+function unlockAudio(){
+  $('audio-start-overlay').style.display='none';ctx();
+  setInterval(()=>{try{const c=ctx(),o=c.createOscillator(),g=c.createGain();g.gain.value=.0001;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.1);}catch(e){}},240000);
+}
+function updateMuteUI(){
+  const b=$('btn-mute-local');
+  b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
+  b.className=muted?'btn btn-dark btn-red':'btn btn-green';
+}
+
+/* ============ MÚSICA AMBIENTAL ============ */
+let playlist=[],track=0,objUrl=null;
+function playTrack(i){
+  if(!playlist.length)return;
+  if(objUrl)URL.revokeObjectURL(objUrl);
+  const f=playlist[i];objUrl=URL.createObjectURL(f);bg.src=objUrl;
+  $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');
+  $('btn-music').disabled=false;
+  bg.play().catch(e=>console.log('Música bloqueada por el navegador',e));
+  $('btn-music').textContent='⏸️';$('btn-music').className='btn btn-green';
+}
+const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
+bg.onended=()=>step(1);
+
+/* ============ DATOS: un espacio por sucursal (of2 / central), solo escribe su usuario ============ */
+let refs=[];
+function attach(s){
+  refs.forEach(r=>r.off());deps={};ready=false;
+  const rd=db.ref(s+'/deps'),rv=db.ref(s+'/voice');refs=[rd,rv];
+  let lastTs=0;
+  rd.on('value',snap=>{
+    const next={};snap.forEach(c=>{const v=c.val();if(v&&typeof v==='object'){v.id=c.key;next[c.key]=v;}});
+    deps=next;ready=true;render();autoCatalog();
+  },err=>console.error('Lectura Firebase:',err.message));
+  rv.on('value',snap=>{            // voceo manual de taquilla: solo llega a esta sucursal
+    const d=snap.val();
+    if(!d||!d.timestamp||d.timestamp<=lastTs)return;
+    lastTs=d.timestamp;
+    if(Date.now()+srvOff-d.timestamp>15000)return;
+    enqueueAudio(d.key,d.mode);
+  });
+  render();
+}
+let autoBusy=false;
+async function autoCatalog(){      // el usuario carga el día solo la primera vez que entra
+  if(!canWrite()||!ready||autoBusy||viewSuc()!==suc)return;
+  const today=nowParts().key;
+  if(Object.values(deps).some(d=>d.day===today))return;
+  autoBusy=true;
+  try{const c=(await db.ref(suc+'/cleared').once('value')).val();if(c!==today)await loadCatalog();}
+  catch(e){console.warn('Catálogo automático:',e.message);}
+  setTimeout(()=>autoBusy=false,10000);
+}
+function loadCatalog(){
+  const day=nowParts().key,o={};
+  Object.keys(CAT).forEach(k=>o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day,delay:0});
+  return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
+}
+
+/* ============ RELOJ: avisos automáticos en la propia pantalla (sin escribir nada) ============ */
+const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
+function autoVoice(d,diff,n){
+  const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
+  const k=`${n.key}|${d.id}|${d.time}|${mode}`;if(fired.has(k))return;
+  fired.add(k);localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.startsWith(n.key))));
+  enqueueAudio(d.presetKey||'p01',mode);
+}
+function tick(){
+  const n=nowParts();
+  $('clock-time').textContent=n.time;
+  $('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if(ready)Object.values(deps).forEach(d=>{if(isLive(d,n)){const x=diffOf(d,n);if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);}});
+  render();
+}
+setInterval(tick,1000);
+setInterval(autoCatalog,30000);
+
+/* ============ RENDER (fila por fila, no pierde el foco al escribir) ============ */
+function badge(st){
+  if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
+  if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
+  if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
+  if(st&&st.includes('DEMORADO'))return`<span class="badge-status status-demorado">${esc(st)}</span>`;
+  if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
+  return'<span class="badge-status status-espera">EN ESPERA</span>';
+}
+const cleanScales=s=>(s||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');
+function tvRow(d,c){const sc=cleanScales(d.scales);return`<td style="font-size:24px;font-weight:900;font-family:monospace">${esc(d.time)}</td>
+<td><div style="font-size:20px;font-weight:900">${esc(d.destination)}</div>${sc?`<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: ${esc(sc)}</div>`:''}</td>
+<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">${esc(d.bus||'---')}</td>
+<td class="c" style="font-size:16px;font-weight:800;color:#00D974">${c?'Central de Autobuses':'Oficina Pedro Cárdenas'}</td>
+<td class="c">${badge(d._st)}</td>`;}
+function adminRow(d){return`<td><strong>${esc(d.time)}</strong></td>
+<td><div><strong>${esc(d.destination)}</strong></div><div style="font-size:10px;color:#93c5fd">MP3: ${esc(d.presetKey||'Sin clave')}</div></td>
+<td class="c"><input type="text" class="inline-bus-input" value="${esc(d.bus||'')}" placeholder="---"></td>
+<td class="c">${badge(d._st)}</td>
+<td><div class="flex">${[10,15,30,60].map(v=>`<button class="btn btn-delay" data-act="delay" data-v="${v}">${v===60?'+1h':'+'+v+'m'}</button>`).join('')}</div></td>
+<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>
+<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>`;}
+function syncRows(tb,list,html){
+  const sigOf=d=>JSON.stringify([d.time,d.destination,d.scales,d.bus,d._st,d.presetKey]);
+  const rows=new Map([...tb.children].map(r=>[r.dataset.id,r]));
+  list.forEach(d=>{
+    let r=rows.get(d.id);const s=sigOf(d);
+    if(!r){r=document.createElement('tr');r.dataset.id=d.id;r.innerHTML=html(d);r._s=s;tb.appendChild(r);return;}
+    rows.delete(d.id);if(r._s===s)return;
+    const f=document.activeElement,typing=f&&r.contains(f)&&f.classList.contains('inline-bus-input');
+    const val=typing?f.value:null,pos=typing?f.selectionStart:0;
+    r.innerHTML=html(d);r._s=s;
+    if(typing){const ni=r.querySelector('.inline-bus-input');ni.value=val;ni.focus();ni.setSelectionRange(pos,pos);}
+  });
+  rows.forEach(r=>r.remove());
+  const want=list.map(d=>d.id).join(),have=[...tb.children].map(r=>r.dataset.id).join();
+  if(want!==have&&!tb.contains(document.activeElement))list.forEach(d=>tb.appendChild(tb.querySelector(`[data-id="${CSS.escape(d.id)}"]`)));
+}
+function render(){
+  const c=viewSuc()==='central',fb=$('fids-body'),ab=$('admin-body');
+  if(!ready){fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';fb._wait=true;return;}
+  if(fb._wait){fb.innerHTML='';fb._wait=false;}
+  const n=nowParts();
+  const list=Object.values(deps).filter(d=>isLive(d,n)&&diffOf(d,n)>-15)       // se quita a los 15 min de salir
+    .map(d=>({...d,_st:stat(d,diffOf(d,n))})).sort((a,b)=>a.time.localeCompare(b.time));
+  syncRows(fb,list,d=>tvRow(d,c));
+  if(canWrite())syncRows(ab,list,adminRow);
+}
+
+/* ============ ACCIONES DEL USUARIO (taquilla) ============ */
+const dref=id=>db.ref(`${suc}/deps/${id}`);
+$('admin-body').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||!canWrite())return;
+  const id=b.closest('tr').dataset.id,d=deps[id];if(!d)return;
+  const act=b.dataset.act;
+  if(act==='voz')db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
+  else if(act==='delay')addDelay(d,+b.dataset.v);
+  else if(act==='edit')editDeparture(d);
+  else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
+});
+$('admin-body').addEventListener('change',e=>{
+  if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
+  dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
+});
+function addDelay(d,add){
+  const[h,m]=d.time.split(':').map(Number),t=(h*60+m+add)%1440,total=(d.delay||0)+add;
+  dref(d.id).update({time:`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`,status:`DEMORADO (+${total}m)`,delay:total}).catch(fail);
+}
+function editDeparture(d){
+  $('dep-id').value=d.id;$('dep-preset-key').value=d.presetKey||'p01';
+  $('dep-time').value=d.time;$('dep-destination').value=d.destination;
+  $('dep-scales').value=d.scales||'';$('dep-bus').value=d.bus||'';
+  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'DEMORADO';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function resetForm(){$('departure-form').reset();$('dep-id').value='';$('dep-preset-key').value='';$('preset-selector').value='';}
+$('departure-form').addEventListener('submit',e=>{
+  e.preventDefault();if(!canWrite())return;
+  const id=$('dep-id').value||('c'+Date.now()),old=deps[id];
+  let status=$('dep-status').value;
+  if(status==='DEMORADO'&&old&&old.status&&old.status.startsWith('DEMORADO'))status=old.status;
+  dref(id).set({presetKey:$('dep-preset-key').value||'p01',time:$('dep-time').value,destination:$('dep-destination').value.trim(),
+    scales:cleanScales($('dep-scales').value),bus:$('dep-bus').value.trim(),status,sucursal:suc,
+    day:old?.day||nowParts().key,delay:old?.delay||0}).then(resetForm).catch(fail);
+});
+$('preset-selector').addEventListener('change',e=>{
+  const k=e.target.value;if(!CAT[k])return;
+  $('dep-id').value='';$('dep-preset-key').value=k;$('dep-time').value=CAT[k][0];
+  $('dep-destination').value=CAT[k][1];$('dep-scales').value=CAT[k][2];
+  $('dep-status').value='EN ESPERA';$('dep-bus').value='';$('dep-bus').focus();
+});
+$('btn-load-all').onclick=()=>{if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
+$('btn-clear-all').onclick=()=>{
+  if(!canWrite()||!confirm('¿Deseas borrar todas las corridas de esta sucursal?'))return;
+  Promise.all([db.ref(suc+'/deps').remove(),db.ref(suc+'/cleared').set(nowParts().key)]).catch(fail);
+};
+$('btn-reset').onclick=resetForm;
+
+/* ============ LOGIN / VISTAS ============ */
+const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
+auth.onAuthStateChanged(u=>{
+  const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
+  if(viewSuc()!==prev)attach(viewSuc());
+  updateHeaderTitles();render();autoCatalog();
+});
+function switchTab(tab){
+  if(tab==='admin'&&!canWrite())return;
+  $('view-screen').classList.toggle('hidden',tab!=='screen');
+  $('view-admin').classList.toggle('hidden',tab!=='admin');
+  $('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');
+  $('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
+  render();
+}
+function openPin(){
+  if(canWrite())return switchTab('admin');
+  $('login-user-input').value='';$('login-pass-input').value='';
+  $('pin-error-msg').classList.add('hidden');
+  $('pin-modal-overlay').classList.remove('hidden');$('login-user-input').focus();
+}
+function doLogin(){
+  const u=$('login-user-input').value.trim().toLowerCase(),p=$('login-pass-input').value.trim();
+  let em=u;
+  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com';if(u==='terminalof2')em='terminalof2@transpais.com';}
+  auth.signInWithEmailAndPassword(em,p).then(()=>{
+    suc=sucFromEmail(em);
+    $('pin-modal-overlay').classList.add('hidden');
+    attach(viewSuc());updateHeaderTitles();switchTab('admin');
+  }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
+}
+
+/* ============ EVENTOS ============ */
+$('btn-unlock').onclick=unlockAudio;
+document.body.addEventListener('click',()=>ctx());
+$('btn-tab-screen').onclick=()=>switchTab('screen');
+$('btn-tab-admin').onclick=openPin;
+$('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');
+$('btn-login-ok').onclick=doLogin;
+$('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('btn-chime').onclick=()=>chime();
+$('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};
+$('btn-folder').onclick=()=>$('folder-input').click();
+$('folder-input').onchange=e=>{
+  playlist=[...e.target.files].filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name));
+  if(playlist.length){track=0;playTrack(0);}else alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
+};
+$('btn-prev').onclick=()=>step(-1);
+$('btn-next').onclick=()=>step(1);
+$('btn-music').onclick=()=>{
+  const b=$('btn-music');
+  if(bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
+  else{bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
+};
+$('music-vol').oninput=e=>{bg.volume=+e.target.value;};
+
+if(isTV)$('control-bar').style.display='none';
+updateMuteUI();updateHeaderTitles();attach(viewSuc());tick();
+</script>
 </body>
 </html>
