@@ -15,10 +15,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;mi
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
 .btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
-.btn-red{background:rgba(230,57,70,.3);color:#f87171}
+.btn-red{background:rgba(230,57,70,.8);color:#fff}.btn-red:hover{background:#dc2626}
 .btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
 .btn-arrive{background:#d97706;color:#fff;font-weight:900}
-.btn-delay{background:#dc2626;color:#fff;padding:5px 8px;font-size:10px}.btn-delay:hover{background:#991b1b}
+.btn-delay{background:rgba(255,255,255,.1);color:#93c5fd;padding:4px 6px;font-size:10px;border:1px solid rgba(147,197,253,.3)}.btn-delay:hover{background:#00A859;color:#fff}
 table{width:100%;border-collapse:collapse;text-align:left}
 th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
 td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -28,7 +28,7 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
 .status-etiq{background:#FFB800;color:#000;animation:pg 1.4s infinite ease-in-out}
 .status-abordaje{background:#00D974;color:#000;animation:pg 1s infinite ease-in-out}
 .status-ultima{background:#e11d48;color:#fff;animation:pr .8s infinite ease-in-out}
-.status-demorado{background:#dc2626;color:#fff}
+.status-reprogramado{background:#d97706;color:#fff;border:1px solid #f59e0b}
 .status-salido{background:rgba(255,255,255,.05);color:#888}
 @keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
 @keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
@@ -107,6 +107,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <audio id="bg-music"></audio>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button id="btn-stop-audio" class="btn btn-red" style="font-weight:900">🛑 DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
     <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
@@ -156,7 +157,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
       <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
       <div><label class="lbl">Estatus Manual</label>
         <select id="dep-status">
-          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
+          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>REPROGRAMADO</option><option>SALIDO</option>
         </select></div>
     </div>
     <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
@@ -170,7 +171,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
   <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
     <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
     <table>
-      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Demoras (1 Clic)</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
+      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajustar Hora (Adelanto / Postergación)</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
       <tbody id="admin-body"></tbody>
     </table>
   </div>
@@ -190,9 +191,9 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
-let suc=null,deps={},ready=false,srvOff=0;          // suc = sucursal del usuario con sesión
+let suc=null,deps={},ready=false,srvOff=0;
 const viewSuc=()=>vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));
-const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc; // solo el usuario escribe; la TV nunca
+const canWrite=()=>!isTV&&!!auth.currentUser&&!!suc;
 const fail=e=>{console.error(e.message);alert('No se pudo guardar: '+e.message);};
 
 const CAT={
@@ -229,14 +230,27 @@ function stat(d,diff){
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
   $('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
-  $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';
-  $('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
+  $('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';$('ticker-text-content').innerHTML=`🧳 <strong>${c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS'}:</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.`;
 }
 
-/* ============ AUDIO (contexto único + cola + ducking) ============ */
+/* ============ MOTOR DE AUDIO MP3 (INTERRUPCIÓN Y GESTIÓN DE COLA) ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 const bg=$('bg-music');bg.volume=0.2;
+let currentAudio=null;
+const aq=[];let playing=false;
+
 function ctx(){if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(C)actx=new C();}if(actx&&actx.state==='suspended')actx.resume();return actx;}
+
+function stopAllAudio(){
+  aq.length=0;
+  if(currentAudio){
+    try{currentAudio.pause();currentAudio.currentTime=0;}catch(e){}
+    currentAudio=null;
+  }
+  playing=false;
+  bg.volume=+$('music-vol').value;
+}
+
 function chime(){return new Promise(res=>{
   if(muted)return res();
   try{const c=ctx();if(!c)return res();
@@ -246,24 +260,50 @@ function chime(){return new Promise(res=>{
     o1.connect(g);o2.connect(g);g.connect(c.destination);o1.start(t);o2.start(t+.18);o1.stop(t+2);o2.stop(t+2);
     setTimeout(res,1800);}catch(e){res();}
 });}
-const aq=[];let playing=false;
-function enqueueAudio(k,m){aq.push([k,m]);if(!playing)runQueue();}
-async function runQueue(){playing=true;while(aq.length){const[k,m]=aq.shift();await playOne(k,m);}playing=false;}
+
+function enqueueAudio(k,m,isManual=false){
+  if(isManual){
+    stopAllAudio(); // Si es una orden manual de taquilla, interrumpe el audio actual de inmediato
+  }
+  aq.push([k,m]);
+  if(!playing)runQueue();
+}
+
+async function runQueue(){
+  playing=true;
+  while(aq.length){
+    const[k,m]=aq.shift();
+    await playOne(k,m);
+  }
+  playing=false;
+  bg.volume=+$('music-vol').value; // Restablece volumen al terminar la cola
+}
+
 function playOne(key,mode){return new Promise(async res=>{
   if(muted)return res();
   const vol=+$('music-vol').value;
-  if(!bg.paused)bg.volume=vol*0.15;
+  if(!bg.paused)bg.volume=vol*0.15; // Ducking de música de fondo
   await chime();
-  const a=new Audio(`audios/${key}_${mode}.mp3`);let done=false;
-  const end=()=>{if(done)return;done=true;clearTimeout(to);bg.volume=aq.length?vol*.15:vol;res();};
+  
+  const a=new Audio(`audios/${key}_${mode}.mp3`);
+  currentAudio=a;
+  let done=false;
+  const end=()=>{
+    if(done)return;done=true;clearTimeout(to);
+    currentAudio=null;
+    res();
+  };
   const to=setTimeout(end,60000);
-  a.onended=end;a.onerror=()=>{console.warn('MP3 no encontrado:',a.src);end();};
+  a.onended=end;
+  a.onerror=()=>{console.warn('MP3 no encontrado:',a.src);end();};
   a.play().catch(end);
 });}
+
 function unlockAudio(){
   $('audio-start-overlay').style.display='none';ctx();
   setInterval(()=>{try{const c=ctx(),o=c.createOscillator(),g=c.createGain();g.gain.value=.0001;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.1);}catch(e){}},240000);
 }
+
 function updateMuteUI(){
   const b=$('btn-mute-local');
   b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
@@ -276,15 +316,14 @@ function playTrack(i){
   if(!playlist.length)return;
   if(objUrl)URL.revokeObjectURL(objUrl);
   const f=playlist[i];objUrl=URL.createObjectURL(f);bg.src=objUrl;
-  $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');
-  $('btn-music').disabled=false;
+  $('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');$('btn-music').disabled=false;
   bg.play().catch(e=>console.log('Música bloqueada por el navegador',e));
   $('btn-music').textContent='⏸️';$('btn-music').className='btn btn-green';
 }
 const step=d=>{if(playlist.length){track=(track+d+playlist.length)%playlist.length;playTrack(track);}};
 bg.onended=()=>step(1);
 
-/* ============ DATOS: un espacio por sucursal (of2 / central), solo escribe su usuario ============ */
+/* ============ CONEXIÓN Y SINCRONIZACIÓN FIREBASE ============ */
 let refs=[];
 function attach(s){
   refs.forEach(r=>r.off());deps={};ready=false;
@@ -294,17 +333,19 @@ function attach(s){
     const next={};snap.forEach(c=>{const v=c.val();if(v&&typeof v==='object'){v.id=c.key;next[c.key]=v;}});
     deps=next;ready=true;render();autoCatalog();
   },err=>console.error('Lectura Firebase:',err.message));
-  rv.on('value',snap=>{            // voceo manual de taquilla: solo llega a esta sucursal
+  
+  rv.on('value',snap=>{
     const d=snap.val();
     if(!d||!d.timestamp||d.timestamp<=lastTs)return;
     lastTs=d.timestamp;
     if(Date.now()+srvOff-d.timestamp>15000)return;
-    enqueueAudio(d.key,d.mode);
+    enqueueAudio(d.key,d.mode,true); // Interrupción prioritaria al recibir orden remota de taquilla
   });
   render();
 }
+
 let autoBusy=false;
-async function autoCatalog(){      // el usuario carga el día solo la primera vez que entra
+async function autoCatalog(){
   if(!canWrite()||!ready||autoBusy||viewSuc()!==suc)return;
   const today=nowParts().key;
   if(Object.values(deps).some(d=>d.day===today))return;
@@ -313,20 +354,23 @@ async function autoCatalog(){      // el usuario carga el día solo la primera v
   catch(e){console.warn('Catálogo automático:',e.message);}
   setTimeout(()=>autoBusy=false,10000);
 }
+
 function loadCatalog(){
   const day=nowParts().key,o={};
   Object.keys(CAT).forEach(k=>o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day,delay:0});
   return db.ref(suc+'/deps').set(o).then(()=>db.ref(suc+'/cleared').remove());
 }
 
-/* ============ RELOJ: avisos automáticos en la propia pantalla (sin escribir nada) ============ */
+/* ============ RELOJ Y EMISIÓN AUTOMÁTICA DE VOCEOS ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 function autoVoice(d,diff,n){
   const mode={15:'etiq',5:'abord',0:'ultima'}[diff];if(!mode)return;
-  const k=`${n.key}|${d.id}|${d.time}|${mode}`;if(fired.has(k))return;
+  // Corrección clave del bucle: usa ID de corrida + Fecha + Modo
+  const k=`${n.key}|${d.id}|${mode}`;if(fired.has(k))return;
   fired.add(k);localStorage.setItem('transpais_fired',JSON.stringify([...fired].filter(x=>x.startsWith(n.key))));
-  enqueueAudio(d.presetKey||'p01',mode);
+  enqueueAudio(d.presetKey||'p01',mode,false);
 }
+
 function tick(){
   const n=nowParts();
   $('clock-time').textContent=n.time;
@@ -337,28 +381,34 @@ function tick(){
 setInterval(tick,1000);
 setInterval(autoCatalog,30000);
 
-/* ============ RENDER (fila por fila, no pierde el foco al escribir) ============ */
+/* ============ RENDERIZADO DE TABLAS Y ESTATUS ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
   if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&st.includes('DEMORADO'))return`<span class="badge-status status-demorado">${esc(st)}</span>`;
+  if(st&&st.includes('REPROGRAMADO'))return`<span class="badge-status status-reprogramado">${esc(st)}</span>`;
   if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
+
 const cleanScales=s=>(s||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');
+
 function tvRow(d,c){const sc=cleanScales(d.scales);return`<td style="font-size:24px;font-weight:900;font-family:monospace">${esc(d.time)}</td>
 <td><div style="font-size:20px;font-weight:900">${esc(d.destination)}</div>${sc?`<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: ${esc(sc)}</div>`:''}</td>
 <td class="c" style="font-size:18px;font-weight:800;font-family:monospace">${esc(d.bus||'---')}</td>
 <td class="c" style="font-size:16px;font-weight:800;color:#00D974">${c?'Central de Autobuses':'Oficina Pedro Cárdenas'}</td>
 <td class="c">${badge(d._st)}</td>`;}
+
 function adminRow(d){return`<td><strong>${esc(d.time)}</strong></td>
 <td><div><strong>${esc(d.destination)}</strong></div><div style="font-size:10px;color:#93c5fd">MP3: ${esc(d.presetKey||'Sin clave')}</div></td>
 <td class="c"><input type="text" class="inline-bus-input" value="${esc(d.bus||'')}" placeholder="---"></td>
 <td class="c">${badge(d._st)}</td>
-<td><div class="flex">${[10,15,30,60].map(v=>`<button class="btn btn-delay" data-act="delay" data-v="${v}">${v===60?'+1h':'+'+v+'m'}</button>`).join('')}</div></td>
+<td><div class="flex">
+  ${[-60,-30,-5,5,30,60].map(v=>`<button class="btn btn-delay" data-act="timeshift" data-v="${v}">${v<0?v+'m':'+'+v+'m'}</button>`).join('')}
+</div></td>
 <td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>
 <td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>`;}
+
 function syncRows(tb,list,html){
   const sigOf=d=>JSON.stringify([d.time,d.destination,d.scales,d.bus,d._st,d.presetKey]);
   const rows=new Map([...tb.children].map(r=>[r.dataset.id,r]));
@@ -375,59 +425,67 @@ function syncRows(tb,list,html){
   const want=list.map(d=>d.id).join(),have=[...tb.children].map(r=>r.dataset.id).join();
   if(want!==have&&!tb.contains(document.activeElement))list.forEach(d=>tb.appendChild(tb.querySelector(`[data-id="${CSS.escape(d.id)}"]`)));
 }
+
 function render(){
   const c=viewSuc()==='central',fb=$('fids-body'),ab=$('admin-body');
   if(!ready){fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';fb._wait=true;return;}
   if(fb._wait){fb.innerHTML='';fb._wait=false;}
   const n=nowParts();
-  const list=Object.values(deps).filter(d=>isLive(d,n)&&diffOf(d,n)>-15)       // se quita a los 15 min de salir
+  const list=Object.values(deps).filter(d=>isLive(d,n)&&diffOf(d,n)>-15)
     .map(d=>({...d,_st:stat(d,diffOf(d,n))})).sort((a,b)=>a.time.localeCompare(b.time));
   syncRows(fb,list,d=>tvRow(d,c));
   if(canWrite())syncRows(ab,list,adminRow);
 }
 
-/* ============ ACCIONES DEL USUARIO (taquilla) ============ */
+/* ============ CONTROL OPERATIVO DESDE TAQUILLA ============ */
 const dref=id=>db.ref(`${suc}/deps/${id}`);
 $('admin-body').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||!canWrite())return;
   const id=b.closest('tr').dataset.id,d=deps[id];if(!d)return;
   const act=b.dataset.act;
   if(act==='voz')db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
-  else if(act==='delay')addDelay(d,+b.dataset.v);
+  else if(act==='timeshift')shiftDepartureTime(d,+b.dataset.v);
   else if(act==='edit')editDeparture(d);
   else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
 });
+
 $('admin-body').addEventListener('change',e=>{
   if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
   dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
 });
-function addDelay(d,add){
-  const[h,m]=d.time.split(':').map(Number),t=(h*60+m+add)%1440,total=(d.delay||0)+add;
-  dref(d.id).update({time:`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`,status:`DEMORADO (+${total}m)`,delay:total}).catch(fail);
+
+function shiftDepartureTime(d,addMinutes){
+  const[h,m]=d.time.split(':').map(Number);
+  let totalMin=h*60+m+addMinutes;
+  if(totalMin<0)totalMin+=1440;
+  totalMin%=1440;
+  const newTime=`${String(Math.floor(totalMin/60)).padStart(2,'0')}:${String(totalMin%60).padStart(2,'0')}`;
+  const newStatus=addMinutes>0?'REPROGRAMADO':'EN ESPERA';
+  dref(d.id).update({time:newTime,status:newStatus}).catch(fail);
 }
+
 function editDeparture(d){
   $('dep-id').value=d.id;$('dep-preset-key').value=d.presetKey||'p01';
   $('dep-time').value=d.time;$('dep-destination').value=d.destination;
-  $('dep-scales').value=d.scales||'';$('dep-bus').value=d.bus||'';
-  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'DEMORADO';
+  $('dep-scales').value=d.scales\vert{}\vert{}'';$('dep-bus').value=d.bus||'';
+  const sel=$('dep-status');sel.value=[...sel.options].some(o=>o.value===d.status)?d.status:'REPROGRAMADO';
   window.scrollTo({top:0,behavior:'smooth'});
 }
-function resetForm(){$('departure-form').reset();$('dep-id').value='';$('dep-preset-key').value='';$('preset-selector').value='';}
-$('departure-form').addEventListener('submit',e=>{
+
+function resetForm(){$('departure-form').reset();$('dep-id').value='';$('dep-preset-key').value='';$('preset-selector').value='';}$('departure-form').addEventListener('submit',e=>{
   e.preventDefault();if(!canWrite())return;
   const id=$('dep-id').value||('c'+Date.now()),old=deps[id];
   let status=$('dep-status').value;
-  if(status==='DEMORADO'&&old&&old.status&&old.status.startsWith('DEMORADO'))status=old.status;
   dref(id).set({presetKey:$('dep-preset-key').value||'p01',time:$('dep-time').value,destination:$('dep-destination').value.trim(),
     scales:cleanScales($('dep-scales').value),bus:$('dep-bus').value.trim(),status,sucursal:suc,
     day:old?.day||nowParts().key,delay:old?.delay||0}).then(resetForm).catch(fail);
 });
+
 $('preset-selector').addEventListener('change',e=>{
   const k=e.target.value;if(!CAT[k])return;
-  $('dep-id').value='';$('dep-preset-key').value=k;$('dep-time').value=CAT[k][0];
-  $('dep-destination').value=CAT[k][1];$('dep-scales').value=CAT[k][2];
-  $('dep-status').value='EN ESPERA';$('dep-bus').value='';$('dep-bus').focus();
+  $('dep-id').value='';$('dep-preset-key').value=k;$('dep-time').value=CAT[k][0];$('dep-destination').value=CAT[k][1];$('dep-scales').value=CAT[k][2];$('dep-status').value='EN ESPERA';$('dep-bus').value='';$('dep-bus').focus();
 });
+
 $('btn-load-all').onclick=()=>{if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
 $('btn-clear-all').onclick=()=>{
   if(!canWrite()||!confirm('¿Deseas borrar todas las corridas de esta sucursal?'))return;
@@ -435,27 +493,27 @@ $('btn-clear-all').onclick=()=>{
 };
 $('btn-reset').onclick=resetForm;
 
-/* ============ LOGIN / VISTAS ============ */
+/* ============ INICIO DE SESIÓN Y VISTAS ============ */
 const sucFromEmail=em=>(em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';
 auth.onAuthStateChanged(u=>{
   const prev=viewSuc();suc=(u&&!isTV)?sucFromEmail(u.email):null;
   if(viewSuc()!==prev)attach(viewSuc());
   updateHeaderTitles();render();autoCatalog();
 });
+
 function switchTab(tab){
   if(tab==='admin'&&!canWrite())return;
-  $('view-screen').classList.toggle('hidden',tab!=='screen');
-  $('view-admin').classList.toggle('hidden',tab!=='admin');
-  $('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');
-  $('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
+  $('view-screen').classList.toggle('hidden',tab!=='screen');$('view-admin').classList.toggle('hidden',tab!=='admin');
+  $('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');$('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
   render();
 }
+
 function openPin(){
   if(canWrite())return switchTab('admin');
-  $('login-user-input').value='';$('login-pass-input').value='';
-  $('pin-error-msg').classList.add('hidden');
+  $('login-user-input').value='';$('login-pass-input').value='';$('pin-error-msg').classList.add('hidden');
   $('pin-modal-overlay').classList.remove('hidden');$('login-user-input').focus();
 }
+
 function doLogin(){
   const u=$('login-user-input').value.trim().toLowerCase(),p=$('login-pass-input').value.trim();
   let em=u;
@@ -467,24 +525,19 @@ function doLogin(){
   }).catch(err=>{console.error('Auth:',err.message);$('pin-error-msg').classList.remove('hidden');});
 }
 
-/* ============ EVENTOS ============ */
+/* ============ EVENTOS GENERALES ============ */
 $('btn-unlock').onclick=unlockAudio;
 document.body.addEventListener('click',()=>ctx());
-$('btn-tab-screen').onclick=()=>switchTab('screen');
-$('btn-tab-admin').onclick=openPin;
-$('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');
-$('btn-login-ok').onclick=doLogin;
+$('btn-tab-screen').onclick=()=>switchTab('screen');$('btn-tab-admin').onclick=openPin;
+$('btn-login-cancel').onclick=()=>$('pin-modal-overlay').classList.add('hidden');$('btn-login-ok').onclick=doLogin;
 $('login-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-$('btn-chime').onclick=()=>chime();
-$('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};
-$('btn-folder').onclick=()=>$('folder-input').click();
-$('folder-input').onchange=e=>{
+$('btn-chime').onclick=()=>chime();$('btn-stop-audio').onclick=stopAllAudio;
+$('btn-mute-local').onclick=()=>{muted=!muted;localStorage.setItem('transpais_local_muted',muted);updateMuteUI();};$('btn-folder').onclick=()=>$('folder-input').click();$('folder-input').onchange=e=>{
   playlist=[...e.target.files].filter(f=>f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name));
   if(playlist.length){track=0;playTrack(0);}else alert('No se encontraron archivos de audio MP3 en la carpeta elegida.');
 };
 $('btn-prev').onclick=()=>step(-1);
-$('btn-next').onclick=()=>step(1);
-$('btn-music').onclick=()=>{
+$('btn-next').onclick=()=>step(1);$('btn-music').onclick=()=>{
   const b=$('btn-music');
   if(bg.paused){bg.play();b.textContent='⏸️';b.className='btn btn-green';}
   else{bg.pause();b.textContent='▶️';b.className='btn btn-dark';}
