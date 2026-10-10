@@ -855,22 +855,19 @@
         if (user === 'terminalof2') fullEmail = 'terminalof2@transpais.com';
       }
 
-      if ((fullEmail === 'ofcentral@transpais.com' && pass === 'jt1910') || 
-          (fullEmail === 'terminalof2@transpais.com' && pass === 'of2776')) {
-        
-        loggedSucursal = (fullEmail === 'ofcentral@transpais.com') ? 'central' : 'of2';
-
-        auth.signInWithEmailAndPassword(fullEmail, pass).catch(err => {
-          console.log("Sesión activa local. Si falta en Firebase Auth, crearlo en consola.", err.message);
+      // Autenticación segura mediante Firebase Auth (Sin contraseñas en código duro)
+      auth.signInWithEmailAndPassword(fullEmail, pass)
+        .then((userCredential) => {
+          loggedSucursal = (fullEmail === 'ofcentral@transpais.com') ? 'central' : 'of2';
+          closePinModal();
+          updateHeaderTitles();
+          switchTab('admin');
+        })
+        .catch((err) => {
+          console.error("Error de autenticación:", err.message);
+          errorMsg.textContent = "❌ Credenciales Incorrectas";
+          errorMsg.classList.remove('hidden');
         });
-
-        closePinModal();
-        updateHeaderTitles();
-        switchTab('admin');
-      } else {
-        errorMsg.textContent = "❌ Credenciales Incorrectas";
-        errorMsg.classList.remove('hidden');
-      }
     }
 
     function switchTab(tab) {
