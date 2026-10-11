@@ -284,6 +284,11 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </footer>
 
 <script>
+/* ============ REGISTRO SERVICE WORKER (ANDROID PUSH) ============ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(function(err){ console.log('SW error:', err); });
+}
+
 /* ============ CONFIG Y UTILIDADES ============ */
 firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
 const db=firebase.database(),auth=firebase.auth();
@@ -763,41 +768,24 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ SEGUIMIENTO Y PERMISOS JUST-IN-TIME ============ */
+/* ============ SEGUIMIENTO Y NOTIFICACIONES DE PASAJERO ============ */
 const prevStatuses = {};
 
-window.trackBus = function(busId){
-  const isSafariIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+window.trackBus = function(busId) {
+  trackedBusId = busId;
+  localStorage.setItem('transpais_tracked_bus', busId);
 
-  function applyTracking() {
-    trackedBusId = busId;
-    localStorage.setItem('transpais_tracked_bus', busId);
-    render();
-  }
-
-  if ("Notification" in window && !isSafariIOS) {
-    if (Notification.permission === "default") {
-      Notification.requestPermission().then(function(perm){
-        applyTracking();
-        if(perm === 'granted'){
-          alert('🔔 ¡Notificaciones activadas! Te avisaremos cuando tu autobús cambie de estatus.');
-        } else {
-          alert('🔔 Seguimiento en pantalla activado. Verás las alertas en vivo mientras tengas abierta la página.');
-        }
-      }).catch(function(){
-        applyTracking();
-      });
-    } else if (Notification.permission === "granted") {
-      applyTracking();
-      alert('🔔 ¡Listo! Te avisaremos cuando tu autobús cambie de estatus.');
-    } else {
-      applyTracking();
-      alert('🔔 Seguimiento en pantalla activado.');
-    }
+  if ("Notification" in window) {
+    Notification.requestPermission().then((perm) => {
+      render();
+      if (perm === 'granted') {
+        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas');
+      } else {
+        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
+      }
+    });
   } else {
-    // Safari iOS / Navegadores sin API de notificaciones nativa
-    applyTracking();
-    alert('🔔 ¡Listo! Recibirás avisos en pantalla en tiempo real para este autobús.');
+    render();
   }
 };
 
@@ -807,33 +795,34 @@ window.untrackBus = function(){
   render();
 };
 
-function checkPassengerPushNotifs(list){
-  if(!isPassenger) return;
+function checkPassengerPushNotifs(list) {
+  if (!isPassenger) return;
 
-  list.forEach(function(d){
+  list.forEach(function(d) {
     const oldSt = prevStatuses[d.id];
     const newSt = d._st;
     
-    // Auto-limpieza si la corrida del pasajero ya salió
-    if(trackedBusId === d.id && newSt === 'SALIDO'){
+    if (trackedBusId === d.id && newSt === 'SALIDO') {
       untrackBus();
     }
 
-    // Solo notificar si es el autobús que el pasajero decidió seguir
-    if(trackedBusId === d.id && oldSt && oldSt !== newSt){
-      if(newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA'){
-        if("Notification" in window && Notification.permission === "granted"){
-          try {
-            new Notification("🚌 Transpais - " + d.destination, {
-              body: "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.",
-              icon: "https://www.transpais.com.mx/favicon.ico"
+    if (trackedBusId === d.id && oldSt && oldSt !== newSt) {
+      if (newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA') {
+        const title = "🚌 Transpais - " + d.destination;
+        const body = "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.";
+
+        if ("Notification" in window && Notification.permission === "granted") {
+          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'SHOW_NOTIFICATION',
+              title: title,
+              body: body
             });
-          } catch(e) {
-            showPassengerInAppToast(d, newSt);
+          } else {
+            new Notification(title, { body: body, icon: 'https://www.transpais.com.mx/favicon.ico' });
           }
-        } else {
-          showPassengerInAppToast(d, newSt);
         }
+        showPassengerInAppToast(d, newSt);
       }
     }
     prevStatuses[d.id] = newSt;
@@ -845,12 +834,12 @@ function showPassengerInAppToast(d, statusText){
   if(!t){
     t = document.createElement('div');
     t.id = 'passenger-toast-msg';
-    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#00A859;color:#fff;padding:15px 25px;border-radius:30px;font-weight:900;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:99999;text-align:center;width:90%;max-width:400px;border:2px solid #00D974;';
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#00A859;color:#fff;padding:12px 20px;border-radius:25px;font-weight:800;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:99999;text-align:center;width:90%;max-width:380px;border:1px solid #00D974;';
     document.body.appendChild(t);
   }
   t.innerHTML = "🚌 <strong>" + esc(d.destination) + " (" + esc(d.time) + "):</strong> ¡" + esc(statusText) + "!";
   t.style.display = 'block';
-  setTimeout(function(){ if(t) t.style.display = 'none'; }, 10000);
+  setTimeout(function(){ if(t) t.style.display = 'none'; }, 8000);
 }
 
 /* ============ VOCEO AUTOMÁTICO EN TV ============ */
