@@ -217,7 +217,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
       <div style="display:flex;gap:10px;align-items:center">
         <input type="file" id="ad-upload-input" accept="image/*,video/mp4" style="display:none">
         <button class="btn btn-green" id="btn-upload-ad">🖼️ Subir Anuncio/Video</button>
-        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 Forzar 75/25 en TV</button>
+        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 FORZAR 75/25 EN TV</button>
       </div>
     </div>
     <div style="max-height:180px;overflow-y:auto">
@@ -306,7 +306,7 @@ const viewSuc=function(){
   return suc||'of2';
 };
 const canWrite=function(){return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc;};
-const fail=function(e){console.error(e.message);alert('Error al guardar: '+e.message);};
+const fail=function(e){console.error(e.message);alert('Error al guardar: '+(e.message||e));};
 
 const CAT={
 p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -323,7 +323,7 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* PRE-CARGA DE AUDIOS MP3 DEL CATÁLOGO */
+/* PRE-CARGA DE AUDIOS MP3 */
 function preloadCatalogAudios(){
   if(isPassenger)return;
   const modes=['etiq','abord','ultima'];
@@ -336,7 +336,7 @@ function preloadCatalogAudios(){
 }
 preloadCatalogAudios();
 
-/* ============ HORA ANTI-ERRORES ============ */
+/* ============ HORA Y SERVIDOR ============ */
 db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
 
 let dtf=null;
@@ -366,7 +366,6 @@ function diffOf(d,n){
 }
 const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===nowParts().key);};
 
-/* ============ ESTATUS SEGÚN TERMINAL ============ */
 function stat(d,diff){
   if(d.status==='SALIDO'||diff<0)return'SALIDO';
   const isCentral = viewSuc() === 'central';
@@ -382,15 +381,14 @@ function stat(d,diff){
   return d.status||'EN ESPERA';
 }
 
-/* ============ TÍTULOS ============ */
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
   if($('header-terminal-title'))$('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
-  if($('header-terminal-sub'))$('header-terminal-sub').textContent=isPassenger?(c?'PASAHERO – CENTRAL':'PASAJERO – PEDRO CÁRDENAS'):(c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO');
+  if($('header-terminal-sub'))$('header-terminal-sub').textContent=isPassenger?(c?'PASAJERO – CENTRAL':'PASAJERO – PEDRO CÁRDENAS'):(c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO');
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO Y REPRODUCCIÓN INTERRUPTIBLE (DESACTIVADO EN PASAJERO) ============ */
+/* ============ AUDIO Y REPRODUCCIÓN ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
 
@@ -589,8 +587,8 @@ async function autoCatalog(){
 }
 
 function calculateCentralTime(timeStr, presetKey){
-  if(presetKey==='p11'||presetKey==='p12')return timeStr; // Nocturnas sin cambio
-  if(presetKey==='p13')return '15:00'; // Valles Completa fijada en Central
+  if(presetKey==='p11'||presetKey==='p12')return timeStr;
+  if(presetKey==='p13')return '15:00';
   const parts=timeStr.split(':').map(Number);
   let totalMins=parts[0]*60+parts[1]-15;
   if(totalMins<0)totalMins+=1440;
@@ -609,7 +607,7 @@ function loadCatalog(){
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ GESTOR DE ANUNCIOS ============ */
+/* ============ GESTOR DE ANUNCIOS (CORREGIDO BOTÓN 75/25) ============ */
 let activeAdIndex=0, adCycleTimer=null, autoSplitState=false;
 
 function renderAds(){
@@ -668,12 +666,89 @@ function renderAds(){
 function update7030State(){
   if(isPassenger)return;
   const wrapper=$('screen-split-container');
+  const btn=$('btn-toggle-7030-manual');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-  const shouldSplit = isTV && activeList.length > 0 && (adsConfig.force7030 || autoSplitState);
+  const isForced=!!adsConfig.force7030;
+  const shouldSplit = activeList.length > 0 && (isForced || (isTV && autoSplitState));
   
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
+  if(btn){
+    btn.textContent = isForced ? '📺 75/25: FORZADO EN TV (ACTIVO)' : '📺 FORZAR 75/25 EN TV';
+    btn.className = 'btn ' + (isForced ? 'btn-green' : 'btn-blue');
+  }
+}
+
+/* EVENTO DE CLICK CORREGIDO PARA FORZAR ANUNCIOS */
+if($('btn-toggle-7030-manual')){
+  $('btn-toggle-7030-manual').onclick=function(){
+    if(!canWrite()){
+      alert('Debes estar autenticado en el Panel de Taquilla para cambiar el modo de pantalla.');
+      return;
+    }
+    const nextState = !adsConfig.force7030;
+    db.ref(suc+'/ads_config').set({force7030:nextState}).then(function(){
+      adsConfig.force7030 = nextState;
+      update7030State();
+    }).catch(fail);
+  };
+}
+
+if($('admin-ads-body')){
+  $('admin-ads-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
+    const id=b.dataset.adid, act=b.dataset.adact;
+    if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
+    else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
+  });
+}
+
+if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-input'))$('ad-upload-input').click();};
+
+if($('ad-upload-input')){
+  $('ad-upload-input').onchange=function(e){
+    const file=e.target.files[0]; if(!file)return;
+    if(file.type.startsWith('video/')){
+      if(file.size > 15 * 1024 * 1024){
+        alert('El video supera los 15 MB. Elige un video más corto.');
+        return;
+      }
+      const reader=new FileReader();
+      reader.onload=function(evt){
+        const newRef=db.ref(suc+'/ads').push();
+        newRef.set({name:file.name,dataUrl:evt.target.result,isVideo:true,active:true}).then(function(){
+          e.target.value='';
+        }).catch(fail);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=function(evt){
+        const img=new Image();
+        img.onload=function(){
+          const canvas=document.createElement('canvas');
+          let w=img.width, h=img.height;
+          const maxDim=720;
+          if(w>maxDim||h>maxDim){
+            if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
+            else{ w=Math.round((w*maxDim)/h); h=maxDim; }
+          }
+          canvas.width=w; canvas.height=h;
+          const ctx=canvas.getContext('2d');
+          ctx.drawImage(img,0,0,w,h);
+          const compressedDataUrl=canvas.toDataURL('image/jpeg',0.65);
+          
+          const newRef=db.ref(suc+'/ads').push();
+          newRef.set({name:file.name,dataUrl:compressedDataUrl,isVideo:false,active:true}).then(function(){
+            e.target.value='';
+          }).catch(fail);
+        };
+        img.src=evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 }
 
 /* MENSAJE URGENTE CONTROLES */
@@ -692,44 +767,74 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ NOTIFICACIONES EN CELULAR DE PASAJERO ============ */
+/* ============ NOTIFICACIONES EN SAFARI / CELULARES ============ */
 const prevStatuses = {};
 
 function checkPassengerPushNotifs(list){
-  if(!isPassenger || !("Notification" in window) || Notification.permission !== "granted") return;
-  
+  if(!isPassenger) return;
   list.forEach(function(d){
     const oldSt = prevStatuses[d.id];
     const newSt = d._st;
     if(oldSt && oldSt !== newSt){
       if(newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA'){
-        try {
-          new Notification("🚌 Transpais - " + d.destination, {
-            body: "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.",
-            icon: "https://www.transpais.com.mx/favicon.ico"
-          });
-        } catch(e) {}
+        if("Notification" in window && Notification.permission === "granted"){
+          try {
+            new Notification("🚌 Transpais - " + d.destination, {
+              body: "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.",
+              icon: "https://www.transpais.com.mx/favicon.ico"
+            });
+          } catch(e) {
+            showPassengerInAppToast(d, newSt);
+          }
+        } else {
+          showPassengerInAppToast(d, newSt);
+        }
       }
     }
     prevStatuses[d.id] = newSt;
   });
 }
 
+function showPassengerInAppToast(d, statusText){
+  let t = $('passenger-toast-msg');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'passenger-toast-msg';
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#00A859;color:#fff;padding:15px 25px;border-radius:30px;font-weight:900;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:99999;text-align:center;width:90%;max-width:400px;border:2px solid #00D974;';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = "🚌 <strong>" + esc(d.destination) + " (" + esc(d.time) + "):</strong> ¡" + esc(statusText) + "!";
+  t.style.display = 'block';
+  setTimeout(function(){ if(t) t.style.display = 'none'; }, 10000);
+}
+
 function initNotifPermissionUI(){
-  if(!isPassenger || !("Notification" in window)) return;
+  if(!isPassenger) return;
   const card = $('notif-perm-card');
   if(!card) return;
 
-  if(Notification.permission === "default"){
+  const isSafariIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if("Notification" in window && !isSafariIOS){
+    if(Notification.permission === "default"){
+      card.classList.remove('hidden');
+      $('btn-request-notif').onclick = function(){
+        Notification.requestPermission().then(function(perm){
+          card.classList.add('hidden');
+          if(perm === 'granted') alert('✅ Notificaciones de abordaje activadas.');
+        }).catch(function(){ card.classList.add('hidden'); });
+      };
+      $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
+    }
+  } else {
     card.classList.remove('hidden');
+    card.querySelector('p').textContent = "Visualiza alertas instantáneas en tu pantalla cuando sea momento de abordar.";
+    $('btn-request-notif').textContent = "✅ Recibir Avisos";
     $('btn-request-notif').onclick = function(){
-      Notification.requestPermission().then(function(perm){
-        card.classList.add('hidden');
-      });
-    };
-    $('btn-dismiss-notif').onclick = function(){
       card.classList.add('hidden');
+      alert('✅ Avisos en pantalla activados para tu viaje.');
     };
+    $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
   }
 }
 initNotifPermissionUI();
@@ -771,7 +876,6 @@ function tick(){
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
     
-    // REINICIO DIARIO A LAS 03:00 AM (SOLO TV)
     if(isTV && n.time === '03:00:00'){
       location.reload(true);
       return;
