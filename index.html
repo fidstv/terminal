@@ -49,12 +49,12 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* ============ LAYOUT 70/30 Y ANUNCIOS ============ */
+/* ============ LAYOUT 75/25 Y ANUNCIOS ============ */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
 .fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
-.screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 70%;width:70%}
+.screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 75%;width:75%}
 
-.ads-sidebar-wrap{flex:0 0 30%;width:30%;min-height:480px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:stretch;justify-content:stretch}
+.ads-sidebar-wrap{flex:0 0 25%;width:25%;min-height:480px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:stretch;justify-content:stretch}
 .screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
 
 .ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden;background:#000B18;display:flex;align-items:center;justify-content:center}
@@ -160,17 +160,17 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </main>
 
 <main id="view-admin" class="glass-card hidden">
-  <!-- SECCIÓN GESTOR DE OFERTAS 70/30 -->
+  <!-- SECCIÓN GESTOR DE OFERTAS 75/25 -->
   <div style="background:rgba(0,30,68,.8);border:1px solid rgba(0,217,116,.3);padding:16px;border-radius:12px;margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
-        <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y OFERTAS (LAYOUT 70/30)</h3>
+        <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y OFERTAS (LAYOUT 75/25)</h3>
         <p style="font-size:11px;color:#93c5fd">Sube imágenes promocionales directamente desde tu computadora para proyectarlas en las Smart TV.</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="file" id="ad-upload-input" accept="image/*" style="display:none">
         <button class="btn btn-green" id="btn-upload-ad">🖼️ Subir Anuncio de PC</button>
-        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 Forzar 70/30 en TV</button>
+        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 Forzar 75/25 en TV</button>
       </div>
     </div>
     <div style="max-height:180px;overflow-y:auto">
@@ -543,7 +543,7 @@ function update7030State(){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
   if($('btn-toggle-7030-manual')){
-    $('btn-toggle-7030-manual').textContent=adsConfig.force7030?'📺 70/30: FORZADO EN TV':'📺 70/30: AUTOMÁTICO';
+    $('btn-toggle-7030-manual').textContent=adsConfig.force7030?'📺 75/25: FORZADO EN TV':'📺 75/25: AUTOMÁTICO';
     $('btn-toggle-7030-manual').className='btn '+(adsConfig.force7030?'btn-green':'btn-blue');
   }
 }
@@ -576,6 +576,7 @@ if($('admin-ads-body')){
 
 if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-input'))$('ad-upload-input').click();};
 
+/* COMPRESIÓN OPTIMIZADA AL SUBIR IMAGEN DE ANUNCIO */
 if($('ad-upload-input')){
   $('ad-upload-input').onchange=function(e){
     const file=e.target.files[0]; if(!file)return;
@@ -585,7 +586,7 @@ if($('ad-upload-input')){
       img.onload=function(){
         const canvas=document.createElement('canvas');
         let w=img.width, h=img.height;
-        const maxDim=1080;
+        const maxDim=720;
         if(w>maxDim||h>maxDim){
           if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
           else{ w=Math.round((w*maxDim)/h); h=maxDim; }
@@ -593,7 +594,7 @@ if($('ad-upload-input')){
         canvas.width=w; canvas.height=h;
         const ctx=canvas.getContext('2d');
         ctx.drawImage(img,0,0,w,h);
-        const compressedDataUrl=canvas.toDataURL('image/jpeg',0.8);
+        const compressedDataUrl=canvas.toDataURL('image/jpeg',0.65);
         
         const newRef=db.ref(suc+'/ads').push();
         newRef.set({name:file.name,dataUrl:compressedDataUrl,active:true}).then(function(){
@@ -639,7 +640,6 @@ function tick(){
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
     
-    // Solo evalúa voceos y re-renderiza la tabla si cambia el minuto
     if(n.min !== lastMinute){
       lastMinute = n.min;
       if(ready){
