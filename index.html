@@ -10,7 +10,10 @@
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
-.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 200px)}
+
+/* TARJETA PRINCIPAL CON SCROLL RESTAURADO */
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
+
 .control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
@@ -49,15 +52,17 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* ============ LAYOUT 70/30 Y ANUNCIOS DINÁMICOS ============ */
-.screen-split-wrapper{display:flex;gap:20px;width:100%;height:100%;min-height:0;flex-grow:1;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
-.fids-table-wrap{flex:1 1 100%;width:100%;height:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
+/* ============ LAYOUT 70/30 Y ANUNCIOS (CORREGIDO) ============ */
+.screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
+.fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
 .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 70%;width:70%}
-.ads-sidebar-wrap{flex:0 0 30%;width:30%;height:100%;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:center;justify-content:center}
+
+.ads-sidebar-wrap{flex:0 0 30%;width:30%;min-height:480px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:stretch;justify-content:stretch}
 .screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
-.ad-image-container{width:100%;height:100%;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.ad-img-item{width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;inset:0;opacity:0;transition:opacity 1s ease-in-out}
-.ad-img-item.active{opacity:1}
+
+.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden}
+.ad-img-item{width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
+.ad-img-item.active{opacity:1!important;z-index:2}
 
 /* ============ WIDGET QR Y VOCEO ============ */
 .qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
@@ -366,9 +371,8 @@ function enqueueAudio(k,m){
   if(!playing)runQueue();
 }
 
-// INTERRUPCIÓN INMEDIATA: Cancela audios anteriores y suena al instante
 function playVoiceImmediate(key,mode){
-  aq.length=0; // Borra la cola pendiente
+  aq.length=0;
   if(currentVoiceAudio){
     try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
     currentVoiceAudio=null;
@@ -511,7 +515,7 @@ function loadCatalog(){
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ GESTOR DE ANUNCIOS Y COMPRESIÓN ============ */
+/* ============ GESTOR DE ANUNCIOS ============ */
 let activeAdIndex=0, adCycleTimer=null, autoSplitState=false;
 
 function renderAds(){
@@ -567,8 +571,6 @@ startAdCarousel();
 function update7030State(){
   const wrapper=$('screen-split-container');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-  
-  // CANDADO DE SEGURIDAD: Solo comprime al 70% si REALMENTE HAY ofertas activas cargadas
   const shouldSplit = isTV && activeList.length > 0 && (adsConfig.force7030 || autoSplitState);
   
   if(wrapper){
@@ -617,7 +619,7 @@ if($('ad-upload-input')){
       img.onload=function(){
         const canvas=document.createElement('canvas');
         let w=img.width, h=img.height;
-        const maxDim=1600;
+        const maxDim=1080;
         if(w>maxDim||h>maxDim){
           if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
           else{ w=Math.round((w*maxDim)/h); h=maxDim; }
@@ -625,7 +627,7 @@ if($('ad-upload-input')){
         canvas.width=w; canvas.height=h;
         const ctx=canvas.getContext('2d');
         ctx.drawImage(img,0,0,w,h);
-        const compressedDataUrl=canvas.toDataURL('image/jpeg',0.85);
+        const compressedDataUrl=canvas.toDataURL('image/jpeg',0.8);
         
         const newRef=db.ref(suc+'/ads').push();
         newRef.set({name:file.name,dataUrl:compressedDataUrl,active:true}).then(function(){
@@ -719,7 +721,6 @@ function adminRow(d){
   '<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>';
 }
 
-// CORRECCIÓN CRÍTICA DE ORDEN: Mantiene las filas estrictamente ordenadas por hora en el DOM
 function syncRows(tb, list, html){
   const sigOf = function(d){ return JSON.stringify([d.time, d.destination, d.scales, d.bus, d._st, d.presetKey]); };
   const existingRows = new Map(Array.from(tb.children).map(function(r){ return [r.dataset.id, r]; }));
@@ -747,7 +748,6 @@ function syncRows(tb, list, html){
       }
     }
     
-    // Re-inserta la fila en la posición exacta según el orden cronológico
     if(tb.children[index] !== r){
       tb.insertBefore(r, tb.children[index] || null);
     }
@@ -1040,7 +1040,7 @@ if($('btn-music')){
     else{bg.pause(); b.textContent='▶️'; b.className='btn btn-dark';}
   };
 }
-if($('music-vol'))$('music-vol').oninput=function(e){if(bg)bg.volume=+e.target.value;};
+if($ music-vol)$('music-vol').oninput=function(e){if(bg)bg.volume=+e.target.value;};
 
 if(isTV&&$('control-bar'))$('control-bar').style.display='none';
 
