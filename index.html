@@ -49,9 +49,14 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* ============ MARQUESINA DE MENSAJE URGENTE ============ */
-.urgent-banner{background:#dc2626;color:#fff;padding:12px 20px;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:0 0 20px rgba(220,38,38,.6);animation:pulseUrgent 2s infinite alternate}
-@keyframes pulseUrgent{0%{background:#dc2626;box-shadow:0 0 10px rgba(220,38,38,.5)}100%{background:#be123c;box-shadow:0 0 25px rgba(225,29,72,.9)}}
+/* ============ MARQUESINA DESLIZANTE DE MENSAJE URGENTE ============ */
+.urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
+.urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
+@keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+/* ============ PERMISO DE NOTIFICACIONES ESTILO TRANSPAIS ============ */
+.transpais-notif-card{background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:16px;padding:16px 20px;margin-bottom:15px;box-shadow:0 10px 30px rgba(0,168,89,.3);display:flex;align-items:center;justify-content:space-between;gap:15px;animation:fadeInDown .5s ease}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:translateY(0)}}
 
 /* ============ LAYOUT 75/25 Y ANUNCIOS ============ */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
@@ -77,6 +82,16 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .voice-indicator.active{transform:translateY(0);opacity:1}
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
+
+/* ESTILOS ESPECÍFICOS PARA DISPOSITIVOS MÓVILES */
+@media (max-width: 768px) {
+  .glass-header{padding:10px 15px}
+  .brand-logo{font-size:20px;padding:5px 12px}
+  #header-terminal-title{font-size:16px!important}
+  #header-terminal-sub{font-size:10px!important}
+  .glass-card{margin:10px;padding:12px;max-height:none}
+  td,th{padding:8px 6px!important}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -150,10 +165,21 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </div>
 
 <main id="view-screen" class="glass-card">
-  <!-- BANNER DE MENSAJE URGENTE -->
+  <!-- TARJETA DE PERMISO DE NOTIFICACIONES ESTILO TRANSPAIS PARA MÓVIL -->
+  <div id="notif-perm-card" class="transpais-notif-card hidden">
+    <div>
+      <h4 style="color:#00D974;font-size:13px;font-weight:900;margin-bottom:2px">🔔 NOTIFICACIONES DE ABORDAJE</h4>
+      <p style="color:#93c5fd;font-size:11px">Recibe una alerta en tu teléfono cuando tu autobús esté listo para salir.</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" id="btn-request-notif">🔔 Activar Alertas</button>
+      <button class="btn btn-dark" id="btn-dismiss-notif">Omitir</button>
+    </div>
+  </div>
+
+  <!-- BANNER DE MENSAJE URGENTE DESLIZANTE -->
   <div id="urgent-banner-screen" class="urgent-banner hidden">
-    <span style="font-size:18px">⚠️</span>
-    <span id="urgent-text-display"></span>
+    <div class="urgent-scroll-text" id="urgent-text-display"></div>
   </div>
 
   <div id="screen-split-container" class="screen-split-wrapper">
@@ -222,10 +248,10 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
       <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
       <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
       <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
-      <option value="p10">18:45 - Tampico x Victoria (Semi-Directa)</option>
+      <option value="p10">18:45 - Tampico (Semi-Directa)</option>
       <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
       <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
-      <option value="p13">15:00 - Ciudad Valles Completa</option>
+      <option value="p13">15:15 - Ciudad Valles Completa</option>
     </select>
   </div>
   <form id="departure-form">
@@ -271,9 +297,15 @@ const $=function(id){return document.getElementById(id);};
 const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
+const isPassenger=vista.startsWith('pasajero');
 let suc=null,deps={},adsData={},adsConfig={force7030:false},ready=false,srvOff=0,urgentMsg='';
-const viewSuc=function(){return vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));};
-const canWrite=function(){return !isTV&&!!auth.currentUser&&!!suc;};
+
+const viewSuc=function(){
+  if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
+  if(isTV||isPassenger)return'of2';
+  return suc||'of2';
+};
+const canWrite=function(){return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc;};
 const fail=function(e){console.error(e.message);alert('Error al guardar: '+e.message);};
 
 const CAT={
@@ -286,13 +318,14 @@ p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victori
 p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
 p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
 p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
-p10:["18:45","Tampico x Victoria","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
+p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
 p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
-p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
+p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
 /* PRE-CARGA DE AUDIOS MP3 DEL CATÁLOGO */
 function preloadCatalogAudios(){
+  if(isPassenger)return;
   const modes=['etiq','abord','ultima'];
   Object.keys(CAT).forEach(function(k){
     modes.forEach(function(m){
@@ -353,20 +386,22 @@ function stat(d,diff){
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
   if($('header-terminal-title'))$('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
-  if($('header-terminal-sub'))$('header-terminal-sub').textContent=c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO';
+  if($('header-terminal-sub'))$('header-terminal-sub').textContent=isPassenger?(c?'PASAHERO – CENTRAL':'PASAJERO – PEDRO CÁRDENAS'):(c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO');
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO Y REPRODUCCIÓN INTERRUPTIBLE ============ */
+/* ============ AUDIO Y REPRODUCCIÓN INTERRUPTIBLE (DESACTIVADO EN PASAJERO) ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
 
 function setVoiceIndicator(show){
+  if(isPassenger)return;
   const vi=$('voice-indicator');
   if(vi)vi.classList.toggle('active',!!show);
 }
 
 function ctx(){
+  if(isPassenger)return null;
   if(!actx){
     const C=window.AudioContext||window.webkitAudioContext;
     if(C)actx=new C();
@@ -377,7 +412,7 @@ function ctx(){
 
 function chime(){
   return new Promise(function(res){
-    if(muted)return res();
+    if(muted||isPassenger)return res();
     try{
       const c=ctx(); if(!c)return res();
       const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
@@ -393,11 +428,13 @@ function chime(){
 const aq=[]; let playing=false;
 
 function enqueueAudio(k,m){
+  if(isPassenger)return;
   aq.push([k,m]); 
   if(!playing)runQueue();
 }
 
 function playVoiceImmediate(key,mode){
+  if(isPassenger)return;
   aq.length=0;
   if(currentVoiceAudio){
     try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
@@ -408,6 +445,7 @@ function playVoiceImmediate(key,mode){
 }
 
 async function runQueue(){
+  if(isPassenger)return;
   playing=true;
   setVoiceIndicator(true);
   while(aq.length){
@@ -420,7 +458,7 @@ async function runQueue(){
 
 function playOne(key,mode){
   return new Promise(async function(res){
-    if(muted)return res();
+    if(muted||isPassenger)return res();
     await chime();
     const a=new Audio('audios/'+key+'_'+mode+'.mp3');
     currentVoiceAudio=a;
@@ -459,7 +497,7 @@ function updateMuteUI(){
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
-/* ============ DATOS Y SINCRONIZACIÓN (CON RESPALDO OFFLINE Y MENSAJE URGENTE) ============ */
+/* ============ DATOS Y SINCRONIZACIÓN ============ */
 let refs=[];
 function attach(s){
   try{
@@ -484,26 +522,28 @@ function attach(s){
       }catch(e){}
     });
 
-    rv.on('value',function(snap){
-      const d=snap.val();
-      if(!d||!d.timestamp||d.timestamp<=lastTs)return;
-      lastTs=d.timestamp;
-      if(Date.now()+srvOff-d.timestamp>15000)return;
-      playVoiceImmediate(d.key,d.mode);
-    });
-
-    ra.on('value',function(snap){
-      const next={};
-      snap.forEach(function(c){
-        const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+    if(!isPassenger){
+      rv.on('value',function(snap){
+        const d=snap.val();
+        if(!d||!d.timestamp||d.timestamp<=lastTs)return;
+        lastTs=d.timestamp;
+        if(Date.now()+srvOff-d.timestamp>15000)return;
+        playVoiceImmediate(d.key,d.mode);
       });
-      adsData=next; renderAds();
-    });
 
-    rc.on('value',function(snap){
-      adsConfig=snap.val()||{force7030:false};
-      update7030State();
-    });
+      ra.on('value',function(snap){
+        const next={};
+        snap.forEach(function(c){
+          const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+        });
+        adsData=next; renderAds();
+      });
+
+      rc.on('value',function(snap){
+        adsConfig=snap.val()||{force7030:false};
+        update7030State();
+      });
+    }
 
     ru.on('value',function(snap){
       urgentMsg=snap.val()||'';
@@ -524,7 +564,7 @@ function renderUrgentMsg(){
   const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
   if(banner&&txt){
     if(urgentMsg&&urgentMsg.trim()){
-      txt.textContent=urgentMsg.trim();
+      txt.textContent="⚠️ " + urgentMsg.trim();
       banner.classList.remove('hidden');
     }else{
       banner.classList.add('hidden');
@@ -548,18 +588,32 @@ async function autoCatalog(){
   setTimeout(function(){autoBusy=false;},10000);
 }
 
+function calculateCentralTime(timeStr, presetKey){
+  if(presetKey==='p11'||presetKey==='p12')return timeStr; // Nocturnas sin cambio
+  if(presetKey==='p13')return '15:00'; // Valles Completa fijada en Central
+  const parts=timeStr.split(':').map(Number);
+  let totalMins=parts[0]*60+parts[1]-15;
+  if(totalMins<0)totalMins+=1440;
+  const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
+  const newM=String(totalMins%60).padStart(2,'0');
+  return newH+':'+newM;
+}
+
 function loadCatalog(){
-  const day=nowParts().key, o={};
+  const day=nowParts().key, o={}, isCentral=suc==='central';
   Object.keys(CAT).forEach(function(k){
-    o[k]={presetKey:k,time:CAT[k][0],destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+    let timeVal = CAT[k][0];
+    if(isCentral) timeVal = calculateCentralTime(timeVal, k);
+    o[k]={presetKey:k,time:timeVal,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
   });
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ GESTOR DE ANUNCIOS Y VIDEOS MP4/GIFs ============ */
+/* ============ GESTOR DE ANUNCIOS ============ */
 let activeAdIndex=0, adCycleTimer=null, autoSplitState=false;
 
 function renderAds(){
+  if(isPassenger)return;
   const container=$('ad-image-container'), adminBody=$('admin-ads-body');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   
@@ -611,19 +665,8 @@ function renderAds(){
   update7030State();
 }
 
-function startAdCarousel(){
-  if(adCycleTimer)clearInterval(adCycleTimer);
-  adCycleTimer=setInterval(function(){
-    const imgs=document.querySelectorAll('.ad-img-item');
-    if(imgs.length<=1)return;
-    imgs[activeAdIndex].classList.remove('active');
-    activeAdIndex=(activeAdIndex+1)%imgs.length;
-    imgs[activeAdIndex].classList.add('active');
-  },7000);
-}
-startAdCarousel();
-
 function update7030State(){
+  if(isPassenger)return;
   const wrapper=$('screen-split-container');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   const shouldSplit = isTV && activeList.length > 0 && (adsConfig.force7030 || autoSplitState);
@@ -631,91 +674,6 @@ function update7030State(){
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
-  if($('btn-toggle-7030-manual')){
-    $('btn-toggle-7030-manual').textContent=adsConfig.force7030?'📺 75/25: FORZADO EN TV':'📺 75/25: AUTOMÁTICO';
-    $('btn-toggle-7030-manual').className='btn '+(adsConfig.force7030?'btn-green':'btn-blue');
-  }
-}
-
-if(isTV){
-  setInterval(function(){
-    const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-    if(activeList.length>0 && !adsConfig.force7030){
-      autoSplitState=true; 
-      update7030State();
-      setTimeout(function(){
-        autoSplitState=false; 
-        update7030State();
-      }, 45000);
-    } else {
-      autoSplitState=false;
-      update7030State();
-    }
-  }, 180000);
-}
-
-if($('admin-ads-body')){
-  $('admin-ads-body').addEventListener('click',function(e){
-    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
-    const id=b.dataset.adid, act=b.dataset.adact;
-    if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
-    else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
-  });
-}
-
-if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-input'))$('ad-upload-input').click();};
-
-/* SUBIDA CON OPTIMIZACIÓN DE IMÁGENES Y SOPORTE DE VIDEO MP4 */
-if($('ad-upload-input')){
-  $('ad-upload-input').onchange=function(e){
-    const file=e.target.files[0]; if(!file)return;
-    if(file.type.startsWith('video/')){
-      if(file.size > 15 * 1024 * 1024){
-        alert('El video supera el tamaño recomendado (15 MB). Elige un video más corto.');
-        return;
-      }
-      const reader=new FileReader();
-      reader.onload=function(evt){
-        const newRef=db.ref(suc+'/ads').push();
-        newRef.set({name:file.name,dataUrl:evt.target.result,isVideo:true,active:true}).then(function(){
-          e.target.value='';
-        }).catch(fail);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const reader=new FileReader();
-      reader.onload=function(evt){
-        const img=new Image();
-        img.onload=function(){
-          const canvas=document.createElement('canvas');
-          let w=img.width, h=img.height;
-          const maxDim=720;
-          if(w>maxDim||h>maxDim){
-            if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
-            else{ w=Math.round((w*maxDim)/h); h=maxDim; }
-          }
-          canvas.width=w; canvas.height=h;
-          const ctx=canvas.getContext('2d');
-          ctx.drawImage(img,0,0,w,h);
-          const compressedDataUrl=canvas.toDataURL('image/jpeg',0.65);
-          
-          const newRef=db.ref(suc+'/ads').push();
-          newRef.set({name:file.name,dataUrl:compressedDataUrl,isVideo:false,active:true}).then(function(){
-            e.target.value='';
-          }).catch(fail);
-        };
-        img.src=evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-}
-
-if($('btn-toggle-7030-manual')){
-  $('btn-toggle-7030-manual').onclick=function(){
-    if(!canWrite())return;
-    db.ref(suc+'/ads_config').set({force7030:!adsConfig.force7030}).catch(fail);
-  };
 }
 
 /* MENSAJE URGENTE CONTROLES */
@@ -734,10 +692,53 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ VOCEO CON TIEMPOS CONFIGURADOS POR TERMINAL ============ */
+/* ============ NOTIFICACIONES EN CELULAR DE PASAJERO ============ */
+const prevStatuses = {};
+
+function checkPassengerPushNotifs(list){
+  if(!isPassenger || !("Notification" in window) || Notification.permission !== "granted") return;
+  
+  list.forEach(function(d){
+    const oldSt = prevStatuses[d.id];
+    const newSt = d._st;
+    if(oldSt && oldSt !== newSt){
+      if(newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA'){
+        try {
+          new Notification("🚌 Transpais - " + d.destination, {
+            body: "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.",
+            icon: "https://www.transpais.com.mx/favicon.ico"
+          });
+        } catch(e) {}
+      }
+    }
+    prevStatuses[d.id] = newSt;
+  });
+}
+
+function initNotifPermissionUI(){
+  if(!isPassenger || !("Notification" in window)) return;
+  const card = $('notif-perm-card');
+  if(!card) return;
+
+  if(Notification.permission === "default"){
+    card.classList.remove('hidden');
+    $('btn-request-notif').onclick = function(){
+      Notification.requestPermission().then(function(perm){
+        card.classList.add('hidden');
+      });
+    };
+    $('btn-dismiss-notif').onclick = function(){
+      card.classList.add('hidden');
+    };
+  }
+}
+initNotifPermissionUI();
+
+/* ============ VOCEO AUTOMÁTICO EN TV ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 
 function autoVoice(d,diff,n){
+  if(isPassenger)return;
   const isCentral = viewSuc() === 'central';
   let mode = null;
   let subKey = '';
@@ -761,7 +762,7 @@ function autoVoice(d,diff,n){
   enqueueAudio(d.presetKey||'p01',mode);
 }
 
-/* ============ RELOJ, RENDIMIENTO Y REINICIO 3:00 AM ============ */
+/* ============ RELOJ Y REINICIO DIARIO ============ */
 let lastMinute = -1;
 
 function tick(){
@@ -770,8 +771,8 @@ function tick(){
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
     
-    // REINICIO DIARIO A LAS 03:00 AM
-    if(n.time === '03:00:00'){
+    // REINICIO DIARIO A LAS 03:00 AM (SOLO TV)
+    if(isTV && n.time === '03:00:00'){
       location.reload(true);
       return;
     }
@@ -793,7 +794,7 @@ function tick(){
 setInterval(tick,1000);
 setInterval(autoCatalog,30000);
 
-/* ============ RENDER TABLAS Y ORDEN CRONOLÓGICO ============ */
+/* ============ RENDER TABLAS ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
@@ -821,14 +822,14 @@ function adminRow(d){
   '<td>'+
     '<div class="flex" style="flex-direction:column;gap:2px">'+
       '<div class="flex">'+
-        '<button class="btn btn-advance" data-act="time" data-v="-60" title="Adelantar 1 hora">-1h</button>'+
-        '<button class="btn btn-advance" data-act="time" data-v="-30" title="Adelantar 30 minutos">-30m</button>'+
-        '<button class="btn btn-advance" data-act="time" data-v="-5" title="Adelantar 5 minutos">-5m</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-60" title="-1 hora">-1h</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-30" title="-30 min">-30m</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-5" title="-5 min">-5m</button>'+
       '</div>'+
       '<div class="flex">'+
-        '<button class="btn btn-delay" data-act="time" data-v="5" title="Demorar 5 minutos">+5m</button>'+
-        '<button class="btn btn-delay" data-act="time" data-v="30" title="Demorar 30 minutos">+30m</button>'+
-        '<button class="btn btn-delay" data-act="time" data-v="60" title="Demorar 1 hora">+1h</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="5" title="+5 min">+5m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="30" title="+30 min">+30m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="60" title="+1 hora">+1h</button>'+
       '</div>'+
     '</div>'+
   '</td>'+
@@ -882,11 +883,13 @@ function render(){
     .map(function(d){
       const obj=Object.assign({},d); obj._st=stat(d,diffOf(d,n)); return obj;
     }).sort(function(a,b){return a.time.localeCompare(b.time);});
+  
   if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
   if(canWrite()&&ab)syncRows(ab,list,adminRow);
+  if(isPassenger)checkPassengerPushNotifs(list);
 }
 
-/* ============ ACCIONES Y CONTROL DE TIEMPO ============ */
+/* ============ ACCIONES DE TAQUILLA ============ */
 const dref=function(id){return db.ref(suc+'/deps/'+id);};
 
 if($('admin-body')){
@@ -972,7 +975,9 @@ if($('departure-form')){
 if($('preset-selector')){
   $('preset-selector').addEventListener('change',function(e){
     const k=e.target.value; if(!CAT[k])return;
-    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=CAT[k][0];
+    let timeVal = CAT[k][0];
+    if(suc === 'central') timeVal = calculateCentralTime(timeVal, k);
+    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=timeVal;
     $('dep-destination').value=CAT[k][1]; $('dep-scales').value=CAT[k][2];
     $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
   });
@@ -985,15 +990,15 @@ if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
 };
 if($('btn-reset'))$('btn-reset').onclick=resetForm;
 
-/* ============ LOGIN, CERRAR SESIÓN Y VISTAS ============ */
+/* ============ AUTH Y VISTAS ============ */
 const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
 
 auth.onAuthStateChanged(function(u){
   const prev=viewSuc(); 
-  suc=(u&&!isTV)?sucFromEmail(u.email):null;
+  suc=(u&&!isTV&&!isPassenger)?sucFromEmail(u.email):null;
   
   if($('btn-logout')){
-    $('btn-logout').classList.toggle('hidden', !u || isTV);
+    $('btn-logout').classList.toggle('hidden', !u || isTV || isPassenger);
   }
   
   if(viewSuc()!==prev)attach(viewSuc());
@@ -1040,60 +1045,16 @@ function doLogout(){
   }
 }
 
-/* ============ ATAJOS DE TECLADO ============ */
-document.addEventListener('keydown',function(e){
-  const tag=document.activeElement?document.activeElement.tagName.toLowerCase():'';
-  const isInput=tag==='input'||tag==='textarea'||tag==='select'||document.activeElement.isContentEditable;
-
-  if((e.code==='Space'||e.key===' ')&&!isInput){
-    e.preventDefault();
-    panicStop();
-  }
-
-  if(e.altKey&&!isInput){
-    if(e.key==='1'){ e.preventDefault(); triggerTopVoice('etiq'); }
-    else if(e.key==='2'){ e.preventDefault(); triggerTopVoice('abord'); }
-    else if(e.key==='3'){ e.preventDefault(); triggerTopVoice('ultima'); }
-  }
-});
-
-function triggerTopVoice(mode){
-  if(!canWrite())return;
-  const n=nowParts();
-  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
-    .sort(function(a,b){return a.time.localeCompare(b.time);});
-  if(list.length>0){
-    const topDep=list[0];
-    db.ref(suc+'/voice').set({
-      key:topDep.presetKey||'p01',
-      mode:mode,
-      timestamp:firebase.database.ServerValue.TIMESTAMP
-    }).catch(fail);
-  }
-}
-
-/* ============ AUTO-SCROLL ============ */
-function autoScrollFids(){
-  const card=document.querySelector('.fids-table-wrap');
-  if(!card||$('view-screen').classList.contains('hidden'))return;
-  if(card.scrollHeight>card.clientHeight){
-    if(card.scrollTop+card.clientHeight>=card.scrollHeight-5){
-      card.scrollTo({top:0,behavior:'smooth'});
-    }else{
-      card.scrollBy({top:120,behavior:'smooth'});
-    }
-  }
-}
-setInterval(autoScrollFids,8000);
-
-/* ============ QR DINÁMICO (EXCLUSIVO TV) ============ */
+/* ============ QR DINÁMICO DIRIGIDO A PASAJEROS ============ */
 let qrGenerated=false;
 function initQR(){
-  const box=$('qrcode-box'); if(!box)return;
+  const box=$('qrcode-box'); if(!box||isPassenger)return;
   box.innerHTML='';
   if(window.QRCode){
+    const targetVista = (viewSuc() === 'central') ? 'pasajerocentral' : 'pasajeroof2';
+    const mobileUrl = window.location.origin + window.location.pathname + '?vista=' + targetVista;
     new QRCode(box,{
-      text:window.location.href,
+      text:mobileUrl,
       width:120,
       height:120,
       colorDark:"#000000",
@@ -1105,25 +1066,25 @@ function initQR(){
 }
 
 function cycleQR(){
-  const qrCard=$('qr-card'); if(!qrCard)return;
-  
-  if(!isTV){
-    qrCard.classList.remove('show');
-    return;
-  }
+  const qrCard=$('qr-card'); if(!qrCard||isPassenger)return;
+  if(!isTV){ qrCard.classList.remove('show'); return; }
 
   if(!qrGenerated)initQR();
   qrCard.classList.add('show');
-  setTimeout(function(){
-    qrCard.classList.remove('show');
-  },25000);
+  setTimeout(function(){ qrCard.classList.remove('show'); },25000);
 }
 
-if(isTV){
+if(isTV && !isPassenger){
   setTimeout(function(){
     cycleQR();
     setInterval(cycleQR,150000);
   },10000);
+}
+
+/* OCULTAR ELEMENTOS INNECESARIOS EN MODOS ESPECIALES */
+if(isTV || isPassenger){
+  if($('control-bar'))$('control-bar').style.display='none';
+  if($('audio-start-overlay'))$('audio-start-overlay').style.display='none';
 }
 
 /* ============ EVENTOS BINDING ============ */
@@ -1137,8 +1098,6 @@ if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',functi
 if($('btn-chime'))$('btn-chime').onclick=function(){chime();};
 if($('btn-panic'))$('btn-panic').onclick=panicStop;
 if($('btn-mute-local'))$('btn-mute-local').onclick=function(){muted=!muted; localStorage.setItem('transpais_local_muted',muted); updateMuteUI();};
-
-if(isTV&&$('control-bar'))$('control-bar').style.display='none';
 
 updateMuteUI();
 updateHeaderTitles();
