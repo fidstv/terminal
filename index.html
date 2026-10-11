@@ -83,15 +83,23 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
-/* ESTILOS ESPECÍFICOS PARA DISPOSITIVOS MÓVILES */
-@media (max-width: 768px) {
-  .glass-header{padding:10px 15px}
-  .brand-logo{font-size:20px;padding:5px 12px}
-  #header-terminal-title{font-size:16px!important}
-  #header-terminal-sub{font-size:10px!important}
-  .glass-card{margin:10px;padding:12px;max-height:none}
-  td,th{padding:8px 6px!important}
-}
+/* ============ ESTILOS EXCLUSIVOS VISTA PASAJERO MÓVIL ============ */
+body.passenger-mode .glass-header{padding:10px 15px}
+body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
+body.passenger-mode #header-terminal-title{font-size:16px!important}
+body.passenger-mode #header-terminal-sub{font-size:10px!important}
+body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;max-height:none}
+body.passenger-mode .fids-table-wrap table{display:none!important}
+
+.passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
+.passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
+.passenger-card.tracked{border:2px solid #00D974;box-shadow:0 0 20px rgba(0,217,116,.4)}
+.passenger-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}
+.passenger-card-time{font-size:24px;font-weight:900;font-family:monospace;color:#fff}
+.passenger-card-dest{font-size:18px;font-weight:800;color:#fff;margin-top:2px}
+.passenger-card-scales{font-size:11px;color:#93c5fd}
+.passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
+.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -165,11 +173,11 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </div>
 
 <main id="view-screen" class="glass-card">
-  <!-- TARJETA DE PERMISO DE NOTIFICACIONES ESTILO TRANSPAIS PARA MÓVIL -->
+  <!-- TARJETA DE PERMISO DE NOTIFICACIONES PARA MÓVIL -->
   <div id="notif-perm-card" class="transpais-notif-card hidden">
     <div>
       <h4 style="color:#00D974;font-size:13px;font-weight:900;margin-bottom:2px">🔔 NOTIFICACIONES DE ABORDAJE</h4>
-      <p style="color:#93c5fd;font-size:11px">Recibe una alerta en tu teléfono cuando tu autobús esté listo para salir.</p>
+      <p style="color:#93c5fd;font-size:11px">Selecciona tu autobús para recibir alertas exclusivas en tu teléfono.</p>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-green" id="btn-request-notif">🔔 Activar Alertas</button>
@@ -181,6 +189,9 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
   <div id="urgent-banner-screen" class="urgent-banner hidden">
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
   </div>
+
+  <!-- CONTENEDOR EN TARJETAS PARA CELULARES -->
+  <div id="passenger-card-list" class="passenger-card-list hidden"></div>
 
   <div id="screen-split-container" class="screen-split-wrapper">
     <div class="fids-table-wrap">
@@ -299,6 +310,9 @@ const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
 const isPassenger=vista.startsWith('pasajero');
 let suc=null,deps={},adsData={},adsConfig={force7030:false},ready=false,srvOff=0,urgentMsg='';
+let trackedBusId = localStorage.getItem('transpais_tracked_bus') || null;
+
+if(isPassenger) document.body.classList.add('passenger-mode');
 
 const viewSuc=function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
@@ -323,7 +337,6 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
-/* PRE-CARGA DE AUDIOS MP3 */
 function preloadCatalogAudios(){
   if(isPassenger)return;
   const modes=['etiq','abord','ultima'];
@@ -607,7 +620,7 @@ function loadCatalog(){
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ GESTOR DE ANUNCIOS (CORREGIDO BOTÓN 75/25) ============ */
+/* ============ GESTOR DE ANUNCIOS ============ */
 let activeAdIndex=0, adCycleTimer=null, autoSplitState=false;
 
 function renderAds(){
@@ -680,7 +693,6 @@ function update7030State(){
   }
 }
 
-/* EVENTO DE CLICK CORREGIDO PARA FORZAR ANUNCIOS */
 if($('btn-toggle-7030-manual')){
   $('btn-toggle-7030-manual').onclick=function(){
     if(!canWrite()){
@@ -767,16 +779,37 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ NOTIFICACIONES EN SAFARI / CELULARES ============ */
+/* ============ SEGUIMIENTO Y NOTIFICACIONES DE PASAJERO ============ */
 const prevStatuses = {};
+
+window.trackBus = function(busId){
+  trackedBusId = busId;
+  localStorage.setItem('transpais_tracked_bus', busId);
+  render();
+  alert('🔔 ¡Listo! Recibirás alertas exclusivas cuando tu autobús cambie de estatus.');
+};
+
+window.untrackBus = function(){
+  trackedBusId = null;
+  localStorage.removeItem('transpais_tracked_bus');
+  render();
+};
 
 function checkPassengerPushNotifs(list){
   if(!isPassenger) return;
+
   list.forEach(function(d){
     const oldSt = prevStatuses[d.id];
     const newSt = d._st;
-    if(oldSt && oldSt !== newSt){
-      if(newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA'){
+    
+    // Auto-limpieza si la corrida del pasajero ya salió
+    if(trackedBusId === d.id && newSt === 'SALIDO'){
+      untrackBus();
+    }
+
+    // Solo notificar si es el autobús que el pasajero decidió seguir
+    if(trackedBusId === d.id && oldSt && oldSt !== newSt){
+      if(newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA'){
         if("Notification" in window && Notification.permission === "granted"){
           try {
             new Notification("🚌 Transpais - " + d.destination, {
@@ -821,7 +854,7 @@ function initNotifPermissionUI(){
       $('btn-request-notif').onclick = function(){
         Notification.requestPermission().then(function(perm){
           card.classList.add('hidden');
-          if(perm === 'granted') alert('✅ Notificaciones de abordaje activadas.');
+          if(perm === 'granted') alert('✅ Notificaciones activadas. Ahora selecciona tu autobús.');
         }).catch(function(){ card.classList.add('hidden'); });
       };
       $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
@@ -832,7 +865,7 @@ function initNotifPermissionUI(){
     $('btn-request-notif').textContent = "✅ Recibir Avisos";
     $('btn-request-notif').onclick = function(){
       card.classList.add('hidden');
-      alert('✅ Avisos en pantalla activados para tu viaje.');
+      alert('✅ Avisos en pantalla activados. Selecciona tu autobús.');
     };
     $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
   }
@@ -898,7 +931,7 @@ function tick(){
 setInterval(tick,1000);
 setInterval(autoCatalog,30000);
 
-/* ============ RENDER TABLAS ============ */
+/* ============ RENDER Y TARJETAS PASAJERO ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
@@ -908,6 +941,30 @@ function badge(st){
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
 const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
+
+function passengerCardHTML(d, isCentral){
+  const sc = cleanScales(d.scales);
+  const isTracked = trackedBusId === d.id;
+  const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
+
+  return '<div class="passenger-card ' + (isTracked ? 'tracked' : '') + '">' +
+    '<div class="passenger-card-header">' +
+      '<span class="passenger-card-time">' + esc(d.time) + '</span>' +
+      '<div>' + badge(d._st) + '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div class="passenger-card-dest">' + esc(d.destination) + '</div>' +
+      (sc ? '<div class="passenger-card-scales">Escalas: ' + esc(sc) + '</div>' : '') +
+    '</div>' +
+    '<div class="passenger-card-details">' +
+      '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
+      '<span>📍 ' + esc(boardingPoint) + '</span>' +
+    '</div>' +
+    (isTracked 
+      ? '<button class="btn btn-green passenger-track-btn" onclick="untrackBus()">✅ SIGUIENDO ESTE AUTOBÚS</button>' 
+      : '<button class="btn btn-blue passenger-track-btn" onclick="trackBus(\'' + d.id + '\')">🔔 SEGUIR MI AUTOBÚS</button>') +
+  '</div>';
+}
 
 function tvRow(d,c){
   const sc=cleanScales(d.scales);
@@ -977,7 +1034,7 @@ function syncRows(tb, list, html){
 }
 
 function render(){
-  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body');
+  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body'), plist=$('passenger-card-list');
   if(!ready){
     if(fb)fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';
     return;
@@ -988,9 +1045,14 @@ function render(){
       const obj=Object.assign({},d); obj._st=stat(d,diffOf(d,n)); return obj;
     }).sort(function(a,b){return a.time.localeCompare(b.time);});
   
-  if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
-  if(canWrite()&&ab)syncRows(ab,list,adminRow);
-  if(isPassenger)checkPassengerPushNotifs(list);
+  if(isPassenger && plist){
+    plist.classList.remove('hidden');
+    plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
+    checkPassengerPushNotifs(list);
+  } else {
+    if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
+    if(canWrite()&&ab)syncRows(ab,list,adminRow);
+  }
 }
 
 /* ============ ACCIONES DE TAQUILLA ============ */
