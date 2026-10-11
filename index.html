@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -49,6 +48,10 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
+
+/* ============ MARQUESINA DE MENSAJE URGENTE ============ */
+.urgent-banner{background:#dc2626;color:#fff;padding:12px 20px;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;display:flex;align-items:center;gap:10px;box-shadow:0 0 20px rgba(220,38,38,.6);animation:pulseUrgent 2s infinite alternate}
+@keyframes pulseUrgent{0%{background:#dc2626;box-shadow:0 0 10px rgba(220,38,38,.5)}100%{background:#be123c;box-shadow:0 0 25px rgba(225,29,72,.9)}}
 
 /* ============ LAYOUT 75/25 Y ANUNCIOS ============ */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
@@ -147,6 +150,12 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </div>
 
 <main id="view-screen" class="glass-card">
+  <!-- BANNER DE MENSAJE URGENTE -->
+  <div id="urgent-banner-screen" class="urgent-banner hidden">
+    <span style="font-size:18px">⚠️</span>
+    <span id="urgent-text-display"></span>
+  </div>
+
   <div id="screen-split-container" class="screen-split-wrapper">
     <div class="fids-table-wrap">
       <table>
@@ -161,6 +170,17 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 </main>
 
 <main id="view-admin" class="glass-card hidden">
+  <!-- SECCIÓN DE MENSAJE URGENTE -->
+  <div style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:16px;border-radius:12px;margin-bottom:20px">
+    <h3 style="color:#f87171;font-size:14px;font-weight:900;margin-bottom:6px">📢 PUBLICAR AVISO / MENSAJE URGENTE EN TV</h3>
+    <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta para proyectarla en tiempo real en la parte superior de la sala de espera.</p>
+    <div style="display:flex;gap:10px">
+      <input type="text" id="urgent-input" placeholder="Ej. Atención: Retrasos de 15 min por obras en carretera..." style="flex:1">
+      <button class="btn btn-green" id="btn-save-urgent">Publicar Mensaje</button>
+      <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar Alerta</button>
+    </div>
+  </div>
+
   <!-- SECCIÓN GESTOR DE OFERTAS 75/25 -->
   <div style="background:rgba(0,30,68,.8);border:1px solid rgba(0,217,116,.3);padding:16px;border-radius:12px;margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -251,7 +271,7 @@ const $=function(id){return document.getElementById(id);};
 const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
 const vista=new URLSearchParams(location.search).get('vista')||'screen';
 const isTV=vista.startsWith('tv');
-let suc=null,deps={},adsData={},adsConfig={force7030:false},ready=false,srvOff=0;
+let suc=null,deps={},adsData={},adsConfig={force7030:false},ready=false,srvOff=0,urgentMsg='';
 const viewSuc=function(){return vista==='tvcentral'?'central':(isTV?'of2':(suc||'of2'));};
 const canWrite=function(){return !isTV&&!!auth.currentUser&&!!suc;};
 const fail=function(e){console.error(e.message);alert('Error al guardar: '+e.message);};
@@ -270,6 +290,18 @@ p10:["18:45","Tampico x Victoria","San Fernando, Jiménez, Padilla, Ciudad Victo
 p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:00","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
+
+/* PRE-CARGA DE AUDIOS MP3 DEL CATÁLOGO */
+function preloadCatalogAudios(){
+  const modes=['etiq','abord','ultima'];
+  Object.keys(CAT).forEach(function(k){
+    modes.forEach(function(m){
+      const a=new Audio('audios/'+k+'_'+m+'.mp3');
+      a.preload='auto';
+    });
+  });
+}
+preloadCatalogAudios();
 
 /* ============ HORA ANTI-ERRORES ============ */
 db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
@@ -427,13 +459,13 @@ function updateMuteUI(){
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
-/* ============ DATOS Y SINCRONIZACIÓN (CON RESPALDO OFFLINE) ============ */
+/* ============ DATOS Y SINCRONIZACIÓN (CON RESPALDO OFFLINE Y MENSAJE URGENTE) ============ */
 let refs=[];
 function attach(s){
   try{
     refs.forEach(function(r){r.off();}); deps={}; adsData={}; ready=false;
-    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'); 
-    refs=[rd,rv,ra,rc];
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'); 
+    refs=[rd,rv,ra,rc,ru];
     let lastTs=0;
     
     rd.on('value',function(snap){
@@ -473,6 +505,11 @@ function attach(s){
       update7030State();
     });
 
+    ru.on('value',function(snap){
+      urgentMsg=snap.val()||'';
+      renderUrgentMsg();
+    });
+
     render();
   }catch(e){
     console.error('Error attach:',e);
@@ -480,6 +517,21 @@ function attach(s){
       const cached = localStorage.getItem('transpais_offline_deps_'+s);
       if(cached){ deps = JSON.parse(cached); ready = true; render(); }
     }catch(err){}
+  }
+}
+
+function renderUrgentMsg(){
+  const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
+  if(banner&&txt){
+    if(urgentMsg&&urgentMsg.trim()){
+      txt.textContent=urgentMsg.trim();
+      banner.classList.remove('hidden');
+    }else{
+      banner.classList.add('hidden');
+    }
+  }
+  if(inp&&canWrite()&&document.activeElement!==inp){
+    inp.value=urgentMsg||'';
   }
 }
 
@@ -666,6 +718,22 @@ if($('btn-toggle-7030-manual')){
   };
 }
 
+/* MENSAJE URGENTE CONTROLES */
+if($('btn-save-urgent')){
+  $('btn-save-urgent').onclick=function(){
+    if(!canWrite())return;
+    const v=$('urgent-input').value.trim();
+    db.ref(suc+'/urgent').set(v).catch(fail);
+  };
+}
+if($('btn-clear-urgent')){
+  $('btn-clear-urgent').onclick=function(){
+    if(!canWrite())return;
+    $('urgent-input').value='';
+    db.ref(suc+'/urgent').remove().catch(fail);
+  };
+}
+
 /* ============ VOCEO CON TIEMPOS CONFIGURADOS POR TERMINAL ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 
@@ -693,7 +761,7 @@ function autoVoice(d,diff,n){
   enqueueAudio(d.presetKey||'p01',mode);
 }
 
-/* ============ RELOJ Y RENDIMIENTO ============ */
+/* ============ RELOJ, RENDIMIENTO Y REINICIO 3:00 AM ============ */
 let lastMinute = -1;
 
 function tick(){
@@ -702,6 +770,12 @@ function tick(){
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
     
+    // REINICIO DIARIO A LAS 03:00 AM
+    if(n.time === '03:00:00'){
+      location.reload(true);
+      return;
+    }
+
     if(n.min !== lastMinute){
       lastMinute = n.min;
       if(ready){
