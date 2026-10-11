@@ -54,10 +54,6 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* ============ PERMISO DE NOTIFICACIONES ESTILO TRANSPAIS ============ */
-.transpais-notif-card{background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:16px;padding:16px 20px;margin-bottom:15px;box-shadow:0 10px 30px rgba(0,168,89,.3);display:flex;align-items:center;justify-content:space-between;gap:15px;animation:fadeInDown .5s ease}
-@keyframes fadeInDown{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:translateY(0)}}
-
 /* ============ LAYOUT 75/25 Y ANUNCIOS ============ */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
 .fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
@@ -173,18 +169,6 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </div>
 
 <main id="view-screen" class="glass-card">
-  <!-- TARJETA DE PERMISO DE NOTIFICACIONES PARA MÓVIL -->
-  <div id="notif-perm-card" class="transpais-notif-card hidden">
-    <div>
-      <h4 style="color:#00D974;font-size:13px;font-weight:900;margin-bottom:2px">🔔 NOTIFICACIONES DE ABORDAJE</h4>
-      <p style="color:#93c5fd;font-size:11px">Selecciona tu autobús para recibir alertas exclusivas en tu teléfono.</p>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-green" id="btn-request-notif">🔔 Activar Alertas</button>
-      <button class="btn btn-dark" id="btn-dismiss-notif">Omitir</button>
-    </div>
-  </div>
-
   <!-- BANNER DE MENSAJE URGENTE DESLIZANTE -->
   <div id="urgent-banner-screen" class="urgent-banner hidden">
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
@@ -709,7 +693,7 @@ if($('btn-toggle-7030-manual')){
 
 if($('admin-ads-body')){
   $('admin-ads-body').addEventListener('click',function(e){
-    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
+    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
     const id=b.dataset.adid, act=b.dataset.adact;
     if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
     else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
@@ -779,14 +763,42 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ SEGUIMIENTO Y NOTIFICACIONES DE PASAJERO ============ */
+/* ============ SEGUIMIENTO Y PERMISOS JUST-IN-TIME ============ */
 const prevStatuses = {};
 
 window.trackBus = function(busId){
-  trackedBusId = busId;
-  localStorage.setItem('transpais_tracked_bus', busId);
-  render();
-  alert('🔔 ¡Listo! Recibirás alertas exclusivas cuando tu autobús cambie de estatus.');
+  const isSafariIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  function applyTracking() {
+    trackedBusId = busId;
+    localStorage.setItem('transpais_tracked_bus', busId);
+    render();
+  }
+
+  if ("Notification" in window && !isSafariIOS) {
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(function(perm){
+        applyTracking();
+        if(perm === 'granted'){
+          alert('🔔 ¡Notificaciones activadas! Te avisaremos cuando tu autobús cambie de estatus.');
+        } else {
+          alert('🔔 Seguimiento en pantalla activado. Verás las alertas en vivo mientras tengas abierta la página.');
+        }
+      }).catch(function(){
+        applyTracking();
+      });
+    } else if (Notification.permission === "granted") {
+      applyTracking();
+      alert('🔔 ¡Listo! Te avisaremos cuando tu autobús cambie de estatus.');
+    } else {
+      applyTracking();
+      alert('🔔 Seguimiento en pantalla activado.');
+    }
+  } else {
+    // Safari iOS / Navegadores sin API de notificaciones nativa
+    applyTracking();
+    alert('🔔 ¡Listo! Recibirás avisos en pantalla en tiempo real para este autobús.');
+  }
 };
 
 window.untrackBus = function(){
@@ -840,37 +852,6 @@ function showPassengerInAppToast(d, statusText){
   t.style.display = 'block';
   setTimeout(function(){ if(t) t.style.display = 'none'; }, 10000);
 }
-
-function initNotifPermissionUI(){
-  if(!isPassenger) return;
-  const card = $('notif-perm-card');
-  if(!card) return;
-
-  const isSafariIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-  if("Notification" in window && !isSafariIOS){
-    if(Notification.permission === "default"){
-      card.classList.remove('hidden');
-      $('btn-request-notif').onclick = function(){
-        Notification.requestPermission().then(function(perm){
-          card.classList.add('hidden');
-          if(perm === 'granted') alert('✅ Notificaciones activadas. Ahora selecciona tu autobús.');
-        }).catch(function(){ card.classList.add('hidden'); });
-      };
-      $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
-    }
-  } else {
-    card.classList.remove('hidden');
-    card.querySelector('p').textContent = "Visualiza alertas instantáneas en tu pantalla cuando sea momento de abordar.";
-    $('btn-request-notif').textContent = "✅ Recibir Avisos";
-    $('btn-request-notif').onclick = function(){
-      card.classList.add('hidden');
-      alert('✅ Avisos en pantalla activados. Selecciona tu autobús.');
-    };
-    $('btn-dismiss-notif').onclick = function(){ card.classList.add('hidden'); };
-  }
-}
-initNotifPermissionUI();
 
 /* ============ VOCEO AUTOMÁTICO EN TV ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
