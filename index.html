@@ -57,12 +57,12 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .ads-sidebar-wrap{flex:0 0 30%;width:30%;min-height:480px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:stretch;justify-content:stretch}
 .screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
 
-.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden}
-.ad-img-item{width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
+.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden;background:#000B18;display:flex;align-items:center;justify-content:center}
+.ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
 .ad-img-item.active{opacity:1!important;z-index:2}
 
 /* ============ WIDGET QR Y VOCEO ============ */
-.qr-card{position:fixed;bottom:55px;right:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
+.qr-card{position:fixed;bottom:55px;left:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
 .qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
 .qr-text{max-width:180px}
 .qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
@@ -136,17 +136,6 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
     <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
     <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
     <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1)">
-    <label class="lbl" style="font-weight:800">🎵 MÚSICA AMBIENTAL:</label>
-    <input type="file" id="folder-input" webkitdirectory directory multiple accept="audio/*" style="display:none">
-    <button class="btn btn-blue" id="btn-folder">📁 Carpeta</button>
-    <button class="btn btn-dark" id="btn-prev">⏮️</button>
-    <button id="btn-music" class="btn btn-dark" disabled>▶️</button>
-    <button class="btn btn-dark" id="btn-next">⏭️</button>
-    <div id="song-title" style="font-size:11px;color:#FFB800;font-weight:700;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sin carpeta</div>
-    <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.2" style="width:60px">
-    <audio id="bg-music"></audio>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente (Barra Espaciadora)">🛑 PÁNICO / DETENER VOCEO</button>
@@ -330,7 +319,6 @@ function updateHeaderTitles(){
 /* ============ AUDIO Y REPRODUCCIÓN INTERRUPTIBLE ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
-const bg=$('bg-music'); if(bg)bg.volume=0.2;
 
 function setVoiceIndicator(show){
   const vi=$('voice-indicator');
@@ -392,8 +380,6 @@ async function runQueue(){
 function playOne(key,mode){
   return new Promise(async function(res){
     if(muted)return res();
-    const vol=+$('music-vol').value;
-    if(bg&&!bg.paused)bg.volume=vol*0.15;
     await chime();
     const a=new Audio('audios/'+key+'_'+mode+'.mp3');
     currentVoiceAudio=a;
@@ -401,7 +387,6 @@ function playOne(key,mode){
     const end=function(){
       if(done)return; done=true; clearTimeout(to);
       currentVoiceAudio=null;
-      if(bg)bg.volume=aq.length?vol*.15:vol;
       res();
     };
     const to=setTimeout(end,60000);
@@ -425,8 +410,6 @@ function panicStop(){
   }
   playing=false;
   setVoiceIndicator(false);
-  const vol=+$('music-vol').value;
-  if(bg&&!bg.paused)bg.volume=vol;
 }
 
 function updateMuteUI(){
@@ -434,20 +417,6 @@ function updateMuteUI(){
   b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
-
-/* ============ MÚSICA AMBIENTAL ============ */
-let playlist=[], track=0, objUrl=null;
-function playTrack(i){
-  if(!playlist.length)return;
-  if(objUrl)URL.revokeObjectURL(objUrl);
-  const f=playlist[i]; objUrl=URL.createObjectURL(f); bg.src=objUrl;
-  if($('song-title'))$('song-title').textContent=f.name.replace(/\.[^/.]+$/,'');
-  if($('btn-music'))$('btn-music').disabled=false;
-  bg.play().catch(function(e){console.log('Música bloqueada:',e);});
-  if($('btn-music')){$('btn-music').textContent='⏸️'; $('btn-music').className='btn btn-green';}
-}
-const step=function(d){if(playlist.length){track=(track+d+playlist.length)%playlist.length; playTrack(track);}};
-if(bg)bg.onended=function(){step(1);};
 
 /* ============ DATOS Y SINCRONIZACIÓN ============ */
 let refs=[];
@@ -644,11 +613,16 @@ if($('btn-toggle-7030-manual')){
   };
 }
 
-/* ============ DETECCIÓN DE VOCEO ÚNICO ============ */
+/* ============ DETECCIÓN DE VOCEO ÚNICO (RANGOS OPTIMIZADOS) ============ */
 const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
 
 function autoVoice(d,diff,n){
-  const mode={15:'etiq',5:'abord',0:'ultima'}[diff]; if(!mode)return;
+  let mode=null;
+  if(diff<=15 && diff>10) mode='etiq';
+  else if(diff<=5 && diff>1) mode='abord';
+  else if(diff<=0 && diff>-3) mode='ultima';
+  
+  if(!mode)return;
   const k=d.id+'|'+mode+'|'+(d.day||n.key);
   if(fired.has(k))return;
   fired.add(k);
@@ -656,20 +630,28 @@ function autoVoice(d,diff,n){
   enqueueAudio(d.presetKey||'p01',mode);
 }
 
+/* ============ RELOJ Y RENDIMIENTO ============ */
+let lastMinute = -1;
+
 function tick(){
   try{
     const n=nowParts();
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    if(ready){
-      Object.values(deps).forEach(function(d){
-        if(isLive(d,n)){
-          const x=diffOf(d,n);
-          if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);
-        }
-      });
+    
+    // Solo evalúa voceos y re-renderiza la tabla si cambia el minuto
+    if(n.min !== lastMinute){
+      lastMinute = n.min;
+      if(ready){
+        Object.values(deps).forEach(function(d){
+          if(isLive(d,n)){
+            const x=diffOf(d,n);
+            if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);
+          }
+        });
+      }
+      render();
     }
-    render();
   }catch(e){console.error('Error tick:',e);}
 }
 setInterval(tick,1000);
@@ -922,7 +904,7 @@ function doLogout(){
   }
 }
 
-/* ============ ATAJOS DE TECLADO (MÓDULO 2C) ============ */
+/* ============ ATAJOS DE TECLADO ============ */
 document.addEventListener('keydown',function(e){
   const tag=document.activeElement?document.activeElement.tagName.toLowerCase():'';
   const isInput=tag==='input'||tag==='textarea'||tag==='select'||document.activeElement.isContentEditable;
@@ -954,7 +936,7 @@ function triggerTopVoice(mode){
   }
 }
 
-/* ============ AUTO-SCROLL (MÓDULO 1B) ============ */
+/* ============ AUTO-SCROLL ============ */
 function autoScrollFids(){
   const card=document.querySelector('.fids-table-wrap');
   if(!card||$('view-screen').classList.contains('hidden'))return;
@@ -1019,25 +1001,6 @@ if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',functi
 if($('btn-chime'))$('btn-chime').onclick=function(){chime();};
 if($('btn-panic'))$('btn-panic').onclick=panicStop;
 if($('btn-mute-local'))$('btn-mute-local').onclick=function(){muted=!muted; localStorage.setItem('transpais_local_muted',muted); updateMuteUI();};
-if($('btn-folder'))$('btn-folder').onclick=function(){$('folder-input').click();};
-
-if($('folder-input')){
-  $('folder-input').onchange=function(e){
-    playlist=Array.from(e.target.files).filter(function(f){return f.type.startsWith('audio/')||/\.(mp3|wav|ogg|m4a)$/i.test(f.name);});
-    if(playlist.length){track=0; playTrack(0);}else alert('No se encontraron archivos de audio MP3.');
-  };
-}
-
-if($('btn-prev'))$('btn-prev').onclick=function(){step(-1);};
-if($('btn-next'))$('btn-next').onclick=function(){step(1);};
-if($('btn-music')){
-  $('btn-music').onclick=function(){
-    var b=$('btn-music');
-    if(bg.paused){bg.play(); b.textContent='⏸️'; b.className='btn btn-green';}
-    else{bg.pause(); b.textContent='▶️'; b.className='btn btn-dark';}
-  };
-}
-if($('music-vol'))$('music-vol').oninput=function(e){if(bg)bg.volume=+e.target.value;};
 
 if(isTV&&$('control-bar'))$('control-bar').style.display='none';
 
