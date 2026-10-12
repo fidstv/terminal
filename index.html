@@ -142,6 +142,21 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 .passenger-card-scales{font-size:11px;color:#93c5fd}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
 .passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
+
+/* Anuncio promocional VistaPasajero integrado al carrusel publicitario */
+body.tv-mode .qr-card{display:none!important}
+.vista-qr-ad{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:clamp(8px,1.2vh,18px);padding:clamp(14px,1.5vw,28px);text-align:center;color:#fff;background:radial-gradient(circle at 85% 20%,rgba(0,217,255,.24),transparent 35%),linear-gradient(145deg,#061b55 0%,#003b91 55%,#001b4d 100%);border:2px solid #00d7ef;border-radius:clamp(10px,1vw,18px);overflow:hidden}
+.vista-qr-ad .vqa-brand{font-size:clamp(14px,1.6vw,27px);font-weight:900;font-style:italic;letter-spacing:.04em}
+.vista-qr-ad .vqa-title{font-size:clamp(17px,2vw,34px);font-weight:900;line-height:1.08}
+.vista-qr-ad .vqa-title em{font-style:normal;color:#39efff}
+.vista-qr-ad .vqa-copy{font-size:clamp(11px,1.05vw,18px);line-height:1.35;color:#dbeafe;max-width:95%}
+.vista-qr-ad .vqa-bottom{display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.3vw,22px);width:100%}
+.vista-qr-ad .vqa-qr{background:#fff;border-radius:10px;padding:clamp(5px,.7vw,10px);flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:clamp(88px,10vw,150px);min-height:clamp(88px,10vw,150px)}
+.vista-qr-ad .vqa-qr canvas,.vista-qr-ad .vqa-qr img{width:clamp(78px,9vw,132px)!important;height:clamp(78px,9vw,132px)!important}
+.vista-qr-ad .vqa-points{display:flex;flex-direction:column;gap:clamp(7px,.8vh,12px);text-align:left;font-size:clamp(10px,.95vw,16px);font-weight:800;line-height:1.2}
+.vista-qr-ad .vqa-point{border:1px solid rgba(0,220,255,.65);background:rgba(0,12,48,.65);border-radius:12px;padding:clamp(7px,.8vw,13px)}
+.vista-qr-ad .vqa-footer{font-size:clamp(9px,.8vw,13px);font-weight:800;color:#65f5cc;letter-spacing:.04em}
+
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -182,8 +197,8 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 <div id="qr-card" class="qr-card">
   <div id="qrcode-box"></div>
   <div class="qr-text">
-    <h4>📱 LLEVA EL ITINERARIO EN TU CELULAR</h4>
-    <p>Escanea este código para ver el estatus en tiempo real desde tu teléfono.</p>
+    <h4>📱 VISTAPASAJERO OF2</h4>
+    <p>Escanea para consultar si tu autobús ya está en la central o está abordando.</p>
   </div>
 </div>
 
@@ -776,29 +791,29 @@ function renderAds(){
   if(container && sig!==adSig){
     adSig=sig;
     container.innerHTML='';
-    if(activeList.length===0){
-      container.innerHTML='<div style="color:#93c5fd;font-size:12px;padding:20px;text-align:center">📱 TRANSPAIS<br>Ofertas y Promociones</div>';
-      clearInterval(adTimer);
-    }else{
-      activeList.forEach(function(ad,idx){
-        let el;
-        if(ad.isVideo || (ad.dataUrl && ad.dataUrl.startsWith('data:video'))){
-          el = document.createElement('video');
-          el.src = ad.dataUrl;
-          el.autoplay = true;
-          el.loop = true;
-          el.muted = true;
-          el.playsInline = true;
-        } else {
-          el = document.createElement('img');
-          el.src = ad.dataUrl;
-        }
-        el.className='ad-img-item '+(idx===0?'active':'');
-        el.dataset.index=idx;
-        container.appendChild(el);
-      });
-      startAdCycle();
-    }
+    activeList.forEach(function(ad,idx){
+      let el;
+      if(ad.isVideo || (ad.dataUrl && ad.dataUrl.startsWith('data:video'))){
+        el = document.createElement('video');
+        el.src = ad.dataUrl;
+        el.autoplay = true;
+        el.loop = true;
+        el.muted = true;
+        el.playsInline = true;
+      } else {
+        el = document.createElement('img');
+        el.src = ad.dataUrl;
+      }
+      el.className='ad-img-item '+(idx===0?'active':'');
+      el.dataset.index=idx;
+      container.appendChild(el);
+    });
+    /* El QR aparece como anuncio propio, nunca flotando encima de otra publicidad. */
+    const qrSlide=makeVistaPasajeroAd();
+    if(activeList.length===0)qrSlide.classList.add('active');
+    qrSlide.dataset.index=activeList.length;
+    container.appendChild(qrSlide);
+    startAdCycle();
   }
 
   if(canWrite()&&adminBody){
@@ -1318,48 +1333,25 @@ function doLogout(){
   }
 }
 
-/* ============ QR DINÁMICO DIRIGIDO A PASAJEROS ============ */
-let qrGenerated=false;
-function initQR(){
-  const box=$('qrcode-box'); if(!box||isPassenger)return;
-  box.innerHTML='';
+/* El QR se integra como una diapositiva propia del carrusel de anuncios. */
+function makeVistaPasajeroAd(){
+  const slide=document.createElement('div');
+  slide.className='ad-img-item vista-qr-ad';
+  slide.innerHTML='<div class="vqa-brand">TRANSPAIS®</div>'+
+    '<div class="vqa-title">¿Tu autobús ya está<br><em>en la central?</em></div>'+
+    '<div class="vqa-copy">Escanea el código y consulta en VistaPasajero OF2 si ya está en abordaje.</div>'+
+    '<div class="vqa-bottom"><div class="vqa-qr" id="vista-pasajero-ad-qr" aria-label="Código QR de VistaPasajero OF2"></div>'+
+    '<div class="vqa-points"><div class="vqa-point">🚌 Consulta si ya está en la central</div><div class="vqa-point">✓ Revisa si ya están abordando</div><div class="vqa-point">🕒 Consulta los datos de tu corrida</div></div></div>'+
+    '<div class="vqa-footer">INFORMACIÓN DE TU VIAJE · ESCANEA AQUÍ</div>';
+  const targetVista=(viewSuc()==='central')?'pasajerocentral':'pasajeroof2';
+  const mobileUrl=window.location.origin+window.location.pathname+'?vista='+targetVista;
+  const boxId='vista-pasajero-ad-qr';
   if(window.QRCode){
-    const targetVista = (viewSuc() === 'central') ? 'pasajerocentral' : 'pasajeroof2';
-    const mobileUrl = window.location.origin + window.location.pathname + '?vista=' + targetVista;
-    new QRCode(box,{
-      text:mobileUrl,
-      width:120,
-      height:120,
-      colorDark:"#000000",
-      colorLight:"#ffffff",
-      correctLevel:QRCode.CorrectLevel.M
+    new QRCode(slide.querySelector('#'+boxId),{
+      text:mobileUrl,width:150,height:150,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M
     });
-    qrGenerated=true;
   }
-}
-
-function cycleQR(){
-  const qrCard=$('qr-card'); if(!qrCard||isPassenger)return;
-  const split=$('screen-split-container');
-  /* El QR nunca se superpone al panel publicitario: se muestra solo cuando no hay anuncios laterales. */
-  if(!isTV || (split && split.classList.contains('split-active'))){
-    qrCard.classList.remove('show'); return;
-  }
-  if(!qrGenerated)initQR();
-  qrCard.classList.add('show');
-  setTimeout(function(){ qrCard.classList.remove('show'); },18000);
-}
-
-if(isTV && !isPassenger){
-  setTimeout(function(){
-    cycleQR();
-    setInterval(cycleQR,150000);
-    /* Si el panel de anuncios se activa mientras el QR está visible, lo retiramos enseguida. */
-    setInterval(function(){
-      const split=$('screen-split-container'), qrCard=$('qr-card');
-      if(split && split.classList.contains('split-active') && qrCard)qrCard.classList.remove('show');
-    },500);
-  },10000);
+  return slide;
 }
 
 /* OCULTAR ELEMENTOS INNECESARIOS */
