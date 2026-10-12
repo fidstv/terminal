@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
 .glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
@@ -49,12 +49,18 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
+/* OCULTAR PANEL SUPERIOR EN TV Y PASAJERO */
+body.tv-mode .control-bar,
+body.passenger-mode .control-bar {
+  display: none !important;
+}
+
 /* MARQUESINA URGENTE */
 .urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* LAYOUT 75/25 CON AJUSTE DINÁMICO DE MARCO AZUL */
+/* LAYOUT CON MARCO AZUL DINÁMICO */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 auto;min-height:0;align-items:stretch;transition:all .3s ease;overflow:hidden}
 .fids-table-wrap{flex:1 1 auto;min-width:0;overflow-y:auto;transition:all .3s ease}
 
@@ -323,7 +329,7 @@ body.tv-mode .qr-card{display:none!important}
       <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
       <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
       <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
-      <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+      <option value="p07">11:45 - Ciudad Valles (vía San Fernando, Victoria y Mante)</option>
       <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
       <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
       <option value="p10">18:45 - Tampico (Semi-Directa)</option>
