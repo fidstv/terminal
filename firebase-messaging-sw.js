@@ -4,12 +4,12 @@ importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js')
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
+  projectId: "transpais-fids",
   messagingSenderId: "33890288863"
 });
 
 const messaging = firebase.messaging();
 
-// Recibir la señal Push de Google cuando la pantalla está apagada o el navegador cerrado
 messaging.onBackgroundMessage(function(payload) {
   const title = payload.notification ? payload.notification.title : '🚌 Transpais';
   const options = {
