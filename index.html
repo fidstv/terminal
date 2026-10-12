@@ -728,10 +728,38 @@ function virtualDeps(){
 }
 
 function virtualActive(){
-  const today=nowParts().key;
-  if(!(gotCleared||offlineFallback))return false;
-  if(clearedDay===today)return false;
-  return !Object.values(deps).some(function(d){return d.day===today;});
+  const n = nowParts();
+  if (!(gotCleared || offlineFallback)) return false;
+  if (clearedDay === n.key) return false;
+  // Si ya existen corridas cargadas y activas en deps, NO activar catálogo virtual
+  return !Object.values(deps).some(function(d){ return d && d.time && isLive(d, n); });
+}
+
+function buildList(n){
+  let base = Object.values(deps);
+  if(virtualActive()){
+    const existingKeys = new Set(base.map(function(d){ return d.id || d.presetKey; }));
+    virtualDeps().forEach(function(vd){
+      if(!existingKeys.has(vd.id)) base.push(vd);
+    });
+  }
+
+  // Deduplicación estricta por ID / clave de ruta para evitar renglones repetidos
+  const seen = new Set();
+  return base.filter(function(d){
+    if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return false;
+    const uniqueKey = d.id || (d.presetKey + '_' + d.time);
+    if(seen.has(uniqueKey)) return false;
+    seen.add(uniqueKey);
+    return true;
+  })
+  .map(function(d){
+    const o = Object.assign({}, d);
+    o._diff = diffOf(d, n);
+    o._st = stat(d, o._diff);
+    o._k = (d.day || '') + '|' + (d.id || d.presetKey);
+    return o;
+  }).sort(function(a, b){ return a._diff - b._diff || a.time.localeCompare(b.time); });
 }
 
 function ensureMat(){
