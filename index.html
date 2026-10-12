@@ -71,7 +71,8 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 
 /* POSICIONAMIENTO DEL QR DENTRO DEL RECUADRO DEL ANUNCIO VERTICAL */
 .vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:6px;padding:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4)}
-.vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important}
+.vqa-qr-overlay canvas,.vqa-qr-overlay img{max-width:100%!important;max-height:100%!important;width:auto!important;height:auto!important;object-fit:contain!important}
+.vqa-qr-overlay img[style*="none"],.vqa-qr-overlay canvas[style*="none"]{display:none!important}
 
 /* OCULTAR BARRA DE CONTROL EN MODO TV */
 body.tv-mode .control-bar{display:none!important}
@@ -416,16 +417,18 @@ function renderAds(){
       // Si es la vista publicitaria tipo QR se inserta la caja encima
       const qrOverlay = document.createElement('div');
       qrOverlay.className = 'vqa-qr-overlay';
-      const qrBox = document.createElement('div');
-      qrOverlay.appendChild(qrBox);
       wrapper.appendChild(qrOverlay);
 
       container.appendChild(wrapper);
 
       try {
-        new QRCode(qrBox, {
-          text: location.origin + location.pathname + '?vista=pasajero',
-          width: 120, height: 120,
+        const isCentral = viewSuc() === 'central';
+        const vistaPasajero = isCentral ? 'tvcentral' : 'tvof2';
+        const qrUrl = window.location.origin + window.location.pathname + '?vista=' + vistaPasajero;
+
+        new QRCode(qrOverlay, {
+          text: qrUrl,
+          width: 200, height: 200,
           colorDark: "#000000", colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.M
         });
