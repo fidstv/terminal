@@ -738,17 +738,20 @@ function virtualActive(){
 function buildList(n){
   let base = Object.values(deps);
   if(virtualActive()){
-    const existingKeys = new Set(base.map(function(d){ return d.id || d.presetKey; }));
+    const existingKeys = new Set(base.map(function(d){ return (d.presetKey || d.destination) + '_' + d.time; }));
     virtualDeps().forEach(function(vd){
-      if(!existingKeys.has(vd.id)) base.push(vd);
+      const key = (vd.presetKey || vd.destination) + '_' + vd.time;
+      if(!existingKeys.has(key)) base.push(vd);
     });
   }
 
-  // Deduplicación estricta por ID / clave de ruta para evitar renglones repetidos
+  // Deduplicación estricta por RUTA/PRESET + HORA PROGRAMADA
   const seen = new Set();
   return base.filter(function(d){
     if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return false;
-    const uniqueKey = d.id || (d.presetKey + '_' + d.time);
+    
+    // Identificador único basado en el catálogo/destino y su hora
+    const uniqueKey = (d.presetKey || d.destination) + '_' + d.time;
     if(seen.has(uniqueKey)) return false;
     seen.add(uniqueKey);
     return true;
@@ -757,7 +760,7 @@ function buildList(n){
     const o = Object.assign({}, d);
     o._diff = diffOf(d, n);
     o._st = stat(d, o._diff);
-    o._k = (d.day || '') + '|' + (d.id || d.presetKey);
+    o._k = (d.day || '') + '|' + (d.id || d.presetKey || ((d.presetKey || d.destination) + '_' + d.time));
     return o;
   }).sort(function(a, b){ return a._diff - b._diff || a.time.localeCompare(b.time); });
 }
