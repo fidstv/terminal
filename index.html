@@ -109,6 +109,7 @@ body.tv-mode .qr-text h4{font-size:clamp(9px,.7vw,12px)}
 body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
 @media (max-aspect-ratio: 4/3){body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex-basis:64%;width:64%}body.tv-mode .ads-sidebar-wrap{flex-basis:36%;width:36%}}
 
+
 /* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
@@ -368,7 +369,7 @@ function preloadCatalogAudios(){
   const modes=['etiq','abord','ultima'];
   Object.keys(CAT).forEach(function(k){
     modes.forEach(function(m){
-      const a=new Audio('Audio/'+k+'_'+m+'.mp3');
+      const a=new Audio('audios/'+k+'_'+m+'.mp3');
       a.preload='auto';
       preloaded.push(a);
     });
@@ -525,7 +526,7 @@ function playOne(key,mode){
     stopCurrent=end;
     await chime();
     if(done||my!==epoch)return end();
-    const a=new Audio('Audio/'+key+'_'+mode+'.mp3');
+    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
     currentVoiceAudio=a;
     to=setTimeout(end,60000);
     a.onended=end;
@@ -1339,17 +1340,10 @@ if(isTV && !isPassenger){
   },10000);
 }
 
-/* OCULTAR CONTROLES, PERO CONSERVAR LA ACTIVACIÓN DE AUDIO EN TV.
-   Se mantienen intactas las funciones originales de voceo y sincronización. */
+/* OCULTAR ELEMENTOS INNECESARIOS */
 if(isTV || isPassenger){
   if($('control-bar'))$('control-bar').style.display='none';
-  if($('audio-start-overlay')){
-    if(isTV){
-      $('audio-start-overlay').style.display='flex';
-    }else{
-      $('audio-start-overlay').style.display='none';
-    }
-  }
+  if($('audio-start-overlay'))$('audio-start-overlay').style.display='none';
 }
 
 /* ============ EVENTOS BINDING ============ */
