@@ -282,7 +282,7 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </footer>
 
 <script>
-/* ============ CONFIG FIREBASE Y MESSAGING (INICIALIZACIÓN ÚNICA COMPLETA) ============ */
+/* ============ CONFIG FIREBASE Y MESSAGING ============ */
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
@@ -838,7 +838,23 @@ function checkPassengerPushNotifs(list) {
 
     if (trackedBusId === d.id && oldSt && oldSt !== newSt) {
       if (newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA') {
+        // 1. Mostrar toast dentro de la página
         showPassengerInAppToast(d, newSt);
+
+        // 2. Disparar notificación nativa en el sistema / pantalla de bloqueo del teléfono
+        if ("Notification" in window && Notification.permission === "granted") {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(function(reg) {
+              reg.showNotification("🚌 Transpais – " + d.destination, {
+                body: "¡Tu corrida (" + d.time + ") cambió a " + newSt + "!",
+                icon: "https://www.transpais.com.mx/favicon.ico",
+                vibrate: [200, 100, 200],
+                tag: d.id,
+                renotify: true
+              });
+            }).catch(function(err){ console.warn("Error mostrando notificación push:", err); });
+          }
+        }
       }
     }
     prevStatuses[d.id] = newSt;
