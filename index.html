@@ -337,7 +337,7 @@ function preloadCatalogAudios(){
   const modes=['etiq','abord','ultima'];
   Object.keys(CAT).forEach(function(k){
     modes.forEach(function(m){
-      const a=new Audio('audios/'+k+'_'+m+'.mp3');
+      const a=new Audio('Audio/'+k+'_'+m+'.mp3');
       a.preload='auto';
       preloaded.push(a);
     });
@@ -494,7 +494,7 @@ function playOne(key,mode){
     stopCurrent=end;
     await chime();
     if(done||my!==epoch)return end();
-    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
+    const a=new Audio('Audio/'+key+'_'+mode+'.mp3');
     currentVoiceAudio=a;
     to=setTimeout(end,60000);
     a.onended=end;
