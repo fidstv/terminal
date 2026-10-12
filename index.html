@@ -728,11 +728,10 @@ function virtualDeps(){
 }
 
 function virtualActive(){
-  const n = nowParts();
   if (!(gotCleared || offlineFallback)) return false;
-  if (clearedDay === n.key) return false;
-  // Si ya existen corridas cargadas y activas en deps, NO activar catálogo virtual
-  return !Object.values(deps).some(function(d){ return d && d.time && isLive(d, n); });
+  if (clearedDay === nowParts().key) return false;
+  // Si ya hay cualquier corrida en memoria, desactiva el catálogo virtual inmediatamente
+  return Object.keys(deps).length === 0;
 }
 
 function buildList(n){
