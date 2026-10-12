@@ -730,38 +730,45 @@ function virtualDeps(){
 function virtualActive(){
   if (!(gotCleared || offlineFallback)) return false;
   if (clearedDay === nowParts().key) return false;
-  // Si ya hay cualquier corrida en memoria, desactiva el catálogo virtual inmediatamente
   return Object.keys(deps).length === 0;
 }
 
 function buildList(n){
   let base = Object.values(deps);
   if(virtualActive()){
-    const existingKeys = new Set(base.map(function(d){ return (d.presetKey || d.destination) + '_' + d.time; }));
+    const existingKeys = new Set(base.map(function(d){ return d.presetKey || (d.destination + '_' + d.time); }));
     virtualDeps().forEach(function(vd){
-      const key = (vd.presetKey || vd.destination) + '_' + vd.time;
+      const key = vd.presetKey || (vd.destination + '_' + vd.time);
       if(!existingKeys.has(key)) base.push(vd);
     });
   }
 
-  // Deduplicación estricta por RUTA/PRESET + HORA PROGRAMADA
-  const seen = new Set();
-  return base.filter(function(d){
-    if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return false;
+  // Deduplicación estricta por RUTA/PRESET
+  const mapByPreset = new Map();
+  base.forEach(function(d){
+    if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return;
     
-    // Identificador único basado en el catálogo/destino y su hora
-    const uniqueKey = (d.presetKey || d.destination) + '_' + d.time;
-    if(seen.has(uniqueKey)) return false;
-    seen.add(uniqueKey);
-    return true;
-  })
-  .map(function(d){
-    const o = Object.assign({}, d);
-    o._diff = diffOf(d, n);
-    o._st = stat(d, o._diff);
-    o._k = (d.day || '') + '|' + (d.id || d.presetKey || ((d.presetKey || d.destination) + '_' + d.time));
-    return o;
-  }).sort(function(a, b){ return a._diff - b._diff || a.time.localeCompare(b.time); });
+    const key = d.presetKey || (d.destination + '_' + d.time);
+    
+    if(!mapByPreset.has(key)){
+      mapByPreset.set(key, d);
+    } else {
+      const existing = mapByPreset.get(key);
+      if((d.status && d.status !== 'EN ESPERA' && existing.status === 'EN ESPERA') || (String(d.id).startsWith('p') && !String(existing.id).startsWith('p'))){
+        mapByPreset.set(key, d);
+      }
+    }
+  });
+
+  return Array.from(mapByPreset.values())
+    .map(function(d){
+      const o = Object.assign({}, d);
+      o._diff = diffOf(d, n);
+      o._st = stat(d, o._diff);
+      o._k = (d.day || '') + '|' + (d.id || d.presetKey || (d.destination + '_' + d.time));
+      return o;
+    })
+    .sort(function(a, b){ return a._diff - b._diff || a.time.localeCompare(b.time); });
 }
 
 function ensureMat(){
@@ -1211,19 +1218,6 @@ function syncRows(tb, list, html){
   existingRows.forEach(function(r){ r.remove(); });
 }
 
-function buildList(n){
-  let base=Object.values(deps);
-  if(virtualActive())base=base.concat(virtualDeps());
-  return base.filter(function(d){return d&&d.time&&isLive(d,n)&&diffOf(d,n)>-15;})
-    .map(function(d){
-      const o=Object.assign({},d);
-      o._diff=diffOf(d,n);
-      o._st=stat(d,o._diff);
-      o._k=(d.day||'')+'|'+d.id;
-      return o;
-    }).sort(function(a,b){return a._diff-b._diff||a.time.localeCompare(b.time);});
-}
-
 function render(){
   const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body'), plist=$('passenger-card-list');
   if(!ready){
@@ -1310,19 +1304,21 @@ if($('departure-form')){
   $('departure-form').addEventListener('submit',function(e){
     e.preventDefault(); if(!canWrite())return;
     ensureMat().then(function(){
-      const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
-      let status=$('dep-status').value;
+      const presetKey = $('dep-preset-key').value;
+      const id = $('dep-id').value || presetKey || ('c' + Date.now());
+      const old = deps[id];
+      let status = $('dep-status').value;
       if(status==='DEMORADO'&&old&&old.status&&(old.status.indexOf('DEMORADO')===0||old.status==='REPROGRAMADO'))status=old.status;
       return dref(id).set({
-        presetKey:$('dep-preset-key').value||'p01',
-        time:$('dep-time').value,
-        destination:$('dep-destination').value.trim(),
-        scales:cleanScales($('dep-scales').value),
-        bus:$('dep-bus').value.trim(),
-        status:status,
-        sucursal:suc,
-        day:(old&&old.day)||nowParts().key,
-        delay:(old&&old.delay)||0
+        presetKey: presetKey || 'p01',
+        time: $('dep-time').value,
+        destination: $('dep-destination').value.trim(),
+        scales: cleanScales($('dep-scales').value),
+        bus: $('dep-bus').value.trim(),
+        status: status,
+        sucursal: suc,
+        day: (old&&old.day)||nowParts().key,
+        delay: (old&&old.delay)||0
       });
     }).then(resetForm).catch(fail);
   });
