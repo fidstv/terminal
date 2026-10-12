@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
 .glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
@@ -85,14 +85,7 @@ body.passenger-mode .control-bar {
 .ad-img-item{width:100%;height:100%;object-fit:fill;position:absolute;inset:0;opacity:0;transition:opacity 1s ease-in-out}
 .ad-img-item.active{opacity:1!important;z-index:2}
 
-/* WIDGET QR Y VOCEO */
-.qr-card{position:fixed;bottom:55px;left:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
-.qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
-.qr-text{max-width:180px}
-.qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
-.qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
-#qrcode-box{background:#fff;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center}
-
+/* VOCEO INDICATOR */
 .voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
 .voice-indicator.active{transform:translateY(0);opacity:1}
 .speaker-pulse{animation:sp 1s infinite alternate}
@@ -120,12 +113,6 @@ body.tv-mode .badge-status{padding:clamp(4px,.4vw,7px) clamp(6px,.7vw,12px);font
 body.tv-mode .ticker-footer{flex:0 0 clamp(28px,4.5vh,42px);height:clamp(28px,4.5vh,42px)}
 body.tv-mode .ticker-title{padding:0 clamp(8px,1.2vw,20px);font-size:clamp(9px,.7vw,12px)}
 body.tv-mode .ticker-content{font-size:clamp(10px,.8vw,13px)}
-body.tv-mode .qr-card{left:auto;right:clamp(12px,1.5vw,26px);bottom:clamp(38px,5vh,52px);max-width:min(390px,42vw);padding:clamp(8px,.8vw,14px);gap:clamp(8px,.8vw,14px);border-radius:12px}
-body.tv-mode #qrcode-box{padding:5px;border-radius:8px;flex:0 0 auto}
-body.tv-mode #qrcode-box canvas,body.tv-mode #qrcode-box img{width:clamp(54px,6vw,88px)!important;height:clamp(54px,6vw,88px)!important}
-body.tv-mode .qr-text{max-width:clamp(120px,16vw,190px)}
-body.tv-mode .qr-text h4{font-size:clamp(9px,.7vw,12px)}
-body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
 
 /* Salidas en etiquetado: panel fijo independiente del auto-scroll */
 .fixed-departures-wrap{display:none;flex:0 0 auto;margin:0 0 12px;border:1px solid rgba(255,184,0,.8);border-left:5px solid #ffb800;border-radius:10px;overflow:hidden;background:rgba(0,18,45,.96);box-shadow:0 5px 18px rgba(0,0,0,.28)}
@@ -151,9 +138,7 @@ body.tv-mode .status-abordaje{background:linear-gradient(135deg,#00d974,#00a86b)
 body.tv-mode .status-ultima{background:linear-gradient(135deg,#ff416c,#c81e4b);color:#fff;border:1px solid #ff9bb2}
 body.tv-mode .status-demorado{background:linear-gradient(135deg,#ff623d,#c81e1e);color:#fff;border:1px solid #ffb1a3}
 body.tv-mode .status-salido{background:#243c60;color:#d9e7fb;border:1px solid #6c84a7}
-body.tv-mode .qr-card{z-index:40}
 body.tv-mode .ads-sidebar-wrap{position:relative;z-index:2}
-body.tv-mode .qr-card.show{pointer-events:none}
 
 /* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
@@ -173,20 +158,11 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 .passenger-card-scales{font-size:11px;color:#93c5fd}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
 .passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
-
-/* Anuncio promocional VistaPasajero */
-body.tv-mode .qr-card{display:none!important}
-.vista-qr-ad{display:flex;align-items:center;justify-content:center;background:transparent;overflow:hidden;padding:0!important;width:100%;height:100%}
-.vqa-stage{position:relative;height:100%;width:100%;aspect-ratio:9/16;overflow:hidden;background:transparent}
-.vqa-stage-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
-.vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:5%;padding:1.4%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.8)}
-.vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -216,14 +192,6 @@ body.tv-mode .qr-card{display:none!important}
 <div id="voice-indicator" class="voice-indicator">
   <span class="speaker-pulse" style="font-size:18px">📢</span>
   <span>VOCEO EN REPRODUCCIÓN...</span>
-</div>
-
-<div id="qr-card" class="qr-card">
-  <div id="qrcode-box"></div>
-  <div class="qr-text">
-    <h4>📱 VISTAPASAJERO OF2</h4>
-    <p>Escanea para consultar si tu autobús ya está en la central o está abordando.</p>
-  </div>
 </div>
 
 <header class="glass-header">
@@ -802,9 +770,7 @@ let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
 function updateSidebarAspectRatio(activeEl){
   const sidebar=$('ads-sidebar');
   if(!sidebar||!activeEl)return;
-  if(activeEl.classList.contains('vista-qr-ad')){
-    sidebar.style.aspectRatio='9 / 16';
-  }else if(activeEl.tagName==='IMG'){
+  if(activeEl.tagName==='IMG'){
     if(activeEl.naturalWidth&&activeEl.naturalHeight){
       sidebar.style.aspectRatio=activeEl.naturalWidth+' / '+activeEl.naturalHeight;
     }else{
@@ -882,10 +848,6 @@ function renderAds(){
       el.dataset.index=idx;
       container.appendChild(el);
     });
-    const qrSlide=makeVistaPasajeroAd();
-    if(activeList.length===0)qrSlide.classList.add('active');
-    qrSlide.dataset.index=activeList.length;
-    container.appendChild(qrSlide);
     startAdCycle();
   }
 
@@ -1425,41 +1387,6 @@ function doLogout(){
   }
 }
 
-function makeVistaPasajeroAd(){
-  const isCentral=viewSuc()==='central';
-  const slide=document.createElement('div');
-  slide.className='ad-img-item vista-qr-ad';
-  const stage=document.createElement('div');
-  stage.className='vqa-stage';
-  const bg=document.createElement('img');
-  bg.className='vqa-stage-bg';
-  bg.alt=isCentral?'Anuncio Transpais de la Central, andén 18':'Anuncio Transpais de Terminal Pedro Cárdenas';
-  
-  bg.src = isCentral 
-    ? 'https://i.imgur.com/8Q73z8A.jpeg' 
-    : 'https://i.imgur.com/392g17S.jpeg';
-
-  const qrOverlay=document.createElement('div');
-  qrOverlay.className='vqa-qr-overlay';
-
-  stage.appendChild(bg);
-  stage.appendChild(qrOverlay);
-  slide.appendChild(stage);
-
-  const targetUrl = location.origin + location.pathname + '?vista=' + (isCentral ? 'pasajerocentral' : 'pasajeroof2');
-  if (window.QRCode) {
-    new QRCode(qrOverlay, {
-      text: targetUrl,
-      width: 180,
-      height: 180,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-  }
-  return slide;
-}
-
 /* ============ INICIALIZACIÓN DE BOTONES Y WIDGETS ============ */
 if($('btn-tab-screen')) $('btn-tab-screen').onclick = function(){ switchTab('screen'); };
 if($('btn-tab-admin')) $('btn-tab-admin').onclick = function(){ openPin(); };
@@ -1479,19 +1406,6 @@ if($('btn-login-cancel')) $('btn-login-cancel').onclick = function(){
 if($('login-pass-input')) $('login-pass-input').onkeyup = function(e){
   if(e.key === 'Enter') doLogin();
 };
-
-if ($('qrcode-box') && window.QRCode) {
-  const isCentral = viewSuc() === 'central';
-  const qrUrl = location.origin + location.pathname + '?vista=' + (isCentral ? 'pasajerocentral' : 'pasajeroof2');
-  new QRCode($('qrcode-box'), {
-    text: qrUrl,
-    width: 120,
-    height: 120,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
 
 attach(viewSuc());
 updateHeaderTitles();
