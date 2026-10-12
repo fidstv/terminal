@@ -102,7 +102,6 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -294,7 +293,6 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const auth = firebase.auth();
-let messaging = null, swReg = null;
 
 const TZ = 'America/Matamoros';
 const $ = function(id){ return document.getElementById(id); };
@@ -306,22 +304,8 @@ const isPassenger = vista.startsWith('pasajero');
 
 let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
 let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
-let trackedBusId = null;
 
 if(isPassenger) document.body.classList.add('passenger-mode');
-
-/* Messaging y Service Worker solo para el celular del pasajero */
-if(isPassenger){
-  try{
-    if(firebase.messaging.isSupported()) messaging = firebase.messaging();
-  }catch(e){ console.warn('Messaging no soportado:', e); }
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./firebase-messaging-sw.js').then(function(reg){
-      swReg = reg;
-      if(messaging) messaging.useServiceWorker(reg);
-    }).catch(function(err){ console.warn('SW no registrado:', err); });
-  }
-}
 
 const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
@@ -412,18 +396,6 @@ function stat(d,diff){
   }
   return d.status||'EN ESPERA';
 }
-
-/* Seguimiento del pasajero: solo vale el mismo día y la misma terminal */
-function readTracked(){
-  try{
-    const t=JSON.parse(localStorage.getItem('transpais_tracked_bus')||'null');
-    const n=nowParts();
-    if(t&&t.id&&t.suc===viewSuc()&&(t.day===n.key||(n.min<360&&t.day===dayShift(n.key,-1))))return t.id;
-  }catch(e){}
-  localStorage.removeItem('transpais_tracked_bus');
-  return null;
-}
-trackedBusId=readTracked();
 
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
@@ -630,18 +602,37 @@ function attach(s){
   }
 }
 
+/* El aviso urgente caduca solo a los 30 minutos si nadie lo quita */
+const URGENT_TTL_MIN=30;
+function urgentInfo(){
+  if(!urgentMsg)return {text:'',expired:false};
+  if(typeof urgentMsg==='object'){
+    const t=String(urgentMsg.text||'').trim();
+    let ok=true;
+    if(urgentMsg.ts){
+      ok=(Date.now()+srvOff-urgentMsg.ts)<=URGENT_TTL_MIN*60000;
+    }else if(urgentMsg.day){
+      const n=nowParts();
+      ok=urgentMsg.day===n.key||(n.min<360&&urgentMsg.day===dayShift(n.key,-1));
+    }
+    return {text:t,expired:!ok};
+  }
+  return {text:String(urgentMsg).trim(),expired:false};
+}
+
 function renderUrgentMsg(){
   const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
+  const u=urgentInfo();
   if(banner&&txt){
-    if(urgentMsg&&String(urgentMsg).trim()){
-      txt.textContent="⚠️ " + String(urgentMsg).trim();
+    if(u.text&&!u.expired){
+      txt.textContent="⚠️ " + u.text;
       banner.classList.remove('hidden');
     }else{
       banner.classList.add('hidden');
     }
   }
   if(inp&&canWrite()&&document.activeElement!==inp){
-    inp.value=urgentMsg||'';
+    inp.value=u.expired?'':u.text;
   }
 }
 
@@ -892,7 +883,7 @@ if($('btn-save-urgent')){
   $('btn-save-urgent').onclick=function(){
     if(!canWrite())return;
     const v=$('urgent-input').value.trim().slice(0,300);
-    (v?db.ref(suc+'/urgent').set(v):db.ref(suc+'/urgent').remove()).catch(fail);
+    (v?db.ref(suc+'/urgent').set({text:v,day:nowParts().key,ts:Date.now()+srvOff}):db.ref(suc+'/urgent').remove()).catch(fail);
   };
 }
 if($('btn-clear-urgent')){
@@ -901,98 +892,6 @@ if($('btn-clear-urgent')){
     $('urgent-input').value='';
     db.ref(suc+'/urgent').remove().catch(fail);
   };
-}
-
-/* ============ SEGUIMIENTO Y TOKEN PUSH (PANTALLA DE BLOQUEO) ============ */
-const prevStatuses = {};
-
-window.trackBus = function(busKey) {
-  trackedBusId = busKey;
-  try{ localStorage.setItem('transpais_tracked_bus', JSON.stringify({id:busKey,suc:viewSuc(),day:nowParts().key})); }catch(e){}
-  render();
-
-  if (!("Notification" in window)) {
-    showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
-    return;
-  }
-  Notification.requestPermission().then((perm) => {
-    if (perm === 'granted' && messaging) {
-      messaging.getToken({
-        vapidKey: 'BE9O3z2gGh2BrhY1sc4VxMPwICMNrMmf9TQ7tIAG0znTcWAX377hsgcnhWCKfhDBq5_ZGr_BPviL4LqSGeD8kso'
-      }).then((currentToken) => {
-        if (currentToken) {
-          const cleanTokenKey = currentToken.replace(/[^a-zA-Z0-9]/g, '_');
-          const parts = String(busKey).split('|');
-          const depKey = String(parts[1] || busKey).replace(/[^a-zA-Z0-9_-]/g, '_');
-          const day = parts[0] || nowParts().key;
-          /* push_tokens/<terminal>/<día>/<corrida>/<token> */
-          db.ref('push_tokens/' + viewSuc() + '/' + day + '/' + depKey + '/' + cleanTokenKey).set({
-            token: currentToken,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-          });
-          showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones en pantalla de bloqueo activadas');
-        }
-      }).catch((err) => {
-        console.error('Error al generar token FCM:', err);
-        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas en pantalla');
-      });
-    } else {
-      showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
-    }
-  });
-};
-
-window.untrackBus = function(silent){
-  trackedBusId = null;
-  localStorage.removeItem('transpais_tracked_bus');
-  if(!silent)render();
-};
-
-function checkPassengerPushNotifs(list) {
-  if (!isPassenger) return;
-
-  list.forEach(function(d) {
-    const oldSt = prevStatuses[d._k];
-    const newSt = d._st;
-
-    if (trackedBusId === d._k && newSt === 'SALIDO') {
-      untrackBus(true);
-    }
-
-    if (trackedBusId === d._k && oldSt && oldSt !== newSt) {
-      if (newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA') {
-        showPassengerInAppToast(d, newSt);
-
-        if ("Notification" in window && Notification.permission === "granted" && 'serviceWorker' in navigator) {
-          navigator.serviceWorker.ready.then(function(reg) {
-            reg.showNotification("🚌 Transpais – " + d.destination, {
-              body: "¡Tu corrida (" + d.time + ") cambió a " + newSt + "!",
-              icon: "https://www.transpais.com.mx/favicon.ico",
-              vibrate: [200, 100, 200],
-              tag: d._k,
-              renotify: true,
-              data: { url: location.href }
-            });
-          }).catch(function(err){ console.warn("Error mostrando notificación:", err); });
-        }
-      }
-    }
-    prevStatuses[d._k] = newSt;
-  });
-}
-
-function showPassengerInAppToast(d, statusText){
-  let t = $('passenger-toast-msg');
-  if(!t){
-    t = document.createElement('div');
-    t.id = 'passenger-toast-msg';
-    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#00A859;color:#fff;padding:12px 20px;border-radius:25px;font-weight:800;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:99999;text-align:center;width:90%;max-width:380px;border:1px solid #00D974;';
-    document.body.appendChild(t);
-  }
-  t.innerHTML = "🚌 <strong>" + esc(d.destination) + " (" + esc(d.time) + "):</strong> ¡" + esc(statusText) + "!";
-  t.style.display = 'block';
-  clearTimeout(t._h);
-  t._h = setTimeout(function(){ t.style.display = 'none'; }, 8000);
 }
 
 /* ============ VOCEO AUTOMÁTICO EN TV ============ */
@@ -1066,6 +965,8 @@ function tick(){
           if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
         });
       }
+      renderUrgentMsg();
+      if(canWrite()&&urgentInfo().expired)db.ref(suc+'/urgent').remove().catch(function(){});
       render();
     }
   }catch(e){console.error('Error tick:',e);}
@@ -1078,7 +979,7 @@ function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
   if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&st.indexOf('DEMORADO')!==-1)return'<span class="badge-status status-demorado">'+esc(st)+'</span>';
+  if(st&&(st.indexOf('DEMORADO')!==-1||st==='REPROGRAMADO'))return'<span class="badge-status status-demorado">'+esc(st)+'</span>';
   if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
@@ -1086,10 +987,9 @@ const cleanScales=function(s){return (s||'').split(',').map(function(x){return x
 
 function passengerCardHTML(d, isCentral){
   const sc = cleanScales(d.scales);
-  const isTracked = trackedBusId === d._k;
   const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
 
-  return '<div class="passenger-card ' + (isTracked ? 'tracked' : '') + '">' +
+  return '<div class="passenger-card">' +
     '<div class="passenger-card-header">' +
       '<span class="passenger-card-time">' + esc(d.time) + '</span>' +
       '<div>' + badge(d._st) + '</div>' +
@@ -1102,9 +1002,6 @@ function passengerCardHTML(d, isCentral){
       '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
       '<span>📍 ' + esc(boardingPoint) + '</span>' +
     '</div>' +
-    (isTracked
-      ? '<button class="btn btn-green passenger-track-btn" data-untrack="1">✅ SIGUIENDO ESTE AUTOBÚS</button>'
-      : '<button class="btn btn-blue passenger-track-btn" data-track="' + esc(d._k) + '">🔔 SEGUIR MI AUTOBÚS</button>') +
   '</div>';
 }
 
@@ -1202,19 +1099,10 @@ function render(){
   if(isPassenger && plist){
     plist.classList.remove('hidden');
     plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
-    checkPassengerPushNotifs(list);
   } else {
     if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
     if(canWrite()&&ab)syncRows(ab,list,adminRow);
   }
-}
-
-if($('passenger-card-list')){
-  $('passenger-card-list').addEventListener('click',function(e){
-    const t=e.target.closest('[data-track]');
-    if(t){ trackBus(t.dataset.track); return; }
-    if(e.target.closest('[data-untrack]'))untrackBus();
-  });
 }
 
 /* ============ ACCIONES DE TAQUILLA ============ */
@@ -1249,9 +1137,10 @@ function adjustTime(d,deltaMinutes){
   const newDelay=Math.max(0,(d.delay||0)+deltaMinutes);
   const updates={time:newTime,delay:newDelay};
 
-  if(newDelay>0){
-    updates.status='DEMORADO (+'+newDelay+'m)';
-  }else if(d.status&&d.status.indexOf('DEMORADO')===0){
+  /* Menos de 1 hora: solo cambia la hora. Desde 1 hora: REPROGRAMADO */
+  if(newDelay>=60){
+    updates.status='REPROGRAMADO';
+  }else if(d.status&&(d.status.indexOf('DEMORADO')===0||d.status==='REPROGRAMADO')){
     updates.status='EN ESPERA';
   }
 
@@ -1279,7 +1168,7 @@ if($('departure-form')){
     ensureMat().then(function(){
       const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
       let status=$('dep-status').value;
-      if(status==='DEMORADO'&&old&&old.status&&old.status.indexOf('DEMORADO')===0)status=old.status;
+      if(status==='DEMORADO'&&old&&old.status&&(old.status.indexOf('DEMORADO')===0||old.status==='REPROGRAMADO'))status=old.status;
       return dref(id).set({
         presetKey:$('dep-preset-key').value||'p01',
         time:$('dep-time').value,
