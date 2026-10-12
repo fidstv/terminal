@@ -179,24 +179,6 @@ body.tv-mode .qr-card{display:none!important}
 .vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
 
 
-
-/* Contorno azul alrededor del panel de imagen; conservar amarillos de estatus y etiquetado */
-.glass-header{border-bottom-color:#168BFF!important}
-.ticker-footer{border-top-color:#168BFF!important}
-.ads-sidebar-wrap{background:transparent!important;border:3px solid #168BFF!important;box-shadow:0 0 0 1px rgba(22,139,255,.18)!important}
-.ad-image-container{background:transparent!important;border:0!important}
-.ad-img-item{outline:0!important}
-.qr-card{border-color:#168BFF!important}
-
-/* Cuando hay una salida fija, el área de anuncios se adapta al espacio restante */
-body.tv-mode .screen-split-wrapper{height:auto!important;flex:1 1 0!important;min-height:0!important;max-height:100%!important}
-body.tv-mode .screen-split-wrapper.split-active .ads-sidebar-wrap{min-height:0!important;height:100%!important}
-body.tv-mode .screen-split-wrapper.split-active .ad-image-container{min-height:0!important;height:100%!important}
-body.tv-mode .screen-split-wrapper.split-active .ad-img-item{object-fit:contain!important;max-height:100%!important}
-body.tv-mode.has-fixed-departure .fixed-departures-wrap{flex-shrink:0!important}
-body.tv-mode.has-fixed-departure .screen-split-wrapper{flex:1 1 0!important;height:auto!important;min-height:0!important}
-body.tv-mode.has-fixed-departure .ads-sidebar-wrap{max-height:100%!important}
-
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -856,7 +838,7 @@ function renderAds(){
   if(isPassenger)return;
   const container=$('ad-image-container'), adminBody=$('admin-ads-body');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-  const sig=activeList.map(function(a){return a.id+':'+String(a.dataUrl||'').length+':'+String(a.dataUrl||'').slice(0,48);}).join('|');
+  const sig=activeList.map(function(a){return a.id;}).join(',');
 
   if(container && sig!==adSig){
     adSig=sig;
@@ -915,9 +897,7 @@ function update7030State(){
   const btn=$('btn-toggle-7030-manual');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   const isForced=!!adsConfig.force7030;
-  /* Mostrar el panel siempre que haya al menos un anuncio activo con imagen,
-     sin depender de la detección de TV ni del ciclo automático. */
-  const shouldSplit = activeList.length > 0;
+  const shouldSplit = activeList.length > 0 && (isForced || (isTV && autoSplitState));
 
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
@@ -928,7 +908,7 @@ function update7030State(){
   }
 }
 
-/* En TV, los anuncios activos permanecen visibles; las imágenes rotan en el panel. */
+/* En TV, sin forzar, los anuncios aparecen 60 s cada 2.5 min */
 function cycleSplit(){
   if(!isTV)return;
   autoSplitState=true; update7030State();
@@ -1248,7 +1228,6 @@ function render(){
     const moving=(isTV&&!isPassenger)?list.filter(function(d){return d._st!=='ETIQUETANDO PASAJE';}):list;
     if(fixedWrap&&fixedBody){
       fixedWrap.classList.toggle('hidden',pinned.length===0);
-      document.body.classList.toggle('has-fixed-departure',pinned.length>0);
       syncRows(fixedBody,pinned,function(d){return tvRow(d,c);});
     }
     if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
