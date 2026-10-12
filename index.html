@@ -18,9 +18,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;mi
 .btn-red{background:rgba(230,57,70,.3);color:#f87171}.btn-red:hover{background:rgba(230,57,70,.5)}
 .btn-panic{background:#e11d48;color:#fff;font-weight:900;box-shadow:0 0 10px rgba(225,29,72,.5)}.btn-panic:hover{background:#be123c}
 .btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
-.btn-arrive{background:#d97706;color:#fff;font-weight:900}
-.btn-delay{background:#dc2626;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-delay:hover{background:#991b1b}
-.btn-advance{background:#2563eb;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-advance:hover{background:#1d4ed8}
 table{width:100%;border-collapse:collapse;text-align:left}
 th{background:rgba(0,20,45,.9);color:#93c5fd;padding:12px 14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
 td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -35,10 +32,8 @@ td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
 @keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
 @keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
 input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px;color:#fff;font-family:inherit;width:100%}
-.inline-bus-input{background:rgba(255,184,0,.15);border:1px solid #FFB800;font-weight:800;text-align:center;width:80px;padding:5px;border-radius:6px}
 .grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
 .lbl{font-size:11px;font-weight:700;color:#93c5fd}
-.flex{display:flex;gap:4px;justify-content:center}
 .ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden;flex-shrink:0}
 .ticker-title{background:#00A859;padding:0 20px;height:100%;display:flex;align-items:center;font-weight:900;font-size:11px;white-space:nowrap}
 .ticker-content{white-space:nowrap;animation:tk 30s linear infinite;font-size:12px;color:#93c5fd}
@@ -64,18 +59,16 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 
 .ad-image-container{width:100%;height:100%;position:relative;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
 
-/* ESTRUCTURA DEL ANUNCIO Y QR DENTRO DEL CONTENEDOR 25% */
 .vqa-stage{position:relative;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:#000}
 .vqa-stage.active{display:flex!important}
 .vqa-stage-bg{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 
-/* POSICIONAMIENTO DEL QR DENTRO DEL RECUADRO DEL ANUNCIO VERTICAL */
+/* QR OVERLAY */
 .vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:6px;padding:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4)}
 .vqa-qr-overlay canvas,.vqa-qr-overlay img{max-width:100%!important;max-height:100%!important;width:auto!important;height:auto!important;object-fit:contain!important}
-.vqa-qr-overlay img[style*="none"],.vqa-qr-overlay canvas[style*="none"]{display:none!important}
 
-/* OCULTAR BARRA DE CONTROL EN MODO TV */
-body.tv-mode .control-bar{display:none!important}
+/* OCULTAR ELEMENTOS DE CONTROL EN MODO TV Y PASAJERO */
+body.tv-mode .control-bar, body.passenger-mode .control-bar {display:none!important}
 body.tv-mode .glass-card{margin:10px 20px;padding:15px;max-height:none;height:calc(100vh - 150px)}
 
 /* SALIDAS EN ETIQUETADO (FIJO) */
@@ -91,8 +84,9 @@ body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
 body.passenger-mode #header-terminal-title{font-size:16px!important}
 body.passenger-mode #header-terminal-sub{font-size:10px!important}
-body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;overflow-y:auto}
-body.passenger-mode .fids-table-wrap table{display:none!important}
+body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;overflow-y:auto;max-height:none}
+body.passenger-mode #screen-split-container{display:none!important}
+body.passenger-mode #fixed-departures-wrap{display:none!important}
 .passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
 .passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
 .passenger-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}
@@ -130,11 +124,6 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
     </div>
     <div id="pin-error-msg" style="color:#f43f5e;font-size:11px;margin-top:10px;font-weight:700" class="hidden">❌ Credenciales Incorrectas</div>
   </div>
-</div>
-
-<div id="voice-indicator" class="voice-indicator" style="display:none">
-  <span class="speaker-pulse" style="font-size:18px">📢</span>
-  <span>VOCEO EN REPRODUCCIÓN...</span>
 </div>
 
 <header class="glass-header">
@@ -283,10 +272,15 @@ const vista = new URLSearchParams(location.search).get('vista') || 'screen';
 const isTV = vista.startsWith('tv');
 const isPassenger = vista.startsWith('pasajero');
 
-let suc = 'of2', deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
-let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
+let suc = 'of2', deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0;
+let curMap = {};
 
-if(isPassenger) document.body.classList.add('passenger-mode');
+if(isPassenger){
+  document.body.classList.add('passenger-mode');
+  window.addEventListener('DOMContentLoaded', function(){
+    if($('audio-start-overlay')) $('audio-start-overlay').style.display = 'none';
+  });
+}
 if(isTV) document.body.classList.add('tv-mode');
 
 const viewSuc = function(){
@@ -295,32 +289,6 @@ const viewSuc = function(){
   return suc||'of2';
 };
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
-const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
-
-const CAT={
- p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
- p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
- p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
- p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
- p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
- p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
- p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
- p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
- p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
- p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"],
- p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
- p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
- p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"]};
-
-const CAT_CENTRAL={
- p01:["05:00",CAT.p01[1],CAT.p01[2]], p02:["07:20",CAT.p02[1],CAT.p02[2]],
- p03:["07:45",CAT.p03[1],CAT.p03[2]], p04:["09:00",CAT.p04[1],CAT.p04[2]],
- p05:["09:45",CAT.p05[1],CAT.p05[2]], p06:["10:30",CAT.p06[1],CAT.p06[2]],
- p07:["11:30",CAT.p07[1],CAT.p07[2]], p08:["13:15",CAT.p08[1],CAT.p08[2]],
- p09:["13:30",CAT.p09[1],CAT.p09[2]], p13:["15:00",CAT.p13[1],CAT.p13[2]],
- p10:["18:30",CAT.p10[1],CAT.p10[2]], p11:["22:45",CAT.p11[1],CAT.p11[2]],
- p12:["23:15",CAT.p12[1],CAT.p12[2]]};
-const catalogFor=function(branch){return branch==='central'?CAT_CENTRAL:CAT;};
 
 db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
 
@@ -538,6 +506,35 @@ function render(){
   const list=buildList(n);
   curMap={}; list.forEach(function(d){curMap[d._k]=d;});
 
+  // VISTA MÓVIL PASAJERO
+  if(isPassenger){
+    const plist = $('passenger-card-list');
+    if(plist){
+      plist.classList.remove('hidden');
+      if(list.length === 0){
+        plist.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#93c5fd;font-weight:700;background:rgba(0,20,45,.8);border-radius:16px">🚌 No hay corridas activas en este momento.</div>';
+      } else {
+        plist.innerHTML = list.map(function(d){
+          const sc = cleanScales(d.scales);
+          return '<div class="passenger-card">' +
+            '<div class="passenger-card-header">' +
+              '<div class="passenger-card-time">' + esc(d.time) + '</div>' +
+              '<div>' + badge(d._st) + '</div>' +
+            '</div>' +
+            '<div class="passenger-card-dest">' + esc(d.destination) + '</div>' +
+            (sc ? '<div class="passenger-card-scales">Escalas: ' + esc(sc) + '</div>' : '') +
+            '<div class="passenger-card-details">' +
+              '<span>Autobús: <strong>' + esc(d.bus || '---') + '</strong></span>' +
+              '<span style="color:#00D974">' + (c ? 'Central de Autobuses' : 'Oficina Pedro Cárdenas') + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    }
+    return;
+  }
+
+  // VISTA PANTALLA / TV
   const fixedWrap=$('fixed-departures-wrap'), fixedBody=$('fixed-fids-body');
   const pinned=list.filter(function(d){return d._st==='ETIQUETANDO PASAJE';});
   const moving=list.filter(function(d){return d._st!=='ETIQUETANDO PASAJE';});
