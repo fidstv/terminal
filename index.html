@@ -423,7 +423,8 @@ function renderAds(){
 
       try {
         const isCentral = viewSuc() === 'central';
-        const vistaPasajero = isCentral ? 'tvcentral' : 'tvof2';
+        // CORRECCIÓN: Apuntar a la vista de pasajero correspondiente
+        const vistaPasajero = isCentral ? 'pasajerocentral' : 'pasajero';
         const qrUrl = window.location.origin + window.location.pathname + '?vista=' + vistaPasajero;
 
         new QRCode(qrOverlay, {
@@ -436,6 +437,24 @@ function renderAds(){
     });
     startAdCycle();
   }
+
+  if(canWrite()&&adminBody){
+    const allList=Object.values(adsData);
+    if(allList.length===0){
+      adminBody.innerHTML='<tr><td colspan="4" class="c" style="color:#888;font-size:11px">No hay anuncios cargados.</td></tr>';
+    }else{
+      adminBody.innerHTML=allList.map(function(a){
+        return '<tr>'+
+          '<td><img src="'+esc(a.dataUrl)+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover"></td>'+
+          '<td style="font-size:11px;font-weight:700">'+esc(a.name)+'</td>'+
+          '<td class="c"><button class="btn '+(a.active?'btn-green':'btn-dark')+'" data-adact="toggle" data-adid="'+esc(a.id)+'">'+(a.active?'✅ MOSTRANDO':'⏸️ OCULTO')+'</button></td>'+
+          '<td class="c"><button class="btn btn-dark btn-red" data-adact="del" data-adid="'+esc(a.id)+'">🗑️ Eliminar</button></td>'+
+        '</tr>';
+      }).join('');
+    }
+  }
+  update7030State();
+}
 
   if(canWrite()&&adminBody){
     const allList=Object.values(adsData);
