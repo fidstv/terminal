@@ -750,19 +750,61 @@ async function autoCatalog(){
 }
 
 function loadCatalog(){
-  const n=nowParts(), day=n.key, o={}, catalog=catalogFor(suc);
+  const branch = suc || viewSuc();
+  const n = nowParts(), day = n.key, o = {}, catalog = catalogFor(branch);
+  
   Object.values(deps).forEach(function(d){
-    if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
-      const c=Object.assign({},d); delete c.id; delete c._virtual;
-      o['old_'+String(d.id).replace(/^old_/,'')]=c;
+    if(d.day && d.day !== day && isLive(d,n) && diffOf(d,n) > -15){
+      const c = Object.assign({}, d); delete c.id; delete c._virtual;
+      o['old_' + String(d.id).replace(/^old_/, '')] = c;
     }
   });
+
   Object.keys(catalog).forEach(function(k){
-    const row=catalog[k];
-    o[k]={presetKey:k,time:row[0],destination:row[1],scales:row[2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+    const row = catalog[k];
+    o[k] = {presetKey: k, time: row[0], destination: row[1], scales: row[2], bus: '', status: 'EN ESPERA', sucursal: branch, day: day, delay: 0};
   });
-  return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
+
+  // Actualización inmediata en memoria local y pantalla
+  deps = o;
+  clearedDay = null;
+  try{ localStorage.setItem('transpais_offline_deps_' + branch, JSON.stringify(deps)); }catch(e){}
+  render();
+
+  // Sincronización con Firebase
+  return db.ref(branch + '/deps').set(o).then(function(){
+    return db.ref(branch + '/cleared').remove();
+  });
 }
+
+if($('btn-clear-all')) $('btn-clear-all').onclick = function(){
+  if(!canWrite()) return;
+  if(!confirm('ATENCIÓN: esto eliminará TODAS las corridas de esta sucursal. Esta acción no se puede deshacer desde la pantalla. ¿Tienes un respaldo y deseas continuar?')) return;
+  
+  const confirmation = prompt('Para confirmar, escribe BORRAR en mayúsculas:');
+  if(confirmation !== 'BORRAR') {
+    alert('Operación cancelada. No se eliminó ninguna corrida.');
+    return;
+  }
+
+  const branch = suc || viewSuc();
+  const dayToClear = nowParts().key;
+
+  // Limpieza inmediata en memoria local
+  clearedDay = dayToClear; 
+  gotCleared = true; 
+  deps = {}; 
+  ready = true;
+  
+  try{ localStorage.setItem('transpais_offline_deps_' + branch, JSON.stringify({})); }catch(e){}
+  render();
+
+  // Sincronización con Firebase
+  const patch = {}; 
+  patch[branch + '/deps'] = null; 
+  patch[branch + '/cleared'] = dayToClear;
+  db.ref().update(patch).catch(function(e){ fail(e); });
+};
 
 /* ============ GESTOR DE ANUNCIOS Y MARCO DINÁMICO ============ */
 let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
