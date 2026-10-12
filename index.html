@@ -8,10 +8,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
-.glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-shrink:0}
+.glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
-.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px 25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:15px 25px;flex-grow:1;display:flex;flex-direction:column;overflow:hidden}
-.control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap;flex-shrink:0}
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
+.control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
 .btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
@@ -22,8 +22,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;mi
 .btn-delay{background:#dc2626;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-delay:hover{background:#991b1b}
 .btn-advance{background:#2563eb;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-advance:hover{background:#1d4ed8}
 table{width:100%;border-collapse:collapse;text-align:left}
-th{background:rgba(0,20,45,.9);color:#93c5fd;padding:12px 14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
-td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
+td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
 .c{text-align:center}
 .badge-status{padding:6px 12px;border-radius:20px;font-size:10px;font-weight:900;text-transform:uppercase;display:inline-block}
 .status-espera{background:rgba(23,162,184,.2);color:#17a2b8;border:1px solid rgba(23,162,184,.4)}
@@ -39,7 +39,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
 .lbl{font-size:11px;font-weight:700;color:#93c5fd}
 .flex{display:flex;gap:4px;justify-content:center}
-.ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden;flex-shrink:0}
+.ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden}
 .ticker-title{background:#00A859;padding:0 20px;height:100%;display:flex;align-items:center;font-weight:900;font-size:11px;white-space:nowrap}
 .ticker-content{white-space:nowrap;animation:tk 30s linear infinite;font-size:12px;color:#93c5fd}
 @keyframes tk{0%{transform:translate3d(100%,0,0)}100%{transform:translate3d(-100%,0,0)}}
@@ -50,58 +50,119 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .hidden{display:none!important}
 
 /* MARQUESINA URGENTE */
-.urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center;flex-shrink:0}
+.urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* LAYOUT FLEXIBLE PANTALLA PRINCIPAL */
-.screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 0;min-height:0;align-items:stretch}
-.fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto}
+/* LAYOUT 75/25 */
+.screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
+.fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
 .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 75%;width:75%}
 
-.ads-sidebar-wrap{flex:0 0 25%;width:25%;height:100%;background:transparent;border:2px solid #168BFF;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 0 0 1px rgba(22,139,255,.18);flex-direction:column;align-items:center;justify-content:center}
+.ads-sidebar-wrap{flex:0 0 25%;width:25%;min-height:480px;background:transparent;border:2px solid #168BFF;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 0 0 1px rgba(22,139,255,.18);flex-direction:column;align-items:stretch;justify-content:stretch}
 .screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
 
-.ad-image-container{width:100%;height:100%;position:relative;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden;background:transparent;display:flex;align-items:center;justify-content:center}
+.ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
+.ad-img-item.active{opacity:1!important;z-index:2}
 
-/* ESTRUCTURA DEL ANUNCIO Y QR DENTRO DEL CONTENEDOR 25% */
-.vqa-stage{position:relative;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:#000}
-.vqa-stage.active{display:flex!important}
-.vqa-stage-bg{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+/* WIDGET QR Y VOCEO */
+.qr-card{position:fixed;bottom:55px;left:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
+.qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.qr-text{max-width:180px}
+.qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
+.qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
+#qrcode-box{background:#fff;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 
-/* POSICIONAMIENTO DEL QR DENTRO DEL RECUADRO DEL ANUNCIO VERTICAL */
-.vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:6px;padding:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4)}
-.vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
+.voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
+.voice-indicator.active{transform:translateY(0);opacity:1}
+.speaker-pulse{animation:sp 1s infinite alternate}
+@keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
-/* OCULTAR BARRA DE CONTROL EN MODO TV Y PASAJERO */
-body.tv-mode .control-bar, body.passenger-mode .control-bar{display:none!important}
-body.tv-mode .glass-card{margin:10px 20px;padding:15px;max-height:none;height:calc(100vh - 150px)}
+/* AJUSTE RESPONSIVO PARA TELEVISORES: 16:9, Full HD y 4K */
+html:has(body.tv-mode){width:100%;height:100%;overflow:hidden}
+body.tv-mode{width:100vw;height:100vh;min-height:0;overflow:hidden;justify-content:flex-start;gap:0}
+body.tv-mode .glass-header{flex:0 0 auto;padding:clamp(8px,1.2vh,18px) clamp(16px,2vw,36px);min-height:clamp(58px,8vh,94px)}
+body.tv-mode .brand-logo{font-size:clamp(18px,1.8vw,30px);padding:clamp(5px,.7vw,10px) clamp(10px,1.3vw,22px)}
+body.tv-mode #header-terminal-title{font-size:clamp(15px,1.55vw,25px)!important;letter-spacing:.04em}
+body.tv-mode #header-terminal-sub{font-size:clamp(9px,.75vw,13px)!important}
+body.tv-mode #clock-time{font-size:clamp(19px,2vw,32px)!important}
+body.tv-mode #clock-date{font-size:clamp(9px,.7vw,12px)!important}
+body.tv-mode .glass-card{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:hidden;margin:0;padding:clamp(10px,1.4vh,22px) clamp(12px,1.5vw,26px);border-radius:0;border-left:0;border-right:0;box-shadow:none}
+body.tv-mode .screen-split-wrapper{height:100%;min-height:0;gap:clamp(10px,1vw,18px);align-items:stretch}
+body.tv-mode .fids-table-wrap{min-width:0;min-height:0;overflow:hidden}
+body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 70%;width:70%}
+body.tv-mode .ads-sidebar-wrap{flex:1 1 30%;width:30%;min-width:0;min-height:0;height:100%;border-radius:clamp(8px,1vw,18px)}
+body.tv-mode .ad-image-container{width:100%;height:100%;min-height:0;min-width:0;flex:1;overflow:hidden}
+body.tv-mode .ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center}
+body.tv-mode th{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(9px,.72vw,12px);letter-spacing:.04em}
+body.tv-mode td{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(11px,.9vw,15px)}
+body.tv-mode .badge-status{padding:clamp(4px,.4vw,7px) clamp(6px,.7vw,12px);font-size:clamp(8px,.65vw,11px)}
+body.tv-mode .ticker-footer{flex:0 0 clamp(28px,4.5vh,42px);height:clamp(28px,4.5vh,42px)}
+body.tv-mode .ticker-title{padding:0 clamp(8px,1.2vw,20px);font-size:clamp(9px,.7vw,12px)}
+body.tv-mode .ticker-content{font-size:clamp(10px,.8vw,13px)}
+body.tv-mode .qr-card{left:auto;right:clamp(12px,1.5vw,26px);bottom:clamp(38px,5vh,52px);max-width:min(390px,42vw);padding:clamp(8px,.8vw,14px);gap:clamp(8px,.8vw,14px);border-radius:12px}
+body.tv-mode #qrcode-box{padding:5px;border-radius:8px;flex:0 0 auto}
+body.tv-mode #qrcode-box canvas,body.tv-mode #qrcode-box img{width:clamp(54px,6vw,88px)!important;height:clamp(54px,6vw,88px)!important}
+body.tv-mode .qr-text{max-width:clamp(120px,16vw,190px)}
+body.tv-mode .qr-text h4{font-size:clamp(9px,.7vw,12px)}
+body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
+@media (max-aspect-ratio: 4/3){body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex-basis:64%;width:64%}body.tv-mode .ads-sidebar-wrap{flex-basis:36%;width:36%}}
 
-/* SALIDAS EN ETIQUETADO (FIJO) */
+/* Salidas en etiquetado: panel fijo independiente del auto-scroll */
 .fixed-departures-wrap{display:none;flex:0 0 auto;margin:0 0 12px;border:1px solid rgba(255,184,0,.8);border-left:5px solid #ffb800;border-radius:10px;overflow:hidden;background:rgba(0,18,45,.96);box-shadow:0 5px 18px rgba(0,0,0,.28)}
 .fixed-departures-wrap:not(.hidden){display:block}
 .fixed-departures-label{padding:6px 12px;background:linear-gradient(90deg,#ffca28,#ffad00);color:#18202c;font-weight:900;font-size:11px;letter-spacing:.08em}
 .fixed-departures-table th{padding:7px 10px;font-size:10px;background:rgba(0,20,45,.98)}
 .fixed-departures-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.1)}
 .fixed-departures-table tr:last-child td{border-bottom:0}
+body.tv-mode .fixed-departures-wrap{margin:0 0 clamp(5px,.7vh,10px);border-radius:8px}
+body.tv-mode .fixed-departures-label{padding:clamp(4px,.45vh,7px) clamp(8px,.8vw,13px);font-size:clamp(9px,.68vw,12px)}
+body.tv-mode .fixed-departures-table th{padding:clamp(4px,.45vh,7px) clamp(5px,.6vw,10px);font-size:clamp(8px,.62vw,11px)}
+body.tv-mode .fixed-departures-table td{padding:clamp(4px,.5vh,8px) clamp(5px,.6vw,10px);font-size:clamp(10px,.82vw,14px)}
+body.tv-mode .fixed-departures-table td:first-child{font-size:clamp(14px,1.1vw,19px);font-weight:900}
+body.tv-mode .screen-split-wrapper{flex:1 1 auto;min-height:0}
+
+/* AJUSTES DE LEGIBILIDAD Y SUPERPOSICIONES EN TV */
+body.tv-mode .fids-table-wrap{overflow-y:auto;scrollbar-width:none}
+body.tv-mode .fids-table-wrap::-webkit-scrollbar{display:none}
+body.tv-mode .badge-status{display:inline-flex;align-items:center;justify-content:center;min-width:clamp(76px,7.8vw,126px);min-height:clamp(28px,3.5vh,42px);padding:clamp(5px,.55vw,10px) clamp(8px,.8vw,13px);font-size:clamp(10px,.88vw,15px);line-height:1.12;white-space:normal;text-align:center;border-radius:999px;font-weight:900;letter-spacing:.015em;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+body.tv-mode .status-espera{background:linear-gradient(135deg,#064b88,#0879bd);color:#fff;border:1px solid #42d9ff;box-shadow:0 0 12px rgba(0,190,255,.25)}
+body.tv-mode .status-etiq{background:linear-gradient(135deg,#ffd54a,#ffad00);color:#172033;border:1px solid #ffe89a}
+body.tv-mode .status-abordaje{background:linear-gradient(135deg,#00d974,#00a86b);color:#002d24;border:1px solid #9affd5}
+body.tv-mode .status-ultima{background:linear-gradient(135deg,#ff416c,#c81e4b);color:#fff;border:1px solid #ff9bb2}
+body.tv-mode .status-demorado{background:linear-gradient(135deg,#ff623d,#c81e1e);color:#fff;border:1px solid #ffb1a3}
+body.tv-mode .status-salido{background:#243c60;color:#d9e7fb;border:1px solid #6c84a7}
+body.tv-mode .qr-card{z-index:40}
+body.tv-mode .ads-sidebar-wrap{position:relative;z-index:2}
+body.tv-mode .qr-card.show{pointer-events:none}
 
 /* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
 body.passenger-mode #header-terminal-title{font-size:16px!important}
 body.passenger-mode #header-terminal-sub{font-size:10px!important}
-body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;overflow-y:auto;max-height:none}
-body.passenger-mode #screen-split-container{display:none!important}
-body.passenger-mode #fixed-departures-wrap{display:none!important}
+body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;max-height:none}
+body.passenger-mode .fids-table-wrap table{display:none!important}
+body.passenger-mode .screen-split-wrapper{min-height:0}
+
 .passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
 .passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
+.passenger-card.tracked{border:2px solid #00D974;box-shadow:0 0 20px rgba(0,217,116,.4)}
 .passenger-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}
 .passenger-card-time{font-size:24px;font-weight:900;font-family:monospace;color:#fff}
 .passenger-card-dest{font-size:18px;font-weight:800;color:#fff;margin-top:2px}
 .passenger-card-scales{font-size:11px;color:#93c5fd}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
+.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
 
-.voice-indicator{position:fixed;bottom:50px;right:25px;background:rgba(0,168,89,.95);border:2px solid #00D974;padding:10px 18px;border-radius:30px;color:#fff;font-weight:900;font-size:12px;box-shadow:0 0 20px rgba(0,217,116,.6);display:flex;align-items:center;gap:8px;z-index:9000}
+/* Anuncio promocional VistaPasajero integrado al carrusel publicitario */
+body.tv-mode .qr-card{display:none!important}
+.vista-qr-ad{display:flex;align-items:center;justify-content:center;background:transparent;overflow:hidden;padding:0!important;border:2px solid #168BFF;border-radius:clamp(10px,1vw,18px)}
+.vqa-stage{position:relative;height:100%;max-height:100%;aspect-ratio:9/16;width:auto;max-width:100%;flex:0 1 auto;overflow:hidden;background:transparent}
+.vqa-stage-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+.vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:5%;padding:1.4%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.8)}
+.vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -116,7 +177,7 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
     <div style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="document.getElementById('audio-start-overlay').style.display='none'; if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -134,9 +195,17 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
   </div>
 </div>
 
-<div id="voice-indicator" class="voice-indicator" style="display:none">
-  <span style="font-size:18px">📢</span>
+<div id="voice-indicator" class="voice-indicator">
+  <span class="speaker-pulse" style="font-size:18px">📢</span>
   <span>VOCEO EN REPRODUCCIÓN...</span>
+</div>
+
+<div id="qr-card" class="qr-card">
+  <div id="qrcode-box"></div>
+  <div class="qr-text">
+    <h4>📱 VISTAPASAJERO</h4>
+    <p>Escanea para consultar si tu autobús ya está en la central o está abordando.</p>
+  </div>
 </div>
 
 <header class="glass-header">
@@ -173,8 +242,7 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
   </div>
 
   <div id="passenger-card-list" class="passenger-card-list hidden"></div>
-  
-  <div id="fixed-departures-wrap" class="fixed-departures-wrap hidden">
+  <div id="fixed-departures-wrap" class="fixed-departures-wrap hidden" aria-live="polite">
     <div class="fixed-departures-label">SALIDA EN ETIQUETADO</div>
     <table class="fixed-departures-table">
       <thead><tr><th>Hora</th><th>Destino / Escalas</th><th class="c">Autobús</th><th class="c">Punto de Abordaje</th><th class="c">Estatus</th></tr></thead>
@@ -195,11 +263,12 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
   </div>
 </main>
 
-<main id="view-admin" class="glass-card hidden" style="overflow-y:auto">
+<main id="view-admin" class="glass-card hidden">
   <div style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:16px;border-radius:12px;margin-bottom:20px">
     <h3 style="color:#f87171;font-size:14px;font-weight:900;margin-bottom:6px">📢 PUBLICAR AVISO / MENSAJE URGENTE EN TV</h3>
+    <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta para proyectarla en tiempo real en la parte superior de la sala de espera.</p>
     <div style="display:flex;gap:10px">
-      <input type="text" id="urgent-input" placeholder="Ej. Atención: Retrasos por obras..." style="flex:1">
+      <input type="text" id="urgent-input" placeholder="Ej. Atención: Retrasos de 15 min por obras en carretera..." style="flex:1">
       <button class="btn btn-green" id="btn-save-urgent">Publicar Mensaje</button>
       <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar Alerta</button>
     </div>
@@ -209,6 +278,7 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
         <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y VIDEOS (LAYOUT 75/25)</h3>
+        <p style="font-size:11px;color:#93c5fd">Sube imágenes, GIFs o videos MP3/MP4 para proyectarlos en las Smart TV.</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="file" id="ad-upload-input" accept="image/*,video/mp4" style="display:none">
@@ -224,20 +294,39 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
     </div>
   </div>
 
-  <div style="background:rgba(0,168,89,.15);border:1px solid #00D974;padding:14px 18px;border-radius:12px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center">
+  <div style="background:rgba(0,168,89,.15);border:1px solid #00D974;padding:14px 18px;border-radius:12px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;gap:10px">
     <div>
-      <h3 style="color:#00D974;font-size:14px;font-weight:900">⚡ ITINERARIO GENERAL DEL DÍA</h3>
+      <h3 style="color:#00D974;font-size:14px;font-weight:900;margin-bottom:2px">⚡ ITINERARIO GENERAL DEL DÍA</h3>
+      <p style="font-size:11px;color:#93c5fd">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
     </div>
     <button class="btn btn-green" id="btn-load-all">🚀 CARGAR TODAS LAS SALIDAS</button>
   </div>
-
+  <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;margin-bottom:15px">
+    <label style="font-size:11px;font-weight:800;color:#FFB800;display:block;margin-bottom:5px">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
+    <select id="preset-selector">
+      <option value="">-- Seleccionar ruta del catálogo --</option>
+      <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
+      <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
+      <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
+      <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
+      <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
+      <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
+      <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+      <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
+      <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
+      <option value="p10">18:45 - Tampico (Semi-Directa)</option>
+      <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
+      <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
+      <option value="p13">15:15 - Ciudad Valles Completa</option>
+    </select>
+  </div>
   <form id="departure-form">
     <input type="hidden" id="dep-id"><input type="hidden" id="dep-preset-key">
     <div class="grid-form">
       <div><label class="lbl">Hora Programada</label><input type="time" id="dep-time" required></div>
-      <div><label class="lbl">Destino Principal</label><input type="text" id="dep-destination" required></div>
-      <div><label class="lbl">Escalas Principales</label><input type="text" id="dep-scales"></div>
-      <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus"></div>
+      <div><label class="lbl">Destino Principal</label><input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required></div>
+      <div><label class="lbl">Escalas Principales</label><input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante"></div>
+      <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
       <div><label class="lbl">Estatus Manual</label>
         <select id="dep-status">
           <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
@@ -251,11 +340,10 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
       </div>
     </div>
   </form>
-
   <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
     <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
     <table>
-      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Editar</th><th class="c">Acciones</th></tr></thead>
+      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
       <tbody id="admin-body"></tbody>
     </table>
   </div>
@@ -267,6 +355,7 @@ body.passenger-mode #fixed-departures-wrap{display:none!important}
 </footer>
 
 <script>
+/* ============ CONFIG FIREBASE Y MESSAGING ============ */
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
@@ -277,6 +366,7 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const auth = firebase.auth();
+
 const TZ = 'America/Matamoros';
 const $ = function(id){ return document.getElementById(id); };
 const esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
@@ -285,69 +375,19 @@ const vista = new URLSearchParams(location.search).get('vista') || 'screen';
 const isTV = vista.startsWith('tv');
 const isPassenger = vista.startsWith('pasajero');
 
-let suc = 'of2', deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
+let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
 let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
-let localAudioEnabled = true;
 
-if(isPassenger){
-  document.body.classList.add('passenger-mode');
-  window.addEventListener('DOMContentLoaded', function(){
-    if($('audio-start-overlay')) $('audio-start-overlay').style.display = 'none';
-  });
-}
+if(isPassenger) document.body.classList.add('passenger-mode');
 if(isTV) document.body.classList.add('tv-mode');
 
 const viewSuc = function(){
-  if(vista==='tvcentral'||vista==='pasajerocentral') return 'central';
-  if(vista==='tvof2'||vista==='pasajeroof2'||vista==='pasajero'||isTV||isPassenger) return 'of2';
+  if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
+  if(isTV||isPassenger)return'of2';
   return suc||'of2';
 };
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
 const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
-
-/* GENERADOR DE AUDIO CHIME (WEB AUDIO API) */
-let audioCtx = null;
-function initAudioContext(){
-  if(!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if(audioCtx.state === 'suspended'){
-    audioCtx.resume();
-  }
-}
-
-function playChime(){
-  if(!localAudioEnabled) return;
-  initAudioContext();
-  const now = audioCtx.currentTime;
-  
-  const osc1 = audioCtx.createOscillator();
-  const gain1 = audioCtx.createGain();
-  osc1.type = 'sine';
-  osc1.frequency.setValueAtTime(659.25, now);
-  gain1.gain.setValueAtTime(0.3, now);
-  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-  osc1.connect(gain1);
-  gain1.connect(audioCtx.destination);
-  osc1.start(now);
-  osc1.stop(now + 0.8);
-
-  const osc2 = audioCtx.createOscillator();
-  const gain2 = audioCtx.createGain();
-  osc2.type = 'sine';
-  osc2.frequency.setValueAtTime(523.25, now + 0.4);
-  gain2.gain.setValueAtTime(0.3, now + 0.4);
-  gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
-  osc2.connect(gain2);
-  gain2.connect(audioCtx.destination);
-  osc2.start(now + 0.4);
-  osc2.stop(now + 1.4);
-}
-
-window.unlockAudio = function(){
-  initAudioContext();
-  playChime();
-};
 
 const CAT={
  p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -364,6 +404,7 @@ const CAT={
  p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
  p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"]};
 
+/* Catálogo propio de Central */
 const CAT_CENTRAL={
  p01:["05:00",CAT.p01[1],CAT.p01[2]], p02:["07:20",CAT.p02[1],CAT.p02[2]],
  p03:["07:45",CAT.p03[1],CAT.p03[2]], p04:["09:00",CAT.p04[1],CAT.p04[2]],
@@ -374,6 +415,21 @@ const CAT_CENTRAL={
  p12:["23:15",CAT.p12[1],CAT.p12[2]]};
 const catalogFor=function(branch){return branch==='central'?CAT_CENTRAL:CAT;};
 
+const preloaded=[];
+function preloadCatalogAudios(){
+  if(isPassenger)return;
+  const modes=['etiq','abord','ultima'];
+  Object.keys(CAT).forEach(function(k){
+    modes.forEach(function(m){
+      const a=new Audio('Audio/'+k+'_'+m+'.mp3');
+      a.preload='auto';
+      preloaded.push(a);
+    });
+  });
+}
+preloadCatalogAudios();
+
+/* ============ HORA Y SERVIDOR ============ */
 db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
 
 let dtf=null;
@@ -406,7 +462,6 @@ function diffOf(d,n){
   if(x<-1200)x+=1440; if(x>1200)x-=1440;
   return x;
 }
-
 const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
 
 function stat(d,diff){
@@ -431,20 +486,320 @@ function updateHeaderTitles(){
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
+/* ============ AUDIO Y REPRODUCCIÓN ============ */
+let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+let currentVoiceAudio=null;
+
+function setVoiceIndicator(show){
+  if(isPassenger)return;
+  const vi=$('voice-indicator');
+  if(vi)vi.classList.toggle('active',!!show);
+}
+
+function ctx(){
+  if(isPassenger)return null;
+  if(!actx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C)actx=new C();
+  }
+  if(actx&&actx.state==='suspended')actx.resume();
+  return actx;
+}
+
+function chime(){
+  return new Promise(function(res){
+    if(muted||isPassenger)return res();
+    try{
+      const c=ctx(); if(!c)return res();
+      const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
+      o1.frequency.setValueAtTime(587.33,t); o2.frequency.setValueAtTime(880,t+.18);
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.05); g.gain.exponentialRampToValueAtTime(.0001,t+2);
+      o1.connect(g); o2.connect(g); g.connect(c.destination);
+      o1.start(t); o2.start(t+.18); o1.stop(t+2); o2.stop(t+2);
+      setTimeout(res,1800);
+    }catch(e){res();}
+  });
+}
+
+const aq=[]; let playing=false, epoch=0, stopCurrent=null;
+
+function enqueueAudio(k,m,onResult){
+  if(isPassenger){if(onResult)onResult(false);return;}
+  aq.push([k,m,onResult||null]);
+  if(!playing)runQueue();
+}
+
+function hardStop(){
+  epoch++;
+  const cancelled=aq.splice(0,aq.length);
+  cancelled.forEach(function(item){if(item&&item[2]){try{item[2](false);}catch(e){}}});
+  if(currentVoiceAudio){
+    try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
+    currentVoiceAudio=null;
+  }
+  if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(false); }
+}
+
+function playVoiceImmediate(key,mode){
+  if(isPassenger)return;
+  hardStop();
+  aq.push([key,mode]);
+  if(!playing) runQueue();
+}
+
+async function runQueue(){
+  if(isPassenger||playing)return;
+  playing=true;
+  setVoiceIndicator(true);
+  try{
+    while(aq.length){
+      const item=aq.shift();
+      const ok=await playOne(item[0],item[1]);
+      if(item[2]){try{item[2](!!ok);}catch(e){}}
+    }
+  }finally{
+    playing=false;
+    setVoiceIndicator(false);
+  }
+}
+
+function playOne(key,mode){
+  return new Promise(async function(res){
+    if(muted||isPassenger)return res();
+    const my=epoch;
+    let done=false, to=null, succeeded=false;
+    const end=function(ok){
+      if(done)return; done=true; clearTimeout(to);
+      if(stopCurrent===end)stopCurrent=null;
+      currentVoiceAudio=null;
+      res(!!ok);
+    };
+    stopCurrent=end;
+    await chime();
+    if(done||my!==epoch)return end(false);
+    const a=new Audio('Audio/'+key+'_'+mode+'.mp3');
+    currentVoiceAudio=a;
+    to=setTimeout(end,60000);
+    a.onended=function(){end(true);};
+    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end(false);};
+    a.play().catch(function(err){console.warn('Audio bloqueado por el navegador:',err&&err.message); end(false);});
+  });
+}
+
+window.unlockAudio=function(){
+  const overlay=$('audio-start-overlay');
+  if(overlay)overlay.style.display='none';
+  try{ctx();}catch(e){}
+};
+
+let lastPanicTs=0;
+function panicStopLocal(){
+  hardStop();
+  setVoiceIndicator(false);
+}
+function panicStop(){
+  panicStopLocal();
+  if(canWrite()){
+    const ts=Date.now()+srvOff;
+    lastPanicTs=ts;
+    db.ref(suc+'/panic').set({timestamp:ts,by:'taquilla'}).catch(fail);
+  }
+}
+
+function updateMuteUI(){
+  const b=$('btn-mute-local'); if(!b)return;
+  b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
+  b.className=muted?'btn btn-dark btn-red':'btn btn-green';
+}
+
+/* ============ DATOS Y SINCRONIZACIÓN ============ */
+let refs=[];
+function attach(s){
+  try{
+    refs.forEach(function(r){r.off();});
+    deps={}; adsData={}; ready=false; gotServer=false; gotCleared=false; offlineFallback=false; clearedDay=null;
+    clearTimeout(fbTimer);
+
+    try{
+      const cached=localStorage.getItem('transpais_offline_deps_'+s);
+      if(cached){ deps=JSON.parse(cached)||{}; ready=true; }
+    }catch(e){ deps={}; }
+
+    fbTimer=setTimeout(function(){
+      if(!gotServer){ offlineFallback=true; ready=true; render(); }
+    },6000);
+
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared'), rp=db.ref(s+'/panic');
+    refs=[rd,rv,ra,rc,ru,rcl,rp];
+    let lastTs=0;
+
+    rd.on('value',function(snap){
+      const next={};
+      snap.forEach(function(c){
+        const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+      });
+      deps=next; ready=true; gotServer=true;
+      try{ localStorage.setItem('transpais_offline_deps_'+s, JSON.stringify(deps)); }catch(e){}
+      render(); autoCatalog();
+    },function(err){
+      console.error('Error Firebase:',err.message);
+      offlineFallback=true;
+      try{
+        const cached=localStorage.getItem('transpais_offline_deps_'+s);
+        if(cached){ deps=JSON.parse(cached)||{}; }
+      }catch(e){}
+      ready=true; render();
+    });
+
+    rcl.on('value',function(snap){
+      clearedDay=snap.val();
+      gotCleared=true;
+      render(); autoCatalog();
+    });
+
+    if(!isPassenger){
+      rp.on('value',function(snap){
+        const d=snap.val();
+        const ts=d&&Number(d.timestamp||0);
+        if(!ts||ts<=lastPanicTs)return;
+        lastPanicTs=ts;
+        panicStopLocal();
+      });
+      rv.on('value',function(snap){
+        const d=snap.val();
+        if(!d||!d.timestamp||d.timestamp<=lastTs||Number(d.timestamp)<=lastPanicTs)return;
+        lastTs=d.timestamp;
+        if(Date.now()+srvOff-d.timestamp>15000)return;
+        playVoiceImmediate(d.key,d.mode);
+      });
+
+      ra.on('value',function(snap){
+        const next={};
+        snap.forEach(function(c){
+          const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+        });
+        adsData=next; renderAds();
+      });
+
+      rc.on('value',function(snap){
+        adsConfig=snap.val()||{force7030:false};
+        update7030State();
+      });
+    }
+
+    ru.on('value',function(snap){
+      urgentMsg=snap.val()||'';
+      renderUrgentMsg();
+    });
+
+    render();
+  }catch(e){
+    console.error('Error attach:',e);
+    offlineFallback=true; ready=true; render();
+  }
+}
+
+const URGENT_TTL_MIN=30;
+function urgentInfo(){
+  if(!urgentMsg)return {text:'',expired:false};
+  if(typeof urgentMsg==='object'){
+    const t=String(urgentMsg.text||'').trim();
+    let ok=true;
+    if(urgentMsg.ts){
+      ok=(Date.now()+srvOff-urgentMsg.ts)<=URGENT_TTL_MIN*60000;
+    }else if(urgentMsg.day){
+      const n=nowParts();
+      ok=urgentMsg.day===n.key||(n.min<360&&urgentMsg.day===dayShift(n.key,-1));
+    }
+    return {text:t,expired:!ok};
+  }
+  return {text:String(urgentMsg).trim(),expired:false};
+}
+
+function renderUrgentMsg(){
+  const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
+  const u=urgentInfo();
+  if(banner&&txt){
+    if(u.text&&!u.expired){
+      txt.textContent="⚠️ " + u.text;
+      banner.classList.remove('hidden');
+    }else{
+      banner.classList.add('hidden');
+    }
+  }
+  if(inp&&canWrite()&&document.activeElement!==inp){
+    inp.value=u.expired?'':u.text;
+  }
+}
+
+/* ============ CATÁLOGO DEL DÍA ============ */
+function virtualDeps(){
+  const day=nowParts().key, branch=viewSuc(), catalog=catalogFor(branch), out=[];
+  Object.keys(catalog).forEach(function(k){
+    const t=catalog[k][0];
+    out.push({id:k,presetKey:k,time:t,destination:catalog[k][1],scales:catalog[k][2],bus:'',status:'EN ESPERA',sucursal:branch,day:day,delay:0,_virtual:true});
+  });
+  return out;
+}
+
+function virtualActive(){
+  const today=nowParts().key;
+  if(!(gotCleared||offlineFallback))return false;
+  if(clearedDay===today)return false;
+  return !Object.values(deps).some(function(d){return d.day===today;});
+}
+
+function ensureMat(){
+  return virtualActive()?loadCatalog():Promise.resolve();
+}
+
+let autoBusy=false;
+async function autoCatalog(){
+  if(!canWrite()||!ready||!gotServer||!gotCleared||autoBusy||viewSuc()!==suc)return;
+  const today=nowParts().key;
+  if(Object.values(deps).some(function(d){return d.day===today;}))return;
+  if(clearedDay===today)return;
+  autoBusy=true;
+  try{ await loadCatalog(); }catch(e){console.warn('Catálogo automático:',e.message);}
+  setTimeout(function(){autoBusy=false;},10000);
+}
+
+function loadCatalog(){
+  const n=nowParts(), day=n.key, o={}, catalog=catalogFor(suc);
+  Object.values(deps).forEach(function(d){
+    if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
+      const c=Object.assign({},d); delete c.id; delete c._virtual;
+      o['old_'+String(d.id).replace(/^old_/,'')]=c;
+    }
+  });
+  Object.keys(catalog).forEach(function(k){
+    const row=catalog[k];
+    o[k]={presetKey:k,time:row[0],destination:row[1],scales:row[2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+  });
+  return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
+}
+
+/* ============ GESTOR DE ANUNCIOS ============ */
 let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
+
+function playIfVideo(el){
+  if(el&&el.tagName==='VIDEO'){
+    try{ el.currentTime=0; const p=el.play(); if(p&&p.catch)p.catch(function(){}); }catch(e){}
+  }
+}
 
 function startAdCycle(){
   clearInterval(adTimer); adIdx=0;
   const c=$('ad-image-container'); if(!c)return;
-  const items=c.querySelectorAll('.vqa-stage');
+  const items=c.querySelectorAll('.ad-img-item');
   if(!items.length)return;
-  items.forEach((el, i) => el.classList.toggle('active', i===0));
+  playIfVideo(items[0]);
   if(items.length<2)return;
-
   adTimer=setInterval(function(){
     items[adIdx].classList.remove('active');
     adIdx=(adIdx+1)%items.length;
     items[adIdx].classList.add('active');
+    playIfVideo(items[adIdx]);
   },10000);
 }
 
@@ -458,33 +813,26 @@ function renderAds(){
     adSig=sig;
     container.innerHTML='';
     activeList.forEach(function(ad,idx){
-      const wrapper = document.createElement('div');
-      wrapper.className = 'vqa-stage ' + (idx===0 ? 'active' : '');
-      
-      const img = document.createElement('img');
-      img.src = ad.dataUrl;
-      img.className = 'vqa-stage-bg';
-      wrapper.appendChild(img);
-
-      const qrOverlay = document.createElement('div');
-      qrOverlay.className = 'vqa-qr-overlay';
-      wrapper.appendChild(qrOverlay);
-
-      container.appendChild(wrapper);
-
-      try {
-        const isCentral = viewSuc() === 'central';
-        const vistaPasajero = isCentral ? 'pasajerocentral' : 'pasajeroof2';
-        const qrUrl = window.location.origin + window.location.pathname + '?vista=' + vistaPasajero;
-
-        new QRCode(qrOverlay, {
-          text: qrUrl,
-          width: 200, height: 200,
-          colorDark: "#000000", colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch(e){}
+      let el;
+      if(ad.isVideo || (ad.dataUrl && ad.dataUrl.startsWith('data:video'))){
+        el = document.createElement('video');
+        el.src = ad.dataUrl;
+        el.autoplay = true;
+        el.loop = true;
+        el.muted = true;
+        el.playsInline = true;
+      } else {
+        el = document.createElement('img');
+        el.src = ad.dataUrl;
+      }
+      el.className='ad-img-item '+(idx===0?'active':'');
+      el.dataset.index=idx;
+      container.appendChild(el);
     });
+    const qrSlide=makeVistaPasajeroAd();
+    if(activeList.length===0)qrSlide.classList.add('active');
+    qrSlide.dataset.index=activeList.length;
+    container.appendChild(qrSlide);
     startAdCycle();
   }
 
@@ -494,8 +842,13 @@ function renderAds(){
       adminBody.innerHTML='<tr><td colspan="4" class="c" style="color:#888;font-size:11px">No hay anuncios cargados.</td></tr>';
     }else{
       adminBody.innerHTML=allList.map(function(a){
+        const isVid = a.isVideo || (a.dataUrl && a.dataUrl.startsWith('data:video'));
+        const src = esc(a.dataUrl||'');
+        const preview = isVid
+          ? '<video src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)" muted loop autoplay></video>'
+          : '<img src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)">';
         return '<tr>'+
-          '<td><img src="'+esc(a.dataUrl)+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover"></td>'+
+          '<td>'+preview+'</td>'+
           '<td style="font-size:11px;font-weight:700">'+esc(a.name)+'</td>'+
           '<td class="c"><button class="btn '+(a.active?'btn-green':'btn-dark')+'" data-adact="toggle" data-adid="'+esc(a.id)+'">'+(a.active?'✅ MOSTRANDO':'⏸️ OCULTO')+'</button></td>'+
           '<td class="c"><button class="btn btn-dark btn-red" data-adact="del" data-adid="'+esc(a.id)+'">🗑️ Eliminar</button></td>'+
@@ -518,11 +871,194 @@ function update7030State(){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
   if(btn){
-    btn.textContent = isForced ? '📺 75/25: FORZADO EN TV' : '📺 FORZAR 75/25 EN TV';
+    btn.textContent = isForced ? '📺 75/25: FORZADO EN TV (ACTIVO)' : '📺 FORZAR 75/25 EN TV';
     btn.className = 'btn ' + (isForced ? 'btn-green' : 'btn-blue');
   }
 }
 
+function cycleSplit(){
+  if(!isTV)return;
+  autoSplitState=true; update7030State();
+  setTimeout(function(){ autoSplitState=false; update7030State(); },60000);
+}
+if(isTV){
+  setTimeout(function(){ cycleSplit(); setInterval(cycleSplit,150000); },20000);
+}
+
+if($('btn-toggle-7030-manual')){
+  $('btn-toggle-7030-manual').onclick=function(){
+    if(!canWrite()){
+      alert('Debes estar autenticado en el Panel de Taquilla para cambiar el modo de pantalla.');
+      return;
+    }
+    const nextState = !adsConfig.force7030;
+    db.ref(suc+'/ads_config').set({force7030:nextState}).then(function(){
+      adsConfig.force7030 = nextState;
+      update7030State();
+    }).catch(fail);
+  };
+}
+
+if($('admin-ads-body')){
+  $('admin-ads-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
+    const id=b.dataset.adid, act=b.dataset.adact;
+    if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
+    else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
+  });
+}
+
+if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-input'))$('ad-upload-input').click();};
+
+if($('ad-upload-input')){
+  $('ad-upload-input').onchange=function(e){
+    const file=e.target.files[0]; if(!file)return;
+    if(!canWrite()){ alert('Inicia sesión en el Panel de Taquilla para subir anuncios.'); e.target.value=''; return; }
+    const saveAd=function(dataUrl,isVideo){
+      db.ref(suc+'/ads').push().set({name:file.name,dataUrl:dataUrl,isVideo:isVideo,active:true}).then(function(){
+        e.target.value='';
+      }).catch(fail);
+    };
+    if(file.type.startsWith('video/')){
+      if(file.size > 6.5 * 1024 * 1024){
+        alert('El video supera los 6.5 MB. Elige un video más corto o comprímelo.');
+        e.target.value='';
+        return;
+      }
+      const reader=new FileReader();
+      reader.onload=function(evt){ saveAd(evt.target.result,true); };
+      reader.readAsDataURL(file);
+    } else if(file.type==='image/gif' && file.size <= 2*1024*1024){
+      const reader=new FileReader();
+      reader.onload=function(evt){ saveAd(evt.target.result,false); };
+      reader.readAsDataURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=function(evt){
+        const img=new Image();
+        img.onload=function(){
+          const canvas=document.createElement('canvas');
+          let w=img.width, h=img.height;
+          const maxDim=720;
+          if(w>maxDim||h>maxDim){
+            if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
+            else{ w=Math.round((w*maxDim)/h); h=maxDim; }
+          }
+          canvas.width=w; canvas.height=h;
+          const cx=canvas.getContext('2d');
+          cx.drawImage(img,0,0,w,h);
+          saveAd(canvas.toDataURL('image/jpeg',0.65),false);
+        };
+        img.onerror=function(){ alert('No se pudo leer la imagen.'); };
+        img.src=evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+}
+
+if($('btn-save-urgent')){
+  $('btn-save-urgent').onclick=function(){
+    if(!canWrite())return;
+    const v=$('urgent-input').value.trim().slice(0,300);
+    (v?db.ref(suc+'/urgent').set({text:v,day:nowParts().key,ts:Date.now()+srvOff}):db.ref(suc+'/urgent').remove()).catch(fail);
+  };
+}
+if($('btn-clear-urgent')){
+  $('btn-clear-urgent').onclick=function(){
+    if(!canWrite())return;
+    $('urgent-input').value='';
+    db.ref(suc+'/urgent').remove().catch(fail);
+  };
+}
+
+/* ============ VOCEO AUTOMÁTICO EN TV ============ */
+function loadFired(){
+  try{
+    const n=nowParts(), y=dayShift(n.key,-1);
+    return new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]').filter(function(x){
+      const dd=String(x).split('|')[2]; return dd===n.key||dd===y;
+    }));
+  }catch(e){ return new Set(); }
+}
+const fired=loadFired();
+const voicePending=new Set();
+const voiceRetryAfter=new Map();
+
+function autoVoice(d,diff,n){
+  if(isPassenger||(!isTV&&!canWrite()))return;
+  const isCentral = viewSuc() === 'central';
+  let mode = null;
+  let subKey = '';
+
+  if(isCentral){
+    if(diff <= 30 && diff > 15) { mode = 'etiq'; subKey = 'etiq30'; }
+    else if(diff <= 15 && diff > 10) { mode = 'abord'; subKey = 'abord15'; }
+    else if(diff <= 10 && diff > 5) { mode = 'abord'; subKey = 'abord10'; }
+    else if(diff <= 5 && diff > 0) { mode = 'ultima'; subKey = 'ultima5'; }
+  } else {
+    if(diff <= 15 && diff > 10) { mode = 'etiq'; subKey = 'etiq15'; }
+    else if(diff <= 5 && diff > 1) { mode = 'abord'; subKey = 'abord5'; }
+    else if(diff <= 0 && diff > -3) { mode = 'ultima'; subKey = 'ultima0'; }
+  }
+
+  if(!mode)return;
+  const baseId=String(d.id).replace(/^old_/,'');
+  const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
+  if(fired.has(k)||voicePending.has(k))return;
+  const retryAt=voiceRetryAfter.get(k)||0;
+  if(Date.now()<retryAt)return;
+  voicePending.add(k);
+  enqueueAudio(d.presetKey||'p01',mode,function(ok){
+    voicePending.delete(k);
+    if(!ok){voiceRetryAfter.set(k,Date.now()+15000);return;}
+    voiceRetryAfter.delete(k);
+    fired.add(k);
+    const y=dayShift(n.key,-1);
+    try{
+      localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
+        const dd=x.split('|')[2]; return dd===n.key||dd===y;
+      })));
+    }catch(e){}
+  });
+}
+
+/* ============ RELOJ Y REINICIO DIARIO ============ */
+let lastMinute = -1;
+
+function tick(){
+  try{
+    const n=nowParts();
+    if($('clock-time'))$('clock-time').textContent=n.time;
+    if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+    if(isTV && n.min>=180 && n.min<190){
+      try{
+        if(localStorage.getItem('transpais_reload_day')!==n.key){
+          localStorage.setItem('transpais_reload_day',n.key);
+          location.reload();
+          return;
+        }
+      }catch(e){}
+    }
+
+    if(ready && (gotServer||offlineFallback)){
+      buildList(n).forEach(function(d){
+        if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
+      });
+    }
+    if(n.min !== lastMinute){
+      lastMinute = n.min;
+      renderUrgentMsg();
+      if(canWrite()&&urgentInfo().expired)db.ref(suc+'/urgent').remove().catch(function(){});
+      render();
+    }
+  }catch(e){console.error('Error tick:',e);}
+}
+setInterval(tick,1000);
+setInterval(autoCatalog,30000);
+
+/* ============ RENDER Y TARJETAS PASAJERO ============ */
 function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
@@ -533,13 +1069,56 @@ function badge(st){
 }
 const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
 
+function passengerCardHTML(d, isCentral){
+  const sc = cleanScales(d.scales);
+  const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
+
+  return '<div class="passenger-card">' +
+    '<div class="passenger-card-header">' +
+      '<span class="passenger-card-time">' + esc(d.time) + '</span>' +
+      '<div>' + badge(d._st) + '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div class="passenger-card-dest">' + esc(d.destination) + '</div>' +
+      (sc ? '<div class="passenger-card-scales">Escalas: ' + esc(sc) + '</div>' : '') +
+    '</div>' +
+    '<div class="passenger-card-details">' +
+      '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
+      '<span>📍 ' + esc(boardingPoint) + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
 function tvRow(d,c){
   const sc=cleanScales(d.scales);
-  return '<td style="font-size:20px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
-  '<td><div style="font-size:18px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:11px;color:#93c5fd;margin-top:2px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
-  '<td class="c" style="font-size:16px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
-  '<td class="c" style="font-size:15px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
+  return '<td style="font-size:24px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
+  '<td><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
+  '<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
+  '<td class="c" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
   '<td class="c">'+badge(d._st)+'</td>';
+}
+
+function adminRow(d){
+  return '<td><strong>'+esc(d.time)+'</strong></td>'+
+  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc(d.presetKey||'Sin clave')+'</div></td>'+
+  '<td class="c"><input type="text" class="inline-bus-input" value="'+esc(d.bus||'')+'" placeholder="---"></td>'+
+  '<td class="c">'+badge(d._st)+'</td>'+
+  '<td>'+
+    '<div class="flex" style="flex-direction:column;gap:2px">'+
+      '<div class="flex">'+
+        '<button class="btn btn-advance" data-act="time" data-v="-60" title="-1 hora">-1h</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-30" title="-30 min">-30m</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-5" title="-5 min">-5m</button>'+
+      '</div>'+
+      '<div class="flex">'+
+        '<button class="btn btn-delay" data-act="time" data-v="5" title="+5 min">+5m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="30" title="+30 min">+30m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="60" title="+1 hora">+1h</button>'+
+      '</div>'+
+    '</div>'+
+  '</td>'+
+  '<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>'+
+  '<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>';
 }
 
 function syncRows(tb, list, html){
@@ -558,8 +1137,14 @@ function syncRows(tb, list, html){
     } else {
       existingRows.delete(d._k);
       if(r._s !== s){
+        const f = document.activeElement, typing = f && r.contains(f) && f.classList.contains('inline-bus-input');
+        const val = typing ? f.value : null, pos = typing ? f.selectionStart : 0;
         r.innerHTML = html(d);
         r._s = s;
+        if(typing){
+          const ni = r.querySelector('.inline-bus-input');
+          if(ni){ ni.value = val; ni.focus(); ni.setSelectionRange(pos, pos); }
+        }
       }
     }
 
@@ -573,6 +1158,7 @@ function syncRows(tb, list, html){
 
 function buildList(n){
   let base=Object.values(deps);
+  if(virtualActive())base=base.concat(virtualDeps());
   return base.filter(function(d){return d&&d.time&&isLive(d,n)&&diffOf(d,n)>-15;})
     .map(function(d){
       const o=Object.assign({},d);
@@ -584,369 +1170,275 @@ function buildList(n){
 }
 
 function render(){
-  const c=viewSuc()==='central', fb=$('fids-body');
-  if(!ready) return;
+  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body'), plist=$('passenger-card-list');
+  if(!ready){
+    if(fb)fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';
+    return;
+  }
   const n=nowParts();
   const list=buildList(n);
   curMap={}; list.forEach(function(d){curMap[d._k]=d;});
 
-  // VISTA MÓVIL PASAJERO
-  if(isPassenger){
-    const plist = $('passenger-card-list');
-    if(plist){
-      plist.classList.remove('hidden');
-      if(list.length === 0){
-        plist.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#93c5fd;font-weight:700;background:rgba(0,20,45,.8);border-radius:16px">🚌 No hay corridas activas en este momento.</div>';
-      } else {
-        plist.innerHTML = list.map(function(d){
-          const sc = cleanScales(d.scales);
-          return '<div class="passenger-card">' +
-            '<div class="passenger-card-header">' +
-              '<div class="passenger-card-time">' + esc(d.time) + '</div>' +
-              '<div>' + badge(d._st) + '</div>' +
-            '</div>' +
-            '<div class="passenger-card-dest">' + esc(d.destination) + '</div>' +
-            (sc ? '<div class="passenger-card-scales">Escalas: ' + esc(sc) + '</div>' : '') +
-            '<div class="passenger-card-details">' +
-              '<span>Autobús: <strong>' + esc(d.bus || '---') + '</strong></span>' +
-              '<span style="color:#00D974">' + (c ? 'Central de Autobuses' : 'Oficina Pedro Cárdenas') + '</span>' +
-            '</div>' +
-          '</div>';
-        }).join('');
-      }
+  if(isPassenger && plist){
+    plist.classList.remove('hidden');
+    plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
+  } else {
+    const fixedWrap=$('fixed-departures-wrap'), fixedBody=$('fixed-fids-body');
+    const pinned=(isTV&&!isPassenger)?list.filter(function(d){return d._st==='ETIQUETANDO PASAJE';}):[];
+    const moving=(isTV&&!isPassenger)?list.filter(function(d){return d._st!=='ETIQUETANDO PASAJE';}):list;
+    if(fixedWrap&&fixedBody){
+      fixedWrap.classList.toggle('hidden',pinned.length===0);
+      syncRows(fixedBody,pinned,function(d){return tvRow(d,c);});
     }
-    return;
+    if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
+    if(canWrite()&&ab)syncRows(ab,list,adminRow);
   }
-
-  // VISTA ADMIN / TAQUILLA
-  if(canWrite() && $('admin-body')){
-    $('admin-body').innerHTML = list.map(function(d){
-      return '<tr>' +
-        '<td style="font-weight:900;font-family:monospace">' + esc(d.time) + '</td>' +
-        '<td><strong>' + esc(d.destination) + '</strong><br><small style="color:#93c5fd">' + esc(cleanScales(d.scales)) + '</small></td>' +
-        '<td class="c"><input class="inline-bus-input" data-busid="' + esc(d.id) + '" value="' + esc(d.bus || '') + '" placeholder="---"></td>' +
-        '<td class="c">' + badge(d._st) + '</td>' +
-        '<td class="c">' +
-          '<button class="btn btn-advance" data-act="time" data-depid="' + esc(d.id) + '" data-delta="-5">-5m</button> ' +
-          '<button class="btn btn-delay" data-act="time" data-depid="' + esc(d.id) + '" data-delta="5">+5m</button>' +
-        '</td>' +
-        '<td class="c"><button class="btn btn-blue" data-act="edit" data-depid="' + esc(d.id) + '">✏️ Editar</button></td>' +
-        '<td class="c"><button class="btn btn-dark btn-red" data-act="del" data-depid="' + esc(d.id) + '">🗑️ Borrar</button></td>' +
-      '</tr>';
-    }).join('');
-  }
-
-  // VISTA PANTALLA / TV
-  const fixedWrap=$('fixed-departures-wrap'), fixedBody=$('fixed-fids-body');
-  const pinned=list.filter(function(d){return d._st==='ETIQUETANDO PASAJE';});
-  const moving=list.filter(function(d){return d._st!=='ETIQUETANDO PASAJE';});
-
-  if(fixedWrap&&fixedBody){
-    fixedWrap.classList.toggle('hidden',pinned.length===0);
-    syncRows(fixedBody,pinned,function(d){return tvRow(d,c);});
-  }
-  if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
 }
 
-function attach(s){
-  const rd=db.ref(s+'/deps'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent_msg');
-  rd.on('value',function(snap){
-    const next={};
-    snap.forEach(function(c){
-      const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
-    });
-    deps=next; ready=true; render();
-  });
-  ra.on('value',function(snap){
-    const next={};
-    snap.forEach(function(c){
-      const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
-    });
-    adsData=next; renderAds();
-  });
-  rc.on('value',function(snap){
-    adsConfig=snap.val()||{force7030:false};
-    update7030State();
-  });
-  ru.on('value',function(snap){
-    urgentMsg=snap.val()||'';
-    const banner=$('urgent-banner-screen'), txt=$('urgent-text-display');
-    if(banner && txt){
-      if(urgentMsg){
-        txt.textContent=urgentMsg;
-        banner.classList.remove('hidden');
-      }else{
-        banner.classList.add('hidden');
-      }
-    }
-  });
-}
-
-/* LISTENERS DE NAVEGACIÓN Y LOGIN */
-if($('btn-unlock')){
-  $('btn-unlock').addEventListener('click', function(){
-    if($('audio-start-overlay')) $('audio-start-overlay').style.display='none';
-    if(window.unlockAudio) window.unlockAudio();
-  });
-}
-
-if($('btn-chime')){
-  $('btn-chime').addEventListener('click', playChime);
-}
-
-if($('btn-mute-local')){
-  $('btn-mute-local').addEventListener('click', function(){
-    localAudioEnabled = !localAudioEnabled;
-    this.textContent = localAudioEnabled ? '🔊 AUDIO COMPU: ACTIVADO' : '🔇 AUDIO COMPU: SILENCIADO';
-    this.className = 'btn ' + (localAudioEnabled ? 'btn-green' : 'btn-dark');
-  });
-}
-
-if($('btn-panic')){
-  $('btn-panic').addEventListener('click', function(){
-    if($('voice-indicator')) $('voice-indicator').style.display = 'none';
-  });
-}
-
-if($('btn-tab-screen')){
-  $('btn-tab-screen').addEventListener('click', function(){
-    $('view-screen').classList.remove('hidden');
-    $('view-admin').classList.add('hidden');
-    $('btn-tab-screen').className = 'btn btn-green';
-    $('btn-tab-admin').className = 'btn btn-dark';
-  });
-}
-
-if($('btn-tab-admin')){
-  $('btn-tab-admin').addEventListener('click', function(){
-    if(auth.currentUser){
-      $('view-screen').classList.add('hidden');
-      $('view-admin').classList.remove('hidden');
-      $('btn-tab-admin').className = 'btn btn-green';
-      $('btn-tab-screen').className = 'btn btn-dark';
-    }else{
-      $('pin-modal-overlay').classList.remove('hidden');
-      $('pin-error-msg').classList.add('hidden');
-    }
-  });
-}
-
-if($('btn-login-cancel')){
-  $('btn-login-cancel').addEventListener('click', function(){
-    $('pin-modal-overlay').classList.add('hidden');
-  });
-}
-
-if($('btn-login-ok')){
-  $('btn-login-ok').addEventListener('click', function(){
-    const u = $('login-user-input').value.trim();
-    const p = $('login-pass-input').value.trim();
-    auth.signInWithEmailAndPassword(u, p).then(function(){
-      $('pin-modal-overlay').classList.add('hidden');
-      $('view-screen').classList.add('hidden');
-      $('view-admin').classList.remove('hidden');
-      $('btn-tab-admin').className = 'btn btn-green';
-      $('btn-tab-screen').className = 'btn btn-dark';
-    }).catch(function(){
-      $('pin-error-msg').classList.remove('hidden');
-    });
-  });
-}
-
-if($('btn-logout')){
-  $('btn-logout').addEventListener('click', function(){
-    auth.signOut().then(function(){
-      location.reload();
-    });
-  });
-}
-
-/* EVENTOS FORMULARIO Y ACCIONES DE ADMIN */
-if($('departure-form')){
-  $('departure-form').addEventListener('submit', function(e){
-    e.preventDefault();
-    if(!canWrite()) return;
-    const id = $('dep-id').value || db.ref(viewSuc() + '/deps').push().key;
-    const n = nowParts();
-    const data = {
-      time: $('dep-time').value,
-      destination: $('dep-destination').value.trim(),
-      scales: $('dep-scales').value.trim(),
-      bus: $('dep-bus').value.trim(),
-      status: $('dep-status').value,
-      presetKey: $('dep-preset-key').value || '',
-      day: n.key
-    };
-    db.ref(viewSuc() + '/deps/' + id).set(data).then(function(){
-      $('departure-form').reset();
-      $('dep-id').value = '';
-      $('dep-preset-key').value = '';
-    }).catch(fail);
-  });
-}
-
-if($('btn-load-all')){
-  $('btn-load-all').addEventListener('click', function(){
-    if(!canWrite()) return;
-    if(!confirm('¿Cargar todas las salidas del día?')) return;
-    const cat = catalogFor(viewSuc());
-    const n = nowParts();
-    const updates = {};
-    Object.keys(cat).forEach(function(k){
-      const item = cat[k];
-      const newKey = db.ref(viewSuc() + '/deps').push().key;
-      updates[newKey] = {
-        time: item[0],
-        destination: item[1],
-        scales: item[2] || '',
-        bus: '',
-        status: 'EN ESPERA',
-        presetKey: k,
-        day: n.key
-      };
-    });
-    db.ref(viewSuc() + '/deps').update(updates).catch(fail);
-  });
-}
-
-if($('btn-clear-all')){
-  $('btn-clear-all').addEventListener('click', function(){
-    if(!canWrite()) return;
-    if(!confirm('¿Seguro de borrar todas las salidas de la pantalla?')) return;
-    db.ref(viewSuc() + '/deps').remove().catch(fail);
-  });
-}
-
-if($('btn-reset')){
-  $('btn-reset').addEventListener('click', function(){
-    $('departure-form').reset();
-    $('dep-id').value = '';
-    $('dep-preset-key').value = '';
-  });
-}
-
-if($('btn-upload-ad')){
-  $('btn-upload-ad').addEventListener('click', function(){
-    $('ad-upload-input').click();
-  });
-}
-
-if($('ad-upload-input')){
-  $('ad-upload-input').addEventListener('change', function(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      const newKey = db.ref(viewSuc() + '/ads').push().key;
-      db.ref(viewSuc() + '/ads/' + newKey).set({
-        name: file.name,
-        dataUrl: evt.target.result,
-        active: true
-      }).catch(fail);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-if($('btn-toggle-7030-manual')){
-  $('btn-toggle-7030-manual').addEventListener('click', function(){
-    if(!canWrite()) return;
-    const nextState = !adsConfig.force7030;
-    db.ref(viewSuc() + '/ads_config').set({ force7030: nextState }).catch(fail);
-  });
-}
-
-if($('admin-ads-body')){
-  $('admin-ads-body').addEventListener('click', function(e){
-    const btn = e.target.closest('button[data-adact]');
-    if(!btn || !canWrite()) return;
-    const act = btn.dataset.adact;
-    const id = btn.dataset.adid;
-    if(act === 'toggle'){
-      const cur = adsData[id] ? adsData[id].active : false;
-      db.ref(viewSuc() + '/ads/' + id + '/active').set(!cur).catch(fail);
-    }else if(act === 'del'){
-      if(confirm('¿Eliminar este anuncio?')){
-        db.ref(viewSuc() + '/ads/' + id).remove().catch(fail);
-      }
-    }
-  });
-}
+/* ============ ACCIONES DE TAQUILLA ============ */
+const dref=function(id){return db.ref(suc+'/deps/'+id);};
 
 if($('admin-body')){
-  $('admin-body').addEventListener('change', function(e){
-    if(e.target.classList.contains('inline-bus-input') && canWrite()){
-      const id = e.target.dataset.busid;
-      const busVal = e.target.value.trim();
-      db.ref(viewSuc() + '/deps/' + id + '/bus').set(busVal).catch(fail);
+  $('admin-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
+    const tr=b.closest('tr'), d=curMap[tr.dataset.k]; if(!d)return;
+    const act=b.dataset.act;
+    if(act==='voz'){
+      db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
     }
+    else if(act==='time')ensureMat().then(function(){adjustTime(d,+b.dataset.v);}).catch(fail);
+    else if(act==='edit')editDeparture(d);
+    else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))ensureMat().then(function(){return dref(d.id).remove();}).catch(fail);
   });
 
-  $('admin-body').addEventListener('click', function(e){
-    const btn = e.target.closest('button[data-act]');
-    if(!btn || !canWrite()) return;
-    const act = btn.dataset.act;
-    const id = btn.dataset.depid;
-    const dep = deps[id];
-
-    if(act === 'del'){
-      if(confirm('¿Eliminar esta corrida?')){
-        db.ref(viewSuc() + '/deps/' + id).remove().catch(fail);
-      }
-    }else if(act === 'edit' && dep){
-      $('dep-id').value = id;
-      $('dep-time').value = dep.time || '';
-      $('dep-destination').value = dep.destination || '';
-      $('dep-scales').value = dep.scales || '';
-      $('dep-bus').value = dep.bus || '';
-      $('dep-status').value = dep.status || 'EN ESPERA';
-      $('dep-preset-key').value = dep.presetKey || '';
-    }else if(act === 'time' && dep){
-      const delta = parseInt(btn.dataset.delta, 10);
-      const parts = dep.time.split(':').map(Number);
-      let totalMin = parts[0] * 60 + parts[1] + delta;
-      if(totalMin < 0) totalMin += 1440;
-      totalMin %= 1440;
-      const newTime = pad(Math.floor(totalMin / 60)) + ':' + pad(totalMin % 60);
-      db.ref(viewSuc() + '/deps/' + id + '/time').set(newTime).catch(fail);
-    }
+  $('admin-body').addEventListener('change',function(e){
+    if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
+    const d=curMap[e.target.closest('tr').dataset.k]; if(!d)return;
+    const v=e.target.value.trim();
+    ensureMat().then(function(){return dref(d.id).update({bus:v});}).catch(fail);
   });
 }
 
-if($('btn-save-urgent')){
-  $('btn-save-urgent').addEventListener('click', function(){
-    if(!canWrite()) return;
-    const msg = $('urgent-input').value.trim();
-    db.ref(viewSuc() + '/urgent_msg').set(msg).catch(fail);
+function adjustTime(d,deltaMinutes){
+  const parts=d.time.split(':').map(Number);
+  const totalMins=(((parts[0]*60+parts[1]+deltaMinutes)%1440)+1440)%1440;
+  const newTime=pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
+
+  const newDelay=Math.max(0,(d.delay||0)+deltaMinutes);
+  const updates={time:newTime,delay:newDelay};
+
+  if(newDelay>=60){
+    updates.status='REPROGRAMADO';
+  }else if(d.status&&(d.status.indexOf('DEMORADO')===0||d.status==='REPROGRAMADO')){
+    updates.status='EN ESPERA';
+  }
+
+  dref(d.id).update(updates).catch(fail);
+}
+
+function editDeparture(d){
+  $('dep-id').value=d.id; $('dep-preset-key').value=d.presetKey||'p01';
+  $('dep-time').value=d.time; $('dep-destination').value=d.destination;
+  $('dep-scales').value=d.scales||''; $('dep-bus').value=d.bus||'';
+  const sel=$('dep-status'); sel.value=Array.from(sel.options).some(function(o){return o.value===d.status;})?d.status:'DEMORADO';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm(){
+  if($('departure-form'))$('departure-form').reset();
+  if($('dep-id'))$('dep-id').value='';
+  if($('dep-preset-key'))$('dep-preset-key').value='';
+  if($('preset-selector'))$('preset-selector').value='';
+}
+
+if($('departure-form')){
+  $('departure-form').addEventListener('submit',function(e){
+    e.preventDefault(); if(!canWrite())return;
+    ensureMat().then(function(){
+      const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
+      let status=$('dep-status').value;
+      if(status==='DEMORADO'&&old&&old.status&&(old.status.indexOf('DEMORADO')===0||old.status==='REPROGRAMADO'))status=old.status;
+      return dref(id).set({
+        presetKey:$('dep-preset-key').value||'p01',
+        time:$('dep-time').value,
+        destination:$('dep-destination').value.trim(),
+        scales:cleanScales($('dep-scales').value),
+        bus:$('dep-bus').value.trim(),
+        status:status,
+        sucursal:suc,
+        day:(old&&old.day)||nowParts().key,
+        delay:(old&&old.delay)||0
+      });
+    }).then(resetForm).catch(fail);
   });
 }
 
-if($('btn-clear-urgent')){
-  $('btn-clear-urgent').addEventListener('click', function(){
-    if(!canWrite()) return;
-    $('urgent-input').value = '';
-    db.ref(viewSuc() + '/urgent_msg').remove().catch(fail);
+function refreshPresetOptions(){
+  const sel=$('preset-selector'); if(!sel)return;
+  const catalog=catalogFor(suc||'of2');
+  Array.from(sel.options).forEach(function(opt){
+    const row=catalog[opt.value];
+    if(row)opt.textContent=opt.textContent.replace(/^\d{2}:\d{2}/,row[0]);
   });
 }
+if($('preset-selector')){
+  $('preset-selector').addEventListener('change',function(e){
+    const k=e.target.value, catalog=catalogFor(suc||'of2'); if(!catalog[k])return;
+    const row=catalog[k];
+    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=row[0];
+    $('dep-destination').value=row[1]; $('dep-scales').value=row[2];
+    $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
+  });
+}
+
+if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
+if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
+  if(!canWrite())return;
+  if(!confirm('ATENCIÓN: esto eliminará TODAS las corridas de esta sucursal. Esta acción no se puede deshacer desde la pantalla. ¿Tienes un respaldo y deseas continuar?'))return;
+  const confirmation=prompt('Para confirmar, escribe BORRAR en mayúsculas:');
+  if(confirmation!=='BORRAR') {
+    alert('Operación cancelada. No se eliminó ninguna corrida.');
+    return;
+  }
+  const dayToClear=nowParts().key;
+  clearedDay=dayToClear; gotCleared=true; deps={}; ready=true;
+  try{localStorage.setItem('transpais_offline_deps_'+suc,JSON.stringify({}));}catch(e){}
+  render();
+  const patch={}; patch[suc+'/deps']=null; patch[suc+'/cleared']=dayToClear;
+  db.ref().update(patch).catch(function(e){fail(e);});
+};
+if($('btn-reset'))$('btn-reset').onclick=resetForm;
+
+/* ============ AUTH Y VISTAS ============ */
+const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
 
 auth.onAuthStateChanged(function(u){
-  suc=(u&&!isTV&&!isPassenger)?(u.email.toLowerCase()==='ofcentral@transpais.com'?'central':'of2'):'of2';
-  if(u){
-    if($('btn-logout')) $('btn-logout').classList.remove('hidden');
-  }else{
-    if($('btn-logout')) $('btn-logout').classList.add('hidden');
+  const prev=viewSuc();
+  suc=(u&&!isTV&&!isPassenger)?sucFromEmail(u.email):null;
+
+  if($('btn-logout')){
+    $('btn-logout').classList.toggle('hidden', !u || isTV || isPassenger);
   }
-  attach(viewSuc()); updateHeaderTitles(); render();
+
+  if(viewSuc()!==prev)attach(viewSuc());
+  updateHeaderTitles(); refreshPresetOptions(); renderAds(); renderUrgentMsg(); render(); autoCatalog();
 });
 
-setInterval(function(){
-  const n=nowParts();
-  if($('clock-time'))$('clock-time').textContent=n.time;
-  if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function switchTab(tab){
+  if(tab==='admin'&&!canWrite())return;
+  if($('view-screen'))$('view-screen').classList.toggle('hidden',tab!=='screen');
+  if($('view-admin'))$('view-admin').classList.toggle('hidden',tab!=='admin');
+  if($('btn-tab-screen'))$('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');
+  if($('btn-tab-admin'))$('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
   render();
-},1000);
+}
 
-updateHeaderTitles();
+function openPin(){
+  if(canWrite())return switchTab('admin');
+  if($('login-user-input'))$('login-user-input').value='';
+  if($('login-pass-input'))$('login-pass-input').value='';
+  if($('pin-error-msg'))$('pin-error-msg').classList.add('hidden');
+  if($('pin-modal-overlay'))$('pin-modal-overlay').classList.remove('hidden');
+  if($('login-user-input'))$('login-user-input').focus();
+}
+
+function doLogin(){
+  const u=$('login-user-input').value.trim().toLowerCase(), p=$('login-pass-input').value.trim();
+  if(!u||!p){ if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden'); return; }
+  let em=u;
+  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com'; if(u==='terminalof2')em='terminalof2@transpais.com';}
+  const btn=$('btn-login-ok'); if(btn)btn.disabled=true;
+  auth.signInWithEmailAndPassword(em,p).then(function(){
+    suc=sucFromEmail(em);
+    if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
+    if(viewSuc()!==(suc==='central'?'central':'of2'))attach(viewSuc());
+    updateHeaderTitles(); switchTab('admin');
+  }).catch(function(err){
+    console.error('Auth:',err.message);
+    if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');
+  }).then(function(){ if(btn)btn.disabled=false; });
+}
+
+function doLogout(){
+  if(confirm('¿Deseas cerrar la sesión de taquilla?')){
+    auth.signOut().then(function(){
+      suc=null;
+      switchTab('screen');
+      attach(viewSuc());
+      updateHeaderTitles();
+    }).catch(fail);
+  }
+}
+
+function makeVistaPasajeroAd(){
+  const isCentral=viewSuc()==='central';
+  const slide=document.createElement('div');
+  slide.className='ad-img-item vista-qr-ad';
+  const stage=document.createElement('div');
+  stage.className='vqa-stage';
+  const bg=document.createElement('img');
+  bg.className='vqa-stage-bg';
+  bg.alt=isCentral?'Anuncio Transpais de la Central, andén 18':'Anuncio Transpais de Terminal Pedro Cárdenas';
+  
+  // Utiliza directamente las fuentes de imagen integradas
+  bg.src = isCentral 
+    ? 'data:image/jpeg;base64,' + '...' // Reemplazado automáticamente por la base64 correspondiente
+    : 'data:image/jpeg;base64,' + '...';
+
+  const overlay=document.createElement('div');
+  overlay.className='vqa-qr-overlay';
+  
+  const targetUrl = location.origin + location.pathname + (isCentral ? '?vista=pasajerocentral' : '?vista=pasajero');
+  
+  new QRCode(overlay, {
+    text: targetUrl,
+    width: 180,
+    height: 180,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  stage.appendChild(bg);
+  stage.appendChild(overlay);
+  slide.appendChild(stage);
+  return slide;
+}
+
+if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
+if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
+if($('btn-login-ok'))$('btn-login-ok').onclick=doLogin;
+if($('btn-login-cancel'))$('btn-login-cancel').onclick=function(){if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');};
+if($('btn-logout'))$('btn-logout').onclick=doLogout;
+if($('btn-panic'))$('btn-panic').onclick=panicStop;
+if($('btn-chime'))$('btn-chime').onclick=chime;
+
+if($('btn-mute-local'))$('btn-mute-local').onclick=function(){
+  muted=!muted;
+  localStorage.setItem('transpais_local_muted',muted?'true':'false');
+  updateMuteUI();
+};
+
+window.addEventListener('load',function(){
+  updateMuteUI();
+  updateHeaderTitles();
+  
+  const targetUrl = location.origin + location.pathname + (viewSuc()==='central'?'?vista=pasajerocentral':'?vista=pasajero');
+  const qrBox = $('qrcode-box');
+  if(qrBox){
+    qrBox.innerHTML='';
+    new QRCode(qrBox, {
+      text: targetUrl,
+      width: 80,
+      height: 80
+    });
+  }
+  
+  const qrCard = $('qr-card');
+  if(qrCard && !isTV && !isPassenger){
+    qrCard.classList.add('show');
+  }
+
+  attach(viewSuc());
+});
 </script>
 </body>
 </html>
