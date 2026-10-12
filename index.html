@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transpais FIDS - Sistema de Información a Pasajeros</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
+.glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
+.control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
+.btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
+.btn-dark{background:rgba(255,255,255,.1);color:#ccc}.btn-dark:hover{background:rgba(255,255,255,.2);color:#fff}
+.btn-red{background:rgba(230,57,70,.3);color:#f87171}.btn-red:hover{background:rgba(230,57,70,.5)}
+.btn-panic{background:#e11d48;color:#fff;font-weight:900;box-shadow:0 0 10px rgba(225,29,72,.5)}.btn-panic:hover{background:#be123c}
+.btn-blue{background:#002A5C;color:#818cf8;border:1px solid rgba(129,140,248,.3)}
+.btn-arrive{background:#d97706;color:#fff;font-weight:900}
+.btn-delay{background:#dc2626;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-delay:hover{background:#991b1b}
+.btn-advance{background:#2563eb;color:#fff;padding:4px 6px;font-size:10px;border-radius:4px}.btn-advance:hover{background:#1d4ed8}
+table{width:100%;border-collapse:collapse;text-align:left}
+th{background:rgba(0,20,45,.9);color:#93c5fd;padding:14px;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.1)}
+td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.c{text-align:center}
+.badge-status{padding:6px 12px;border-radius:20px;font-size:10px;font-weight:900;text-transform:uppercase;display:inline-block}
+.status-espera{background:rgba(23,162,184,.2);color:#17a2b8;border:1px solid rgba(23,162,184,.4)}
+.status-etiq{background:#FFB800;color:#000;animation:pg 1.4s infinite ease-in-out}
+.status-abordaje{background:#00D974;color:#000;animation:pg 1s infinite ease-in-out}
+.status-ultima{background:#e11d48;color:#fff;animation:pr .8s infinite ease-in-out}
+.status-demorado{background:#dc2626;color:#fff}
+.status-salido{background:rgba(255,255,255,.05);color:#888}
+@keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
+@keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
+input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px;color:#fff;font-family:inherit;width:100%}
+.inline-bus-input{background:rgba(255,184,0,.15);border:1px solid #FFB800;font-weight:800;text-align:center;width:80px;padding:5px;border-radius:6px}
+.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
+.lbl{font-size:11px;font-weight:700;color:#93c5fd}
+.flex{display:flex;gap:4px;justify-content:center}
+.ticker-footer{background:#00142D;border-top:2px solid #00A859;height:40px;display:flex;align-items:center;overflow:hidden}
+.ticker-title{background:#00A859;padding:0 20px;height:100%;display:flex;align-items:center;font-weight:900;font-size:11px;white-space:nowrap}
+.ticker-content{white-space:nowrap;animation:tk 30s linear infinite;font-size:12px;color:#93c5fd}
+@keyframes tk{0%{transform:translate3d(100%,0,0)}100%{transform:translate3d(-100%,0,0)}}
+.overlay{position:fixed;inset:0;background:rgba(0,11,24,.92);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}
+.modal-overlay{z-index:9998;background:rgba(0,0,0,.85)}
+.card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
+.modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
+.hidden{display:none!important}
+
+/* MARQUESINA URGENTE */
+.urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
+.urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
+@keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+/* LAYOUT 75/25 */
+.screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
+.fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
+.screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 75%;width:75%}
+
+.ads-sidebar-wrap{flex:0 0 25%;width:25%;min-height:480px;background:rgba(0,20,45,.95);border:2px solid #00A859;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5);flex-direction:column;align-items:stretch;justify-content:stretch}
+.screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
+
+.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden;background:#000B18;display:flex;align-items:center;justify-content:center}
+.ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
+.ad-img-item.active{opacity:1!important;z-index:2}
+
+/* WIDGET QR Y VOCEO */
+.qr-card{position:fixed;bottom:55px;left:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
+.qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.qr-text{max-width:180px}
+.qr-text h4{color:#00D974;font-size:12px;font-weight:900;margin-bottom:4px;letter-spacing:.5px}
+.qr-text p{color:#93c5fd;font-size:11px;line-height:1.3}
+#qrcode-box{background:#fff;padding:10px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+
+.voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
+.voice-indicator.active{transform:translateY(0);opacity:1}
+.speaker-pulse{animation:sp 1s infinite alternate}
+@keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
+
+/* VISTA MÓVIL PASAJERO */
+body.passenger-mode .glass-header{padding:10px 15px}
+body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
+body.passenger-mode #header-terminal-title{font-size:16px!important}
+body.passenger-mode #header-terminal-sub{font-size:10px!important}
+body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;max-height:none}
+body.passenger-mode .fids-table-wrap table{display:none!important}
+body.passenger-mode .screen-split-wrapper{min-height:0}
+
+.passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
+.passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
+.passenger-card.tracked{border:2px solid #00D974;box-shadow:0 0 20px rgba(0,217,116,.4)}
+.passenger-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}
+.passenger-card-time{font-size:24px;font-weight:900;font-family:monospace;color:#fff}
+.passenger-card-dest{font-size:18px;font-weight:800;color:#fff;margin-top:2px}
+.passenger-card-scales{font-size:11px;color:#93c5fd}
+.passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
+.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div id="audio-start-overlay" class="overlay">
+  <div class="card">
+    <div style="font-size:48px;margin-bottom:15px">🔊</div>
+    <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
+    <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="document.getElementById('audio-start-overlay').style.display='none'; if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+  </div>
+</div>
+
+<div id="pin-modal-overlay" class="overlay modal-overlay hidden">
+  <div class="modal-card">
+    <h3 style="font-size:16px;font-weight:900;color:#FFB800;margin-bottom:10px">ACCESO A TAQUILLA</h3>
+    <p style="font-size:12px;color:#ccc;margin-bottom:15px">Ingrese Usuario y Contraseña:</p>
+    <input type="text" id="login-user-input" style="margin-bottom:10px" placeholder="Usuario / Correo">
+    <input type="password" id="login-pass-input" style="margin-bottom:15px" placeholder="Contraseña">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-dark" style="flex:1;justify-content:center" id="btn-login-cancel">Cancelar</button>
+      <button class="btn btn-green" style="flex:1;justify-content:center" id="btn-login-ok">Acceder</button>
+    </div>
+    <div id="pin-error-msg" style="color:#f43f5e;font-size:11px;margin-top:10px;font-weight:700" class="hidden">❌ Credenciales Incorrectas</div>
+  </div>
+</div>
+
+<div id="voice-indicator" class="voice-indicator">
+  <span class="speaker-pulse" style="font-size:18px">📢</span>
+  <span>VOCEO EN REPRODUCCIÓN...</span>
+</div>
+
+<div id="qr-card" class="qr-card">
+  <div id="qrcode-box"></div>
+  <div class="qr-text">
+    <h4>📱 LLEVA EL ITINERARIO EN TU CELULAR</h4>
+    <p>Escanea este código para ver el estatus en tiempo real desde tu teléfono.</p>
+  </div>
+</div>
+
+<header class="glass-header">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="brand-logo">TRANSPAIS®</div>
+    <div>
+      <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
+      <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
+    </div>
+  </div>
+  <div style="text-align:right;background:rgba(0,0,0,.4);padding:8px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1)">
+    <div id="clock-time" style="font-size:28px;font-weight:900;font-family:monospace">00:00:00</div>
+    <div id="clock-date" style="font-size:11px;color:#93c5fd">Cargando...</div>
+  </div>
+</header>
+
+<div class="control-bar" id="control-bar">
+  <div style="display:flex;gap:10px;align-items:center">
+    <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
+    <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
+    <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
+    <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
+    <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
+    <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
+  </div>
+</div>
+
+<main id="view-screen" class="glass-card">
+  <div id="urgent-banner-screen" class="urgent-banner hidden">
+    <div class="urgent-scroll-text" id="urgent-text-display"></div>
+  </div>
+
+  <div id="passenger-card-list" class="passenger-card-list hidden"></div>
+
+  <div id="screen-split-container" class="screen-split-wrapper">
+    <div class="fids-table-wrap">
+      <table>
+        <thead><tr><th>Hora</th><th>Destino / Escalas</th><th class="c">Autobús</th><th class="c">Punto de Abordaje</th><th class="c">Estatus</th></tr></thead>
+        <tbody id="fids-body"></tbody>
+      </table>
+    </div>
+    <div id="ads-sidebar" class="ads-sidebar-wrap">
+      <div id="ad-image-container" class="ad-image-container"></div>
+    </div>
+  </div>
+</main>
+
+<main id="view-admin" class="glass-card hidden">
+  <div style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:16px;border-radius:12px;margin-bottom:20px">
+    <h3 style="color:#f87171;font-size:14px;font-weight:900;margin-bottom:6px">📢 PUBLICAR AVISO / MENSAJE URGENTE EN TV</h3>
+    <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta para proyectarla en tiempo real en la parte superior de la sala de espera.</p>
+    <div style="display:flex;gap:10px">
+      <input type="text" id="urgent-input" placeholder="Ej. Atención: Retrasos de 15 min por obras en carretera..." style="flex:1">
+      <button class="btn btn-green" id="btn-save-urgent">Publicar Mensaje</button>
+      <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar Alerta</button>
+    </div>
+  </div>
+
+  <div style="background:rgba(0,30,68,.8);border:1px solid rgba(0,217,116,.3);padding:16px;border-radius:12px;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y VIDEOS (LAYOUT 75/25)</h3>
+        <p style="font-size:11px;color:#93c5fd">Sube imágenes, GIFs o videos MP3/MP4 para proyectarlos en las Smart TV.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="file" id="ad-upload-input" accept="image/*,video/mp4" style="display:none">
+        <button class="btn btn-green" id="btn-upload-ad">🖼️ Subir Anuncio/Video</button>
+        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 FORZAR 75/25 EN TV</button>
+      </div>
+    </div>
+    <div style="max-height:180px;overflow-y:auto">
+      <table>
+        <thead><tr><th>Vista Previa</th><th>Nombre del Archivo</th><th class="c">Estado en TV</th><th class="c">Acciones</th></tr></thead>
+        <tbody id="admin-ads-body"><tr><td colspan="4" class="c" style="color:#888;font-size:11px">No hay anuncios cargados.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:rgba(0,168,89,.15);border:1px solid #00D974;padding:14px 18px;border-radius:12px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <div>
+      <h3 style="color:#00D974;font-size:14px;font-weight:900;margin-bottom:2px">⚡ ITINERARIO GENERAL DEL DÍA</h3>
+      <p style="font-size:11px;color:#93c5fd">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
+    </div>
+    <button class="btn btn-green" id="btn-load-all">🚀 CARGAR TODAS LAS SALIDAS</button>
+  </div>
+  <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;margin-bottom:15px">
+    <label style="font-size:11px;font-weight:800;color:#FFB800;display:block;margin-bottom:5px">Seleccionar Ruta del Catálogo (Asigna MP3 en automático):</label>
+    <select id="preset-selector">
+      <option value="">-- Seleccionar ruta del catálogo --</option>
+      <option value="p01">05:15 - San Luis Potosí (vía San Fernando, Victoria, Jaumave, Tula)</option>
+      <option value="p02">07:35 - Tampico - Madero (vía Soto la Marina, Aldama, Altamira)</option>
+      <option value="p03">08:00 - Ciudad Valles (Directo x Victoria y Mante)</option>
+      <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
+      <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
+      <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
+      <option value="p07">11:45 - Ciudad Valles (vía Victoria y Mante)</option>
+      <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
+      <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
+      <option value="p10">18:45 - Tampico (Semi-Directa)</option>
+      <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
+      <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
+      <option value="p13">15:15 - Ciudad Valles Completa</option>
+    </select>
+  </div>
+  <form id="departure-form">
+    <input type="hidden" id="dep-id"><input type="hidden" id="dep-preset-key">
+    <div class="grid-form">
+      <div><label class="lbl">Hora Programada</label><input type="time" id="dep-time" required></div>
+      <div><label class="lbl">Destino Principal</label><input type="text" id="dep-destination" placeholder="Ej. Ciudad Valles" required></div>
+      <div><label class="lbl">Escalas Principales</label><input type="text" id="dep-scales" placeholder="Ej. San Fernando, Victoria, Mante"></div>
+      <div><label class="lbl" style="color:#FFB800">No. Autobús</label><input type="text" id="dep-bus" placeholder="Ej. 9548" style="border:1px solid #FFB800;background:rgba(255,184,0,.1)"></div>
+      <div><label class="lbl">Estatus Manual</label>
+        <select id="dep-status">
+          <option>EN ESPERA</option><option>ETIQUETANDO PASAJE</option><option>EN ABORDAJE</option><option>ÚLTIMA LLAMADA</option><option>DEMORADO</option><option>SALIDO</option>
+        </select></div>
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+      <button type="button" class="btn btn-dark btn-red" id="btn-clear-all">Limpiar Pantalla del Día</button>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-dark" id="btn-reset">Limpiar Formulario</button>
+        <button type="submit" class="btn btn-green">Guardar / Publicar Corrida</button>
+      </div>
+    </div>
+  </form>
+  <div style="margin-top:25px;border-top:1px solid rgba(255,255,255,.1);padding-top:15px">
+    <h3 style="font-size:14px;font-weight:800;margin-bottom:12px">CORRIDAS ACTIVAS EN PANTALLA</h3>
+    <table>
+      <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
+      <tbody id="admin-body"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer class="ticker-footer">
+  <div class="ticker-title">AVISO DE EQUIPAJE</div>
+  <div style="overflow:hidden;width:100%"><div id="ticker-text-content" class="ticker-content"></div></div>
+</footer>
+
+<script>
+/* ============ CONFIG FIREBASE Y MESSAGING ============ */
+firebase.initializeApp({
+  apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
+  databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
+  projectId: "transpais-fids",
+  messagingSenderId: "562920108882",
+  appId: "1:562920108882:web:4b61a6cd076c407eb8408b"
+});
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+const TZ = 'America/Matamoros';
+const $ = function(id){ return document.getElementById(id); };
+const esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+const pad = function(x){ return String(x).padStart(2,'0'); };
+const vista = new URLSearchParams(location.search).get('vista') || 'screen';
+const isTV = vista.startsWith('tv');
+const isPassenger = vista.startsWith('pasajero');
+
+let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
+let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
+
+if(isPassenger) document.body.classList.add('passenger-mode');
+
+const viewSuc = function(){
+  if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
+  if(isTV||isPassenger)return'of2';
+  return suc||'of2';
+};
+const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
+const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
+
+const CAT={
+p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
+p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
+p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
+p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
+p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
+p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
+
+/* Se conservan las referencias para que el navegador mantenga los MP3 en memoria */
+const preloaded=[];
+function preloadCatalogAudios(){
+  if(isPassenger)return;
+  const modes=['etiq','abord','ultima'];
+  Object.keys(CAT).forEach(function(k){
+    modes.forEach(function(m){
+      const a=new Audio('audios/'+k+'_'+m+'.mp3');
+      a.preload='auto';
+      preloaded.push(a);
+    });
+  });
+}
+preloadCatalogAudios();
+
+/* ============ HORA Y SERVIDOR ============ */
+db.ref('.info/serverTimeOffset').on('value',function(s){srvOff=s.val()||0;});
+
+let dtf=null;
+try{ dtf=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){}
+
+function nowParts(){
+  const now=new Date(Date.now()+srvOff);
+  if(dtf){
+    try{
+      const p={}; dtf.formatToParts(now).forEach(function(x){p[x.type]=x.value;});
+      if(p.year&&p.month&&p.day&&p.hour!==undefined){
+        const h=+p.hour%24, m=+p.minute, s=+(p.second||0);
+        return {key:p.year+'-'+p.month+'-'+p.day,min:h*60+m,time:pad(h)+':'+pad(m)+':'+pad(s)};
+      }
+    }catch(e){}
+  }
+  const y=now.getFullYear(), mo=pad(now.getMonth()+1), da=pad(now.getDate());
+  const ho=now.getHours(), mi=now.getMinutes(), se=now.getSeconds();
+  return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:pad(ho)+':'+pad(mi)+':'+pad(se)};
+}
+
+/* Día anterior/posterior de una clave AAAA-MM-DD */
+function dayShift(key,delta){
+  const p=key.split('-').map(Number);
+  return new Date(Date.UTC(p[0],p[1]-1,p[2]+delta)).toISOString().slice(0,10);
+}
+
+function diffOf(d,n){
+  const parts=d.time.split(':').map(Number);
+  let x=parts[0]*60+parts[1]-n.min;
+  if(x<-1200)x+=1440; if(x>1200)x-=1440;
+  return x;
+}
+/* Una corrida del día anterior sigue vigente después de medianoche */
+const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
+
+function stat(d,diff){
+  if(d.status==='SALIDO'||diff<0)return'SALIDO';
+  const isCentral = viewSuc() === 'central';
+  if(isCentral){
+    if(diff<=5)return'ÚLTIMA LLAMADA';
+    if(diff<=15)return'EN ABORDAJE';
+    if(diff<=30)return'ETIQUETANDO PASAJE';
+  }else{
+    if(diff===0)return'ÚLTIMA LLAMADA';
+    if(diff<=5)return'EN ABORDAJE';
+    if(diff<=15)return'ETIQUETANDO PASAJE';
+  }
+  return d.status||'EN ESPERA';
+}
+
+function updateHeaderTitles(){
+  const c=viewSuc()==='central';
+  if($('header-terminal-title'))$('header-terminal-title').textContent=c?'CENTRAL DE AUTOBUSES':'TERMINAL PEDRO CÁRDENAS';
+  if($('header-terminal-sub'))$('header-terminal-sub').textContent=isPassenger?(c?'PASAJERO – CENTRAL':'PASAJERO – PEDRO CÁRDENAS'):(c?'MATAMOROS – TERMINAL CENTRAL':'MATAMOROS – OFICINA DE PASO');
+  if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
+}
+
+/* ============ AUDIO Y REPRODUCCIÓN ============ */
+let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
+let currentVoiceAudio=null;
+
+function setVoiceIndicator(show){
+  if(isPassenger)return;
+  const vi=$('voice-indicator');
+  if(vi)vi.classList.toggle('active',!!show);
+}
+
+function ctx(){
+  if(isPassenger)return null;
+  if(!actx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(C)actx=new C();
+  }
+  if(actx&&actx.state==='suspended')actx.resume();
+  return actx;
+}
+
+function chime(){
+  return new Promise(function(res){
+    if(muted||isPassenger)return res();
+    try{
+      const c=ctx(); if(!c)return res();
+      const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
+      o1.frequency.setValueAtTime(587.33,t); o2.frequency.setValueAtTime(880,t+.18);
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.35,t+.05); g.gain.exponentialRampToValueAtTime(.0001,t+2);
+      o1.connect(g); o2.connect(g); g.connect(c.destination);
+      o1.start(t); o2.start(t+.18); o1.stop(t+2); o2.stop(t+2);
+      setTimeout(res,1800);
+    }catch(e){res();}
+  });
+}
+
+const aq=[]; let playing=false, epoch=0, stopCurrent=null;
+
+function enqueueAudio(k,m){
+  if(isPassenger)return;
+  aq.push([k,m]);
+  if(!playing)runQueue();
+}
+
+/* Detiene lo que suena y libera la cola sin dejar promesas colgadas */
+function hardStop(){
+  epoch++;
+  aq.length=0;
+  if(currentVoiceAudio){
+    try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
+    currentVoiceAudio=null;
+  }
+  if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(); }
+}
+
+function playVoiceImmediate(key,mode){
+  if(isPassenger)return;
+  hardStop();
+  aq.push([key,mode]);
+  if(!playing) runQueue();
+}
+
+async function runQueue(){
+  if(isPassenger||playing)return;
+  playing=true;
+  setVoiceIndicator(true);
+  try{
+    while(aq.length){
+      const item=aq.shift();
+      await playOne(item[0],item[1]);
+    }
+  }finally{
+    playing=false;
+    setVoiceIndicator(false);
+  }
+}
+
+function playOne(key,mode){
+  return new Promise(async function(res){
+    if(muted||isPassenger)return res();
+    const my=epoch;
+    let done=false, to=null;
+    const end=function(){
+      if(done)return; done=true; clearTimeout(to);
+      if(stopCurrent===end)stopCurrent=null;
+      currentVoiceAudio=null;
+      res();
+    };
+    stopCurrent=end;
+    await chime();
+    if(done||my!==epoch)return end();
+    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
+    currentVoiceAudio=a;
+    to=setTimeout(end,60000);
+    a.onended=end;
+    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end();};
+    a.play().catch(function(err){console.warn('Audio bloqueado por el navegador:',err&&err.message); end();});
+  });
+}
+
+window.unlockAudio=function(){
+  const overlay=$('audio-start-overlay');
+  if(overlay)overlay.style.display='none';
+  try{ctx();}catch(e){}
+};
+
+function panicStop(){
+  hardStop();
+  setVoiceIndicator(false);
+}
+
+function updateMuteUI(){
+  const b=$('btn-mute-local'); if(!b)return;
+  b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
+  b.className=muted?'btn btn-dark btn-red':'btn btn-green';
+}
+
+/* ============ DATOS Y SINCRONIZACIÓN ============ */
+let refs=[];
+function attach(s){
+  try{
+    refs.forEach(function(r){r.off();});
+    deps={}; adsData={}; ready=false; gotServer=false; gotCleared=false; offlineFallback=false; clearedDay=null;
+    clearTimeout(fbTimer);
+
+    /* Si hay copia local se muestra de inmediato (útil si la TV reinicia sin internet) */
+    try{
+      const cached=localStorage.getItem('transpais_offline_deps_'+s);
+      if(cached){ deps=JSON.parse(cached)||{}; ready=true; }
+    }catch(e){ deps={}; }
+
+    /* Sin respuesta del servidor en 6 s: se trabaja con catálogo local */
+    fbTimer=setTimeout(function(){
+      if(!gotServer){ offlineFallback=true; ready=true; render(); }
+    },6000);
+
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared');
+    refs=[rd,rv,ra,rc,ru,rcl];
+    let lastTs=0;
+
+    rd.on('value',function(snap){
+      const next={};
+      snap.forEach(function(c){
+        const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+      });
+      deps=next; ready=true; gotServer=true;
+      try{ localStorage.setItem('transpais_offline_deps_'+s, JSON.stringify(deps)); }catch(e){}
+      render(); autoCatalog();
+    },function(err){
+      console.error('Error Firebase:',err.message);
+      offlineFallback=true;
+      try{
+        const cached=localStorage.getItem('transpais_offline_deps_'+s);
+        if(cached){ deps=JSON.parse(cached)||{}; }
+      }catch(e){}
+      ready=true; render();
+    });
+
+    rcl.on('value',function(snap){
+      clearedDay=snap.val();
+      gotCleared=true;
+      render(); autoCatalog();
+    });
+
+    if(!isPassenger){
+      rv.on('value',function(snap){
+        const d=snap.val();
+        if(!d||!d.timestamp||d.timestamp<=lastTs)return;
+        lastTs=d.timestamp;
+        if(Date.now()+srvOff-d.timestamp>15000)return;
+        playVoiceImmediate(d.key,d.mode);
+      });
+
+      ra.on('value',function(snap){
+        const next={};
+        snap.forEach(function(c){
+          const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
+        });
+        adsData=next; renderAds();
+      });
+
+      rc.on('value',function(snap){
+        adsConfig=snap.val()||{force7030:false};
+        update7030State();
+      });
+    }
+
+    ru.on('value',function(snap){
+      urgentMsg=snap.val()||'';
+      renderUrgentMsg();
+    });
+
+    render();
+  }catch(e){
+    console.error('Error attach:',e);
+    offlineFallback=true; ready=true; render();
+  }
+}
+
+/* El aviso urgente caduca solo a los 30 minutos si nadie lo quita */
+const URGENT_TTL_MIN=30;
+function urgentInfo(){
+  if(!urgentMsg)return {text:'',expired:false};
+  if(typeof urgentMsg==='object'){
+    const t=String(urgentMsg.text||'').trim();
+    let ok=true;
+    if(urgentMsg.ts){
+      ok=(Date.now()+srvOff-urgentMsg.ts)<=URGENT_TTL_MIN*60000;
+    }else if(urgentMsg.day){
+      const n=nowParts();
+      ok=urgentMsg.day===n.key||(n.min<360&&urgentMsg.day===dayShift(n.key,-1));
+    }
+    return {text:t,expired:!ok};
+  }
+  return {text:String(urgentMsg).trim(),expired:false};
+}
+
+function renderUrgentMsg(){
+  const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
+  const u=urgentInfo();
+  if(banner&&txt){
+    if(u.text&&!u.expired){
+      txt.textContent="⚠️ " + u.text;
+      banner.classList.remove('hidden');
+    }else{
+      banner.classList.add('hidden');
+    }
+  }
+  if(inp&&canWrite()&&document.activeElement!==inp){
+    inp.value=u.expired?'':u.text;
+  }
+}
+
+/* ============ CATÁLOGO DEL DÍA (REAL Y VIRTUAL) ============ */
+function calculateCentralTime(timeStr, presetKey){
+  if(presetKey==='p11'||presetKey==='p12')return timeStr;
+  if(presetKey==='p13')return '15:00';
+  const parts=timeStr.split(':').map(Number);
+  let totalMins=parts[0]*60+parts[1]-15;
+  if(totalMins<0)totalMins+=1440;
+  return pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
+}
+
+/* Catálogo generado localmente: las TVs y el celular muestran el día
+   aunque la taquilla no haya cargado nada (carga automática de las 12 am). */
+function virtualDeps(){
+  const day=nowParts().key, isCentral=viewSuc()==='central', out=[];
+  Object.keys(CAT).forEach(function(k){
+    let t=CAT[k][0]; if(isCentral)t=calculateCentralTime(t,k);
+    out.push({id:k,presetKey:k,time:t,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:viewSuc(),day:day,delay:0,_virtual:true});
+  });
+  return out;
+}
+
+function virtualActive(){
+  const today=nowParts().key;
+  if(!(gotCleared||offlineFallback))return false;
+  if(clearedDay===today)return false;
+  return !Object.values(deps).some(function(d){return d.day===today;});
+}
+
+/* Si la taquilla edita algo mientras el día aún es virtual, primero se guarda el catálogo */
+function ensureMat(){
+  return virtualActive()?loadCatalog():Promise.resolve();
+}
+
+let autoBusy=false;
+async function autoCatalog(){
+  if(!canWrite()||!ready||!gotServer||!gotCleared||autoBusy||viewSuc()!==suc)return;
+  const today=nowParts().key;
+  if(Object.values(deps).some(function(d){return d.day===today;}))return;
+  if(clearedDay===today)return;
+  autoBusy=true;
+  try{ await loadCatalog(); }catch(e){console.warn('Catálogo automático:',e.message);}
+  setTimeout(function(){autoBusy=false;},10000);
+}
+
+function loadCatalog(){
+  const n=nowParts(), day=n.key, o={}, isCentral=suc==='central';
+  /* Las corridas de ayer que siguen vigentes después de medianoche se conservan */
+  Object.values(deps).forEach(function(d){
+    if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
+      const c=Object.assign({},d); delete c.id; delete c._virtual;
+      o['old_'+String(d.id).replace(/^old_/,'')]=c;
+    }
+  });
+  Object.keys(CAT).forEach(function(k){
+    let timeVal = CAT[k][0];
+    if(isCentral) timeVal = calculateCentralTime(timeVal, k);
+    o[k]={presetKey:k,time:timeVal,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+  });
+  return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
+}
+
+/* ============ GESTOR DE ANUNCIOS ============ */
+let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
+
+function playIfVideo(el){
+  if(el&&el.tagName==='VIDEO'){
+    try{ el.currentTime=0; const p=el.play(); if(p&&p.catch)p.catch(function(){}); }catch(e){}
+  }
+}
+
+function startAdCycle(){
+  clearInterval(adTimer); adIdx=0;
+  const c=$('ad-image-container'); if(!c)return;
+  const items=c.querySelectorAll('.ad-img-item');
+  if(!items.length)return;
+  playIfVideo(items[0]);
+  if(items.length<2)return;
+  adTimer=setInterval(function(){
+    items[adIdx].classList.remove('active');
+    adIdx=(adIdx+1)%items.length;
+    items[adIdx].classList.add('active');
+    playIfVideo(items[adIdx]);
+  },10000);
+}
+
+function renderAds(){
+  if(isPassenger)return;
+  const container=$('ad-image-container'), adminBody=$('admin-ads-body');
+  const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
+  const sig=activeList.map(function(a){return a.id;}).join(',');
+
+  if(container && sig!==adSig){
+    adSig=sig;
+    container.innerHTML='';
+    if(activeList.length===0){
+      container.innerHTML='<div style="color:#93c5fd;font-size:12px;padding:20px;text-align:center">📱 TRANSPAIS<br>Ofertas y Promociones</div>';
+      clearInterval(adTimer);
+    }else{
+      activeList.forEach(function(ad,idx){
+        let el;
+        if(ad.isVideo || (ad.dataUrl && ad.dataUrl.startsWith('data:video'))){
+          el = document.createElement('video');
+          el.src = ad.dataUrl;
+          el.autoplay = true;
+          el.loop = true;
+          el.muted = true;
+          el.playsInline = true;
+        } else {
+          el = document.createElement('img');
+          el.src = ad.dataUrl;
+        }
+        el.className='ad-img-item '+(idx===0?'active':'');
+        el.dataset.index=idx;
+        container.appendChild(el);
+      });
+      startAdCycle();
+    }
+  }
+
+  if(canWrite()&&adminBody){
+    const allList=Object.values(adsData);
+    if(allList.length===0){
+      adminBody.innerHTML='<tr><td colspan="4" class="c" style="color:#888;font-size:11px">No hay anuncios cargados.</td></tr>';
+    }else{
+      adminBody.innerHTML=allList.map(function(a){
+        const isVid = a.isVideo || (a.dataUrl && a.dataUrl.startsWith('data:video'));
+        const src = esc(a.dataUrl||'');
+        const preview = isVid
+          ? '<video src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)" muted loop autoplay></video>'
+          : '<img src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)">';
+        return '<tr>'+
+          '<td>'+preview+'</td>'+
+          '<td style="font-size:11px;font-weight:700">'+esc(a.name)+'</td>'+
+          '<td class="c"><button class="btn '+(a.active?'btn-green':'btn-dark')+'" data-adact="toggle" data-adid="'+esc(a.id)+'">'+(a.active?'✅ MOSTRANDO':'⏸️ OCULTO')+'</button></td>'+
+          '<td class="c"><button class="btn btn-dark btn-red" data-adact="del" data-adid="'+esc(a.id)+'">🗑️ Eliminar</button></td>'+
+        '</tr>';
+      }).join('');
+    }
+  }
+  update7030State();
+}
+
+function update7030State(){
+  if(isPassenger)return;
+  const wrapper=$('screen-split-container');
+  const btn=$('btn-toggle-7030-manual');
+  const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
+  const isForced=!!adsConfig.force7030;
+  const shouldSplit = activeList.length > 0 && (isForced || (isTV && autoSplitState));
+
+  if(wrapper){
+    wrapper.classList.toggle('split-active', shouldSplit);
+  }
+  if(btn){
+    btn.textContent = isForced ? '📺 75/25: FORZADO EN TV (ACTIVO)' : '📺 FORZAR 75/25 EN TV';
+    btn.className = 'btn ' + (isForced ? 'btn-green' : 'btn-blue');
+  }
+}
+
+/* En TV, sin forzar, los anuncios aparecen 60 s cada 2.5 min */
+function cycleSplit(){
+  if(!isTV)return;
+  autoSplitState=true; update7030State();
+  setTimeout(function(){ autoSplitState=false; update7030State(); },60000);
+}
+if(isTV){
+  setTimeout(function(){ cycleSplit(); setInterval(cycleSplit,150000); },20000);
+}
+
+if($('btn-toggle-7030-manual')){
+  $('btn-toggle-7030-manual').onclick=function(){
+    if(!canWrite()){
+      alert('Debes estar autenticado en el Panel de Taquilla para cambiar el modo de pantalla.');
+      return;
+    }
+    const nextState = !adsConfig.force7030;
+    db.ref(suc+'/ads_config').set({force7030:nextState}).then(function(){
+      adsConfig.force7030 = nextState;
+      update7030State();
+    }).catch(fail);
+  };
+}
+
+if($('admin-ads-body')){
+  $('admin-ads-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
+    const id=b.dataset.adid, act=b.dataset.adact;
+    if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
+    else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
+  });
+}
+
+if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-input'))$('ad-upload-input').click();};
+
+if($('ad-upload-input')){
+  $('ad-upload-input').onchange=function(e){
+    const file=e.target.files[0]; if(!file)return;
+    if(!canWrite()){ alert('Inicia sesión en el Panel de Taquilla para subir anuncios.'); e.target.value=''; return; }
+    const saveAd=function(dataUrl,isVideo){
+      db.ref(suc+'/ads').push().set({name:file.name,dataUrl:dataUrl,isVideo:isVideo,active:true}).then(function(){
+        e.target.value='';
+      }).catch(fail);
+    };
+    if(file.type.startsWith('video/')){
+      /* base64 pesa ~33% más; la base de datos admite ~10 MB por dato */
+      if(file.size > 6.5 * 1024 * 1024){
+        alert('El video supera los 6.5 MB. Elige un video más corto o comprímelo.');
+        e.target.value='';
+        return;
+      }
+      const reader=new FileReader();
+      reader.onload=function(evt){ saveAd(evt.target.result,true); };
+      reader.readAsDataURL(file);
+    } else if(file.type==='image/gif' && file.size <= 2*1024*1024){
+      const reader=new FileReader();
+      reader.onload=function(evt){ saveAd(evt.target.result,false); };
+      reader.readAsDataURL(file);
+    } else {
+      const reader=new FileReader();
+      reader.onload=function(evt){
+        const img=new Image();
+        img.onload=function(){
+          const canvas=document.createElement('canvas');
+          let w=img.width, h=img.height;
+          const maxDim=720;
+          if(w>maxDim||h>maxDim){
+            if(w>h){ h=Math.round((h*maxDim)/w); w=maxDim; }
+            else{ w=Math.round((w*maxDim)/h); h=maxDim; }
+          }
+          canvas.width=w; canvas.height=h;
+          const cx=canvas.getContext('2d');
+          cx.drawImage(img,0,0,w,h);
+          saveAd(canvas.toDataURL('image/jpeg',0.65),false);
+        };
+        img.onerror=function(){ alert('No se pudo leer la imagen.'); };
+        img.src=evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+}
+
+/* MENSAJE URGENTE CONTROLES */
+if($('btn-save-urgent')){
+  $('btn-save-urgent').onclick=function(){
+    if(!canWrite())return;
+    const v=$('urgent-input').value.trim().slice(0,300);
+    (v?db.ref(suc+'/urgent').set({text:v,day:nowParts().key,ts:Date.now()+srvOff}):db.ref(suc+'/urgent').remove()).catch(fail);
+  };
+}
+if($('btn-clear-urgent')){
+  $('btn-clear-urgent').onclick=function(){
+    if(!canWrite())return;
+    $('urgent-input').value='';
+    db.ref(suc+'/urgent').remove().catch(fail);
+  };
+}
+
+/* ============ VOCEO AUTOMÁTICO EN TV ============ */
+function loadFired(){
+  try{
+    const n=nowParts(), y=dayShift(n.key,-1);
+    return new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]').filter(function(x){
+      const dd=String(x).split('|')[2]; return dd===n.key||dd===y;
+    }));
+  }catch(e){ return new Set(); }
+}
+const fired=loadFired();
+
+function autoVoice(d,diff,n){
+  /* Solo suenan las TVs y la taquilla con sesión iniciada; el público y el celular no */
+  if(isPassenger||(!isTV&&!canWrite()))return;
+  const isCentral = viewSuc() === 'central';
+  let mode = null;
+  let subKey = '';
+
+  if(isCentral){
+    if(diff <= 30 && diff > 15) { mode = 'etiq'; subKey = 'etiq30'; }
+    else if(diff <= 15 && diff > 10) { mode = 'abord'; subKey = 'abord15'; }
+    else if(diff <= 10 && diff > 5) { mode = 'abord'; subKey = 'abord10'; }
+    else if(diff <= 5 && diff > 0) { mode = 'ultima'; subKey = 'ultima5'; }
+  } else {
+    if(diff <= 15 && diff > 10) { mode = 'etiq'; subKey = 'etiq15'; }
+    else if(diff <= 5 && diff > 1) { mode = 'abord'; subKey = 'abord5'; }
+    else if(diff <= 0 && diff > -3) { mode = 'ultima'; subKey = 'ultima0'; }
+  }
+
+  if(!mode)return;
+  /* La hora va en la clave: si la corrida se demora, vuelve a avisar en su nuevo horario */
+  const baseId=String(d.id).replace(/^old_/,'');
+  const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
+  if(fired.has(k))return;
+  fired.add(k);
+  const y=dayShift(n.key,-1);
+  try{
+    localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
+      const dd=x.split('|')[2]; return dd===n.key||dd===y;
+    })));
+  }catch(e){}
+  enqueueAudio(d.presetKey||'p01',mode);
+}
+
+/* ============ RELOJ Y REINICIO DIARIO ============ */
+let lastMinute = -1;
+
+function tick(){
+  try{
+    const n=nowParts();
+    if($('clock-time'))$('clock-time').textContent=n.time;
+    if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+    /* Recarga diaria de TV entre 03:00 y 03:09, una sola vez por día */
+    if(isTV && n.min>=180 && n.min<190){
+      try{
+        if(localStorage.getItem('transpais_reload_day')!==n.key){
+          localStorage.setItem('transpais_reload_day',n.key);
+          location.reload();
+          return;
+        }
+      }catch(e){}
+    }
+
+    if(n.min !== lastMinute){
+      lastMinute = n.min;
+      if(ready && (gotServer||offlineFallback)){
+        buildList(n).forEach(function(d){
+          if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
+        });
+      }
+      renderUrgentMsg();
+      if(canWrite()&&urgentInfo().expired)db.ref(suc+'/urgent').remove().catch(function(){});
+      render();
+    }
+  }catch(e){console.error('Error tick:',e);}
+}
+setInterval(tick,1000);
+setInterval(autoCatalog,30000);
+
+/* ============ RENDER Y TARJETAS PASAJERO ============ */
+function badge(st){
+  if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
+  if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
+  if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
+  if(st&&(st.indexOf('DEMORADO')!==-1||st==='REPROGRAMADO'))return'<span class="badge-status status-demorado">'+esc(st)+'</span>';
+  if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
+  return'<span class="badge-status status-espera">EN ESPERA</span>';
+}
+const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
+
+function passengerCardHTML(d, isCentral){
+  const sc = cleanScales(d.scales);
+  const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
+
+  return '<div class="passenger-card">' +
+    '<div class="passenger-card-header">' +
+      '<span class="passenger-card-time">' + esc(d.time) + '</span>' +
+      '<div>' + badge(d._st) + '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div class="passenger-card-dest">' + esc(d.destination) + '</div>' +
+      (sc ? '<div class="passenger-card-scales">Escalas: ' + esc(sc) + '</div>' : '') +
+    '</div>' +
+    '<div class="passenger-card-details">' +
+      '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
+      '<span>📍 ' + esc(boardingPoint) + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+function tvRow(d,c){
+  const sc=cleanScales(d.scales);
+  return '<td style="font-size:24px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
+  '<td><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
+  '<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
+  '<td class="c" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
+  '<td class="c">'+badge(d._st)+'</td>';
+}
+
+function adminRow(d){
+  return '<td><strong>'+esc(d.time)+'</strong></td>'+
+  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc(d.presetKey||'Sin clave')+'</div></td>'+
+  '<td class="c"><input type="text" class="inline-bus-input" value="'+esc(d.bus||'')+'" placeholder="---"></td>'+
+  '<td class="c">'+badge(d._st)+'</td>'+
+  '<td>'+
+    '<div class="flex" style="flex-direction:column;gap:2px">'+
+      '<div class="flex">'+
+        '<button class="btn btn-advance" data-act="time" data-v="-60" title="-1 hora">-1h</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-30" title="-30 min">-30m</button>'+
+        '<button class="btn btn-advance" data-act="time" data-v="-5" title="-5 min">-5m</button>'+
+      '</div>'+
+      '<div class="flex">'+
+        '<button class="btn btn-delay" data-act="time" data-v="5" title="+5 min">+5m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="30" title="+30 min">+30m</button>'+
+        '<button class="btn btn-delay" data-act="time" data-v="60" title="+1 hora">+1h</button>'+
+      '</div>'+
+    '</div>'+
+  '</td>'+
+  '<td><div class="flex"><button class="btn btn-blue" data-act="voz" data-m="etiq" title="Vocear Etiquetado">🏷️</button><button class="btn btn-green" data-act="voz" data-m="abord" title="Vocear Abordaje">🚌</button><button class="btn btn-arrive" data-act="voz" data-m="ultima" title="Vocear Última Llamada">📢</button></div></td>'+
+  '<td><div class="flex"><button class="btn btn-dark" data-act="edit">✏️</button><button class="btn btn-dark btn-red" data-act="del">🗑️</button></div></td>';
+}
+
+function syncRows(tb, list, html){
+  const sigOf = function(d){ return JSON.stringify([d.time, d.destination, d.scales, d.bus, d._st, d.presetKey]); };
+  const existingRows = new Map(Array.from(tb.children).map(function(r){ return [r.dataset.k, r]; }));
+
+  list.forEach(function(d, index){
+    let r = existingRows.get(d._k);
+    const s = sigOf(d);
+
+    if(!r){
+      r = document.createElement('tr');
+      r.dataset.k = d._k;
+      r.innerHTML = html(d);
+      r._s = s;
+    } else {
+      existingRows.delete(d._k);
+      if(r._s !== s){
+        const f = document.activeElement, typing = f && r.contains(f) && f.classList.contains('inline-bus-input');
+        const val = typing ? f.value : null, pos = typing ? f.selectionStart : 0;
+        r.innerHTML = html(d);
+        r._s = s;
+        if(typing){
+          const ni = r.querySelector('.inline-bus-input');
+          if(ni){ ni.value = val; ni.focus(); ni.setSelectionRange(pos, pos); }
+        }
+      }
+    }
+
+    if(tb.children[index] !== r){
+      tb.insertBefore(r, tb.children[index] || null);
+    }
+  });
+
+  existingRows.forEach(function(r){ r.remove(); });
+}
+
+/* Lista vigente: corridas reales + catálogo virtual si el día aún no se ha cargado */
+function buildList(n){
+  let base=Object.values(deps);
+  if(virtualActive())base=base.concat(virtualDeps());
+  return base.filter(function(d){return d&&d.time&&isLive(d,n)&&diffOf(d,n)>-15;})
+    .map(function(d){
+      const o=Object.assign({},d);
+      o._diff=diffOf(d,n);
+      o._st=stat(d,o._diff);
+      o._k=(d.day||'')+'|'+d.id;
+      return o;
+    }).sort(function(a,b){return a._diff-b._diff||a.time.localeCompare(b.time);});
+}
+
+function render(){
+  const c=viewSuc()==='central', fb=$('fids-body'), ab=$('admin-body'), plist=$('passenger-card-list');
+  if(!ready){
+    if(fb)fb.innerHTML='<tr><td colspan="5" class="c" style="color:#93c5fd;padding:40px">Conectando con el servidor…</td></tr>';
+    return;
+  }
+  const n=nowParts();
+  const list=buildList(n);
+  curMap={}; list.forEach(function(d){curMap[d._k]=d;});
+
+  if(isPassenger && plist){
+    plist.classList.remove('hidden');
+    plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
+  } else {
+    if(fb)syncRows(fb,list,function(d){return tvRow(d,c);});
+    if(canWrite()&&ab)syncRows(ab,list,adminRow);
+  }
+}
+
+/* ============ ACCIONES DE TAQUILLA ============ */
+const dref=function(id){return db.ref(suc+'/deps/'+id);};
+
+if($('admin-body')){
+  $('admin-body').addEventListener('click',function(e){
+    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
+    const tr=b.closest('tr'), d=curMap[tr.dataset.k]; if(!d)return;
+    const act=b.dataset.act;
+    if(act==='voz'){
+      db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
+    }
+    else if(act==='time')ensureMat().then(function(){adjustTime(d,+b.dataset.v);}).catch(fail);
+    else if(act==='edit')editDeparture(d);
+    else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))ensureMat().then(function(){return dref(d.id).remove();}).catch(fail);
+  });
+
+  $('admin-body').addEventListener('change',function(e){
+    if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
+    const d=curMap[e.target.closest('tr').dataset.k]; if(!d)return;
+    const v=e.target.value.trim();
+    ensureMat().then(function(){return dref(d.id).update({bus:v});}).catch(fail);
+  });
+}
+
+function adjustTime(d,deltaMinutes){
+  const parts=d.time.split(':').map(Number);
+  const totalMins=(((parts[0]*60+parts[1]+deltaMinutes)%1440)+1440)%1440;
+  const newTime=pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
+
+  const newDelay=Math.max(0,(d.delay||0)+deltaMinutes);
+  const updates={time:newTime,delay:newDelay};
+
+  /* Menos de 1 hora: solo cambia la hora. Desde 1 hora: REPROGRAMADO */
+  if(newDelay>=60){
+    updates.status='REPROGRAMADO';
+  }else if(d.status&&(d.status.indexOf('DEMORADO')===0||d.status==='REPROGRAMADO')){
+    updates.status='EN ESPERA';
+  }
+
+  dref(d.id).update(updates).catch(fail);
+}
+
+function editDeparture(d){
+  $('dep-id').value=d.id; $('dep-preset-key').value=d.presetKey||'p01';
+  $('dep-time').value=d.time; $('dep-destination').value=d.destination;
+  $('dep-scales').value=d.scales||''; $('dep-bus').value=d.bus||'';
+  const sel=$('dep-status'); sel.value=Array.from(sel.options).some(function(o){return o.value===d.status;})?d.status:'DEMORADO';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm(){
+  if($('departure-form'))$('departure-form').reset();
+  if($('dep-id'))$('dep-id').value='';
+  if($('dep-preset-key'))$('dep-preset-key').value='';
+  if($('preset-selector'))$('preset-selector').value='';
+}
+
+if($('departure-form')){
+  $('departure-form').addEventListener('submit',function(e){
+    e.preventDefault(); if(!canWrite())return;
+    ensureMat().then(function(){
+      const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
+      let status=$('dep-status').value;
+      if(status==='DEMORADO'&&old&&old.status&&(old.status.indexOf('DEMORADO')===0||old.status==='REPROGRAMADO'))status=old.status;
+      return dref(id).set({
+        presetKey:$('dep-preset-key').value||'p01',
+        time:$('dep-time').value,
+        destination:$('dep-destination').value.trim(),
+        scales:cleanScales($('dep-scales').value),
+        bus:$('dep-bus').value.trim(),
+        status:status,
+        sucursal:suc,
+        day:(old&&old.day)||nowParts().key,
+        delay:(old&&old.delay)||0
+      });
+    }).then(resetForm).catch(fail);
+  });
+}
+
+if($('preset-selector')){
+  $('preset-selector').addEventListener('change',function(e){
+    const k=e.target.value; if(!CAT[k])return;
+    let timeVal = CAT[k][0];
+    if(suc === 'central') timeVal = calculateCentralTime(timeVal, k);
+    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=timeVal;
+    $('dep-destination').value=CAT[k][1]; $('dep-scales').value=CAT[k][2];
+    $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
+  });
+}
+
+if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
+if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
+  if(!canWrite()||!confirm('¿Deseas borrar todas las corridas de esta sucursal?'))return;
+  Promise.all([db.ref(suc+'/deps').remove(),db.ref(suc+'/cleared').set(nowParts().key)]).catch(fail);
+};
+if($('btn-reset'))$('btn-reset').onclick=resetForm;
+
+/* ============ AUTH Y VISTAS ============ */
+const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
+
+auth.onAuthStateChanged(function(u){
+  const prev=viewSuc();
+  suc=(u&&!isTV&&!isPassenger)?sucFromEmail(u.email):null;
+
+  if($('btn-logout')){
+    $('btn-logout').classList.toggle('hidden', !u || isTV || isPassenger);
+  }
+
+  if(viewSuc()!==prev)attach(viewSuc());
+  updateHeaderTitles(); renderAds(); renderUrgentMsg(); render(); autoCatalog();
+});
+
+function switchTab(tab){
+  if(tab==='admin'&&!canWrite())return;
+  if($('view-screen'))$('view-screen').classList.toggle('hidden',tab!=='screen');
+  if($('view-admin'))$('view-admin').classList.toggle('hidden',tab!=='admin');
+  if($('btn-tab-screen'))$('btn-tab-screen').className='btn '+(tab==='screen'?'btn-green':'btn-dark');
+  if($('btn-tab-admin'))$('btn-tab-admin').className='btn '+(tab==='admin'?'btn-green':'btn-dark');
+  render();
+}
+
+function openPin(){
+  if(canWrite())return switchTab('admin');
+  if($('login-user-input'))$('login-user-input').value='';
+  if($('login-pass-input'))$('login-pass-input').value='';
+  if($('pin-error-msg'))$('pin-error-msg').classList.add('hidden');
+  if($('pin-modal-overlay'))$('pin-modal-overlay').classList.remove('hidden');
+  if($('login-user-input'))$('login-user-input').focus();
+}
+
+function doLogin(){
+  const u=$('login-user-input').value.trim().toLowerCase(), p=$('login-pass-input').value.trim();
+  if(!u||!p){ if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden'); return; }
+  let em=u;
+  if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com'; if(u==='terminalof2')em='terminalof2@transpais.com';}
+  const btn=$('btn-login-ok'); if(btn)btn.disabled=true;
+  auth.signInWithEmailAndPassword(em,p).then(function(){
+    suc=sucFromEmail(em);
+    if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
+    if(viewSuc()!==(suc==='central'?'central':'of2'))attach(viewSuc());
+    updateHeaderTitles(); switchTab('admin');
+  }).catch(function(err){
+    console.error('Auth:',err.message);
+    if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');
+  }).then(function(){ if(btn)btn.disabled=false; });
+}
+
+function doLogout(){
+  if(confirm('¿Deseas cerrar la sesión de taquilla?')){
+    auth.signOut().then(function(){
+      suc=null;
+      switchTab('screen');
+      attach(viewSuc());
+      updateHeaderTitles();
+    }).catch(fail);
+  }
+}
+
+/* ============ QR DINÁMICO DIRIGIDO A PASAJEROS ============ */
+let qrGenerated=false;
+function initQR(){
+  const box=$('qrcode-box'); if(!box||isPassenger)return;
+  box.innerHTML='';
+  if(window.QRCode){
+    const targetVista = (viewSuc() === 'central') ? 'pasajerocentral' : 'pasajeroof2';
+    const mobileUrl = window.location.origin + window.location.pathname + '?vista=' + targetVista;
+    new QRCode(box,{
+      text:mobileUrl,
+      width:120,
+      height:120,
+      colorDark:"#000000",
+      colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.M
+    });
+    qrGenerated=true;
+  }
+}
+
+function cycleQR(){
+  const qrCard=$('qr-card'); if(!qrCard||isPassenger)return;
+  if(!isTV){ qrCard.classList.remove('show'); return; }
+
+  if(!qrGenerated)initQR();
+  qrCard.classList.add('show');
+  setTimeout(function(){ qrCard.classList.remove('show'); },25000);
+}
+
+if(isTV && !isPassenger){
+  setTimeout(function(){
+    cycleQR();
+    setInterval(cycleQR,150000);
+  },10000);
+}
+
+/* OCULTAR ELEMENTOS INNECESARIOS */
+if(isTV || isPassenger){
+  if($('control-bar'))$('control-bar').style.display='none';
+  if($('audio-start-overlay'))$('audio-start-overlay').style.display='none';
+}
+
+/* ============ EVENTOS BINDING ============ */
+['click','keydown','touchstart'].forEach(function(ev){
+  document.body.addEventListener(ev,function(){ctx();},{passive:true});
+});
+if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
+if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
+if($('btn-logout'))$('btn-logout').onclick=doLogout;
+if($('btn-login-cancel'))$('btn-login-cancel').onclick=function(){$('pin-modal-overlay').classList.add('hidden');};
+if($('btn-login-ok'))$('btn-login-ok').onclick=doLogin;
+if($('login-pass-input'))$('login-pass-input').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+if($('btn-chime'))$('btn-chime').onclick=function(){chime();};
+if($('btn-panic'))$('btn-panic').onclick=panicStop;
+if($('btn-mute-local'))$('btn-mute-local').onclick=function(){muted=!muted; localStorage.setItem('transpais_local_muted',muted); updateMuteUI();};
+
+updateMuteUI();
+updateHeaderTitles();
+attach(viewSuc());
+tick();
+</script>
+</body>
+</html>
