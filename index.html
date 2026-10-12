@@ -4,10 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Transpais FIDS - Sistema de Información a Pasajeros</title>
+
+<!-- LOGUITO EN LA PESTAÑA (Favicon) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+<link rel="icon" type="image/png" href="logo.png">
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
 .glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
@@ -34,6 +39,21 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
 .status-salido{background:rgba(255,255,255,.05);color:#888}
 @keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
 @keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
+
+/* EFECTO DORADITO EN LA SALIDA (OPCIÓN 3) */
+@keyframes goldGlow{
+  0%,100%{box-shadow:0 0 10px rgba(255,184,0,0.6);border-color:#FFB800;background:rgba(255,184,0,0.12)}
+  50%{box-shadow:0 0 25px rgba(255,215,0,0.95);border-color:#FFE89A;background:rgba(255,184,0,0.22)}
+}
+.gold-card-active{
+  animation:goldGlow 1.8s infinite ease-in-out !important;
+  border:2px solid #FFB800 !important;
+}
+.gold-row-active td{
+  background:rgba(255,184,0,0.14) !important;
+  border-bottom:1px solid rgba(255,184,0,0.4) !important;
+}
+
 input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px;color:#fff;font-family:inherit;width:100%}
 .inline-bus-input{background:rgba(255,184,0,.15);border:1px solid #FFB800;font-weight:800;text-align:center;width:80px;padding:5px;border-radius:6px}
 .grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:15px}
@@ -49,18 +69,15 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* OCULTAR PANEL SUPERIOR EN TV Y PASAJERO */
 body.tv-mode .control-bar,
 body.passenger-mode .control-bar {
   display: none !important;
 }
 
-/* MARQUESINA URGENTE */
 .urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* LAYOUT CON MARCO AZUL DINÁMICO */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 auto;min-height:0;align-items:stretch;transition:all .3s ease;overflow:hidden}
 .fids-table-wrap{flex:1 1 auto;min-width:0;overflow-y:auto;transition:all .3s ease}
 
@@ -85,13 +102,11 @@ body.passenger-mode .control-bar {
 .ad-img-item{width:100%;height:100%;object-fit:fill;position:absolute;inset:0;opacity:0;transition:opacity 1s ease-in-out}
 .ad-img-item.active{opacity:1!important;z-index:2}
 
-/* VOCEO INDICATOR */
 .voice-indicator{position:fixed;top:85px;right:30px;background:rgba(0,168,89,.95);border:1px solid #00D974;color:#fff;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:900;display:flex;align-items:center;gap:10px;box-shadow:0 0 25px rgba(0,217,116,.6);z-index:9000;transition:all .3s ease;transform:translateY(-20px);opacity:0;pointer-events:none}
 .voice-indicator.active{transform:translateY(0);opacity:1}
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
-/* AJUSTE RESPONSIVO PARA TELEVISORES */
 html:has(body.tv-mode){width:100%;height:100%;overflow:hidden}
 body.tv-mode{width:100vw;height:100vh;min-height:0;overflow:hidden;justify-content:flex-start;gap:0}
 body.tv-mode .glass-header{flex:0 0 auto;padding:clamp(8px,1.2vh,18px) clamp(16px,2vw,36px);min-height:clamp(58px,8vh,94px)}
@@ -114,7 +129,6 @@ body.tv-mode .ticker-footer{flex:0 0 clamp(28px,4.5vh,42px);height:clamp(28px,4.
 body.tv-mode .ticker-title{padding:0 clamp(8px,1.2vw,20px);font-size:clamp(9px,.7vw,12px)}
 body.tv-mode .ticker-content{font-size:clamp(10px,.8vw,13px)}
 
-/* Salidas en etiquetado: panel fijo independiente del auto-scroll */
 .fixed-departures-wrap{display:none;flex:0 0 auto;margin:0 0 12px;border:1px solid rgba(255,184,0,.8);border-left:5px solid #ffb800;border-radius:10px;overflow:hidden;background:rgba(0,18,45,.96);box-shadow:0 5px 18px rgba(0,0,0,.28)}
 .fixed-departures-wrap:not(.hidden){display:block}
 .fixed-departures-label{padding:6px 12px;background:linear-gradient(90deg,#ffca28,#ffad00);color:#18202c;font-weight:900;font-size:11px;letter-spacing:.08em}
@@ -128,7 +142,6 @@ body.tv-mode .fixed-departures-table td{padding:clamp(4px,.5vh,8px) clamp(5px,.6
 body.tv-mode .fixed-departures-table td:first-child{font-size:clamp(14px,1.1vw,19px);font-weight:900}
 body.tv-mode .screen-split-wrapper{flex:1 1 auto;min-height:0}
 
-/* AJUSTES DE LEGIBILIDAD Y SUPERPOSICIONES EN TV */
 body.tv-mode .fids-table-wrap{overflow-y:auto;scrollbar-width:none}
 body.tv-mode .fids-table-wrap::-webkit-scrollbar{display:none}
 body.tv-mode .badge-status{display:inline-flex;align-items:center;justify-content:center;min-width:clamp(76px,7.8vw,126px);min-height:clamp(28px,3.5vh,42px);padding:clamp(5px,.55vw,10px) clamp(8px,.8vw,13px);font-size:clamp(10px,.88vw,15px);line-height:1.12;white-space:normal;text-align:center;border-radius:999px;font-weight:900;letter-spacing:.015em;box-shadow:0 2px 10px rgba(0,0,0,.18)}
@@ -140,7 +153,7 @@ body.tv-mode .status-demorado{background:linear-gradient(135deg,#ff623d,#c81e1e)
 body.tv-mode .status-salido{background:#243c60;color:#d9e7fb;border:1px solid #6c84a7}
 body.tv-mode .ads-sidebar-wrap{position:relative;z-index:2}
 
-/* VISTA MÓVIL PASAJERO */
+/* VISTA MÓVIL PASAJERO CON BUSCADOR */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
 body.passenger-mode #header-terminal-title{font-size:16px!important}
@@ -150,14 +163,13 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 body.passenger-mode .screen-split-wrapper{min-height:0}
 
 .passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
-.passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
-.passenger-card.tracked{border:2px solid #00D974;box-shadow:0 0 20px rgba(0,217,116,.4)}
+.passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative;transition:all .3s}
 .passenger-card-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:8px}
 .passenger-card-time{font-size:24px;font-weight:900;font-family:monospace;color:#fff}
 .passenger-card-dest{font-size:18px;font-weight:800;color:#fff;margin-top:2px}
 .passenger-card-scales{font-size:11px;color:#93c5fd}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
-.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
+.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:10px;font-size:11px;border-radius:10px;font-weight:900;cursor:pointer}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -199,7 +211,14 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
     <div class="brand-logo">TRANSPAIS®</div>
     <div>
       <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
-      <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
+        <!-- INDICADOR EN VIVO (OPCIÓN 1) -->
+        <div id="net-status-badge" style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,217,116,0.15);color:#00D974;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:800;border:1px solid rgba(0,217,116,0.3)">
+          <span id="net-dot" style="height:6px;width:6px;background:#00D974;border-radius:50%;display:inline-block"></span>
+          <span id="net-text">ONLINE</span>
+        </div>
+      </div>
     </div>
   </div>
   <div style="text-align:right;background:rgba(0,0,0,.4);padding:8px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1)">
@@ -215,6 +234,8 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
     <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <!-- BOTÓN PANTALLA COMPLETA (OPCIÓN 7) -->
+    <button class="btn btn-blue" onclick="toggleFullscreen()" title="Pantalla Completa">🖥️ PANTALLA COMPLETA</button>
     <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
@@ -225,6 +246,11 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 <main id="view-screen" class="glass-card">
   <div id="urgent-banner-screen" class="urgent-banner hidden">
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
+  </div>
+
+  <!-- BUSCADOR MÓVIL PASAJEROS (OPCIÓN 6) -->
+  <div id="passenger-search-wrap" class="hidden" style="margin-bottom:12px">
+    <input type="text" id="passenger-search-input" placeholder="🔍 Buscar por destino o escala (ej. Tampico, Victoria...)" style="background:rgba(0,0,0,0.6);border:1px solid #00D974;padding:12px;border-radius:12px;color:#fff;font-size:13px" oninput="render()">
   </div>
 
   <div id="passenger-card-list" class="passenger-card-list hidden"></div>
@@ -252,11 +278,18 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 <main id="view-admin" class="glass-card hidden">
   <div style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:16px;border-radius:12px;margin-bottom:20px">
     <h3 style="color:#f87171;font-size:14px;font-weight:900;margin-bottom:6px">📢 PUBLICAR AVISO / MENSAJE URGENTE EN TV</h3>
-    <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta para proyectarla en tiempo real en la parte superior de la sala de espera.</p>
-    <div style="display:flex;gap:10px">
+    <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta o usa los botones de 1 clic para proyectarla en tiempo real en las TV.</p>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
       <input type="text" id="urgent-input" placeholder="Ej. Atención: Retrasos de 15 min por obras en carretera..." style="flex:1">
       <button class="btn btn-green" id="btn-save-urgent">Publicar Mensaje</button>
       <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar Alerta</button>
+    </div>
+    <!-- BOTONES MENTALES DE ALERTA RÁPIDA (OPCIÓN 4) -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#93c5fd;align-self:center;font-weight:700">⚡ Avisos Rápidos:</span>
+      <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚧 Obras en carretera: Posibles demoras de 15 a 20 minutos.')">🚧 Obras en Carretera</button>
+      <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🎫 Favor de tener su boleto e identificación oficial a la mano para abordar.')">🎫 Boleto e Identificación</button>
+      <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚪 Abordaje únicamente por la puerta principal de la sala.')">🚪 Puerta Principal</button>
     </div>
   </div>
 
@@ -341,7 +374,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 </footer>
 
 <script>
-/* ============ CONFIG FIREBASE Y MESSAGING ============ */
+/* ============ CONFIG FIREBASE ============ */
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
@@ -353,27 +386,74 @@ firebase.initializeApp({
 const db = firebase.database();
 const auth = firebase.auth();
 
+/* ============ DETECCIÓN INTELIGENTE DE RUTA ============ */
+const href = location.href.toLowerCase();
+const queryVista = new URLSearchParams(location.search).get('vista') || '';
+
+let vista = queryVista;
+if (!vista) {
+  if (href.includes('tvcentral') || href.includes('vistacentral')) vista = 'tvcentral';
+  else if (href.includes('pasajerocentral')) vista = 'pasajerocentral';
+  else if (href.includes('tvof2') || href.includes('vistaof2')) vista = 'tvof2';
+  else if (href.includes('pasajeroof2') || href.includes('pasajero')) vista = 'pasajeroof2';
+  else vista = 'screen';
+}
+
+const isTV = vista.startsWith('tv') || href.includes('tvof2') || href.includes('tvcentral');
+const isPassenger = vista.startsWith('pasajero') || href.includes('pasajero');
+
 const TZ = 'America/Matamoros';
 const $ = function(id){ return document.getElementById(id); };
 const esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
 const pad = function(x){ return String(x).padStart(2,'0'); };
-const vista = new URLSearchParams(location.search).get('vista') || 'screen';
-const isTV = vista.startsWith('tv');
-const isPassenger = vista.startsWith('pasajero');
 
 let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
 let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
+let trackedBuses = JSON.parse(localStorage.getItem('transpais_tracked_buses') || '{}');
 
 if(isPassenger) document.body.classList.add('passenger-mode');
 if(isTV) document.body.classList.add('tv-mode');
 
 const viewSuc = function(){
-  if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
-  if(isTV||isPassenger)return'of2';
-  return suc||'of2';
+  if (vista === 'tvcentral' || vista === 'pasajerocentral' || href.includes('central')) return 'central';
+  if (isTV || isPassenger || href.includes('of2')) return 'of2';
+  return suc || 'of2';
 };
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
 const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
+
+/* FUNCIÓN DE PANTALLA COMPLETA (OPCIÓN 7) */
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(function(e){});
+  }else{
+    if(document.exitFullscreen) document.exitFullscreen().catch(function(e){});
+  }
+}
+
+/* INDICADOR EN VIVO ONLINE / OFFLINE (OPCIÓN 1) */
+function updateNetStatus(isOnline){
+  const badge = $('net-status-badge'), dot = $('net-dot'), txt = $('net-text');
+  if(!badge) return;
+  if(isOnline){
+    badge.style.background = 'rgba(0,217,116,0.15)';
+    badge.style.color = '#00D974';
+    badge.style.borderColor = 'rgba(0,217,116,0.3)';
+    dot.style.background = '#00D974';
+    txt.textContent = 'ONLINE';
+  }else{
+    badge.style.background = 'rgba(220,38,38,0.2)';
+    badge.style.color = '#f87171';
+    badge.style.borderColor = 'rgba(220,38,38,0.4)';
+    dot.style.background = '#dc2626';
+    txt.textContent = 'DESCONECTADO';
+  }
+}
+window.addEventListener('online', function(){ updateNetStatus(true); });
+window.addEventListener('offline', function(){ updateNetStatus(false); });
+db.ref('.info/connected').on('value', function(snap){
+  updateNetStatus(!!snap.val() && navigator.onLine);
+});
 
 const CAT={
  p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -471,7 +551,7 @@ function updateHeaderTitles(){
   if($('ticker-text-content'))$('ticker-text-content').innerHTML='🧳 <strong>'+(c?'CENTRAL DE AUTOBUSES':'OFICINA PEDRO CÁRDENAS')+':</strong> Favor de pasar a documentar y etiquetar su equipaje <strong>CON EL EQUIPAJERO</strong> a partir de 15 minutos antes de su salida. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🎒 <strong>CABINA:</strong> Permitido 1 EQUIPAJE DE MANO O MOCHILA.';
 }
 
-/* ============ AUDIO Y REPRODUCCIÓN ============ */
+/* ============ AUDIO Y VOCEO ============ */
 let actx=null,muted=localStorage.getItem('transpais_local_muted')==='true';
 let currentVoiceAudio=null;
 
@@ -717,6 +797,15 @@ function renderUrgentMsg(){
   }
 }
 
+/* MENSAJES RÁPIDOS (OPCIÓN 4) */
+function setQuickUrgent(msg){
+  const inp=$('urgent-input');
+  if(inp) inp.value=msg;
+  if(canWrite()){
+    db.ref(suc+'/urgent').set({text:msg,day:nowParts().key,ts:Date.now()+srvOff}).catch(fail);
+  }
+}
+
 /* ============ CATÁLOGO DEL DÍA ============ */
 function virtualDeps(){
   const day=nowParts().key, branch=viewSuc(), catalog=catalogFor(branch), out=[];
@@ -743,7 +832,6 @@ function buildList(n){
     });
   }
 
-  // Deduplicación estricta por RUTA/PRESET
   const mapByPreset = new Map();
   base.forEach(function(d){
     if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return;
@@ -810,7 +898,7 @@ function loadCatalog(){
   });
 }
 
-/* ============ GESTOR DE ANUNCIOS Y MARCO DINÁMICO ============ */
+/* ============ GESTOR DE ANUNCIOS ============ */
 let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
 
 function updateSidebarAspectRatio(activeEl){
@@ -1018,7 +1106,6 @@ if($('ad-upload-input')){
   };
 }
 
-/* MENSAJE URGENTE CONTROLES */
 if($('btn-save-urgent')){
   $('btn-save-urgent').onclick=function(){
     if(!canWrite())return;
@@ -1131,11 +1218,29 @@ function badge(st){
 }
 const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
 
+/* CONMUTADOR SEGUIMIENTO EN MÓVIL (OPCIÓN 6) */
+function toggleTrackBus(presetKey){
+  if(trackedBuses[presetKey]) delete trackedBuses[presetKey];
+  else trackedBuses[presetKey] = true;
+  localStorage.setItem('transpais_tracked_buses', JSON.stringify(trackedBuses));
+  render();
+}
+
 function passengerCardHTML(d, isCentral){
   const sc = cleanScales(d.scales);
   const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
+  const isTracked = !!trackedBuses[d.presetKey];
+  const isActive = d._st === 'ETIQUETANDO PASAJE' || d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA';
 
-  return '<div class="passenger-card">' +
+  // VIBRACIÓN SI EL AUTOBÚS SEGUIDO CAMBIA A ABORDAJE (OPCIÓN 6)
+  if(isTracked && (d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA')){
+    if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+  }
+
+  // EFECTO DORADITO (OPCIÓN 3)
+  const cardClass = 'passenger-card ' + (isActive ? 'gold-card-active' : '');
+
+  return '<div class="' + cardClass + '">' +
     '<div class="passenger-card-header">' +
       '<span class="passenger-card-time">' + esc(d.time) + '</span>' +
       '<div>' + badge(d._st) + '</div>' +
@@ -1148,16 +1253,22 @@ function passengerCardHTML(d, isCentral){
       '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
       '<span>📍 ' + esc(boardingPoint) + '</span>' +
     '</div>' +
+    '<button class="btn passenger-track-btn ' + (isTracked ? 'btn-green' : 'btn-dark') + '" onclick="toggleTrackBus(\'' + esc(d.presetKey) + '\')">' +
+      (isTracked ? '🔔 Siguiendo este autobús (Te avisará)' : '🔕 Notificarme para abordar') +
+    '</button>' +
   '</div>';
 }
 
 function tvRow(d,c){
   const sc=cleanScales(d.scales);
-  return '<td style="font-size:24px;font-weight:900;font-family:monospace">'+esc(d.time)+'</td>'+
-  '<td><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
-  '<td class="c" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
-  '<td class="c" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
-  '<td class="c">'+badge(d._st)+'</td>';
+  const isActive = d._st === 'ETIQUETANDO PASAJE' || d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA';
+  const rowClass = isActive ? 'gold-row-active' : '';
+
+  return '<td style="font-size:24px;font-weight:900;font-family:monospace" class="'+rowClass+'">'+esc(d.time)+'</td>'+
+  '<td class="'+rowClass+'"><div style="font-size:20px;font-weight:900">'+esc(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:#93c5fd;margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
+  '<td class="c '+rowClass+'" style="font-size:18px;font-weight:800;font-family:monospace">'+esc(d.bus||'---')+'</td>'+
+  '<td class="c '+rowClass+'" style="font-size:16px;font-weight:800;color:#00D974">'+(c?'Central de Autobuses':'Oficina Pedro Cárdenas')+'</td>'+
+  '<td class="c '+rowClass+'">'+badge(d._st)+'</td>';
 }
 
 function adminRow(d){
@@ -1225,12 +1336,26 @@ function render(){
     return;
   }
   const n=nowParts();
-  const list=buildList(n);
+  let list=buildList(n);
   curMap={}; list.forEach(function(d){curMap[d._k]=d;});
 
   if(isPassenger && plist){
     plist.classList.remove('hidden');
-    plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
+    if($('passenger-search-wrap')) $('passenger-search-wrap').classList.remove('hidden');
+
+    // FILTRO DE BUSCADOR (OPCIÓN 6)
+    const q = ($('passenger-search-input') ? $('passenger-search-input').value : '').toLowerCase().trim();
+    if(q){
+      list = list.filter(function(d){
+        return d.destination.toLowerCase().includes(q) || (d.scales||'').toLowerCase().includes(q);
+      });
+    }
+
+    if(list.length===0){
+      plist.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px">No se encontraron autobuses para tu búsqueda.</div>';
+    }else{
+      plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
+    }
   } else {
     const fixedWrap=$('fixed-departures-wrap'), fixedBody=$('fixed-fids-body');
     const pinned=(isTV&&!isPassenger)?list.filter(function(d){return d._st==='ETIQUETANDO PASAJE';}):[];
@@ -1428,7 +1553,6 @@ function doLogout(){
   }
 }
 
-/* ============ INICIALIZACIÓN DE BOTONES Y WIDGETS ============ */
 if($('btn-tab-screen')) $('btn-tab-screen').onclick = function(){ switchTab('screen'); };
 if($('btn-tab-admin')) $('btn-tab-admin').onclick = function(){ openPin(); };
 if($('btn-logout')) $('btn-logout').onclick = function(){ doLogout(); };
