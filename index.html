@@ -915,7 +915,7 @@ function update7030State(){
   const btn=$('btn-toggle-7030-manual');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   const isForced=!!adsConfig.force7030;
-  const shouldSplit = activeList.length > 0 && (isForced || (isTV && autoSplitState));
+  const shouldSplit = activeList.length > 0 && (isForced || isTV);
 
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
@@ -926,7 +926,7 @@ function update7030State(){
   }
 }
 
-/* En TV, sin forzar, los anuncios aparecen 60 s cada 2.5 min */
+/* En TV, los anuncios activos permanecen visibles; las imágenes rotan en el panel. */
 function cycleSplit(){
   if(!isTV)return;
   autoSplitState=true; update7030State();
