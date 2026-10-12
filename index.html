@@ -49,12 +49,12 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
-/* ============ MARQUESINA DESLIZANTE DE MENSAJE URGENTE ============ */
+/* MARQUESINA URGENTE */
 .urgent-banner{background:#dc2626;color:#fff;padding:10px 0;border-radius:12px;margin-bottom:15px;font-weight:900;font-size:14px;box-shadow:0 0 20px rgba(220,38,38,.6);overflow:hidden;position:relative;display:flex;align-items:center}
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* ============ LAYOUT 75/25 Y ANUNCIOS ============ */
+/* LAYOUT 75/25 */
 .screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
 .fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
 .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 75%;width:75%}
@@ -66,7 +66,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
 .ad-img-item.active{opacity:1!important;z-index:2}
 
-/* ============ WIDGET QR Y VOCEO ============ */
+/* WIDGET QR Y VOCEO */
 .qr-card{position:fixed;bottom:55px;left:30px;background:rgba(0,20,45,.98);border:2px solid #00A859;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:15px;box-shadow:0 10px 35px rgba(0,168,89,.5);z-index:9000;transition:transform .6s cubic-bezier(.16,1,.3,1),opacity .6s ease;transform:translateY(150%);opacity:0;pointer-events:none}
 .qr-card.show{transform:translateY(0);opacity:1;pointer-events:auto}
 .qr-text{max-width:180px}
@@ -79,7 +79,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
-/* ============ ESTILOS EXCLUSIVOS VISTA PASAJERO MÓVIL ============ */
+/* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
 body.passenger-mode #header-terminal-title{font-size:16px!important}
@@ -98,7 +98,6 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 .passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
 </style>
 
-<!-- LIBRERÍAS DE FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -164,7 +163,7 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
     <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente (Barra Espaciadora)">🛑 PÁNICO / DETENER VOCEO</button>
+    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
     <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
@@ -172,12 +171,10 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </div>
 
 <main id="view-screen" class="glass-card">
-  <!-- BANNER DE MENSAJE URGENTE DESLIZANTE -->
   <div id="urgent-banner-screen" class="urgent-banner hidden">
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
   </div>
 
-  <!-- CONTENEDOR EN TARJETAS PARA CELULARES -->
   <div id="passenger-card-list" class="passenger-card-list hidden"></div>
 
   <div id="screen-split-container" class="screen-split-wrapper">
@@ -194,7 +191,6 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </main>
 
 <main id="view-admin" class="glass-card hidden">
-  <!-- SECCIÓN DE MENSAJE URGENTE -->
   <div style="background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);padding:16px;border-radius:12px;margin-bottom:20px">
     <h3 style="color:#f87171;font-size:14px;font-weight:900;margin-bottom:6px">📢 PUBLICAR AVISO / MENSAJE URGENTE EN TV</h3>
     <p style="font-size:11px;color:#93c5fd;margin-bottom:10px">Escribe una alerta para proyectarla en tiempo real en la parte superior de la sala de espera.</p>
@@ -205,7 +201,6 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
     </div>
   </div>
 
-  <!-- SECCIÓN GESTOR DE OFERTAS 75/25 -->
   <div style="background:rgba(0,30,68,.8);border:1px solid rgba(0,217,116,.3);padding:16px;border-radius:12px;margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
@@ -287,7 +282,7 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </footer>
 
 <script>
-/* ============ CONFIG FIREBASE Y MESSAGING ============ */
+/* ============ CONFIG FIREBASE Y MESSAGING (INICIALIZACIÓN ÚNICA) ============ */
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
@@ -295,10 +290,10 @@ firebase.initializeApp({
   messagingSenderId: "33890288863"
 });
 
-const db = firebase.database(), auth = firebase.auth();
+const db = firebase.database();
+const auth = firebase.auth();
 let messaging = null;
 
-// Inicialización blindada de Messaging para no bloquear la pantalla FIDS
 try {
   if (firebase.messaging.isSupported()) {
     messaging = firebase.messaging();
@@ -309,10 +304,9 @@ try {
     }
   }
 } catch (e) {
-  console.warn('Messaging no soportado en este navegador:', e);
+  console.warn('Messaging no soportado:', e);
 }
-const db = firebase.database(), auth = firebase.auth();
-const messaging = firebase.messaging();
+
 const TZ = 'America/Matamoros';
 const $ = function(id){ return document.getElementById(id); };
 const esc = function(s){ return String(s??'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
@@ -323,13 +317,6 @@ let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = 
 let trackedBusId = localStorage.getItem('transpais_tracked_bus') || null;
 
 if(isPassenger) document.body.classList.add('passenger-mode');
-
-/* Registrar el Service Worker de Firebase */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./firebase-messaging-sw.js').then((reg) => {
-    messaging.useServiceWorker(reg);
-  }).catch((err) => console.log('Error al registrar SW:', err));
-}
 
 const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
@@ -805,7 +792,7 @@ window.trackBus = function(busId) {
 
   if ("Notification" in window) {
     Notification.requestPermission().then((perm) => {
-      if (perm === 'granted') {
+      if (perm === 'granted' && messaging) {
         messaging.getToken({ 
           vapidKey: 'BE9O3z2gGh2BrhY1sc4VxMPwICMNrMmf9TQ7tIAG0znTcWAX377hsgcnhWCKfhDBq5_ZGr_BPviL4LqSGeD8kso' 
         }).then((currentToken) => {
@@ -1245,7 +1232,7 @@ if(isTV && !isPassenger){
   },10000);
 }
 
-/* OCULTAR ELEMENTOS INNECESARIOS EN MODOS ESPECIALES */
+/* OCULTAR ELEMENTOS INNECESARIOS */
 if(isTV || isPassenger){
   if($('control-bar'))$('control-bar').style.display='none';
   if($('audio-start-overlay'))$('audio-start-overlay').style.display='none';
