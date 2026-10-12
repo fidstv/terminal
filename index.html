@@ -856,7 +856,7 @@ function renderAds(){
   if(isPassenger)return;
   const container=$('ad-image-container'), adminBody=$('admin-ads-body');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-  const sig=activeList.map(function(a){return a.id;}).join(',');
+  const sig=activeList.map(function(a){return a.id+':'+String(a.dataUrl||'').length+':'+String(a.dataUrl||'').slice(0,48);}).join('|');
 
   if(container && sig!==adSig){
     adSig=sig;
@@ -915,7 +915,9 @@ function update7030State(){
   const btn=$('btn-toggle-7030-manual');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   const isForced=!!adsConfig.force7030;
-  const shouldSplit = activeList.length > 0 && (isForced || isTV);
+  /* Mostrar el panel siempre que haya al menos un anuncio activo con imagen,
+     sin depender de la detección de TV ni del ciclo automático. */
+  const shouldSplit = activeList.length > 0;
 
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
