@@ -79,6 +79,36 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
+/* AJUSTE RESPONSIVO PARA TELEVISORES: 16:9, Full HD y 4K */
+html:has(body.tv-mode){width:100%;height:100%;overflow:hidden}
+body.tv-mode{width:100vw;height:100vh;min-height:0;overflow:hidden;justify-content:flex-start;gap:0}
+body.tv-mode .glass-header{flex:0 0 auto;padding:clamp(8px,1.2vh,18px) clamp(16px,2vw,36px);min-height:clamp(58px,8vh,94px)}
+body.tv-mode .brand-logo{font-size:clamp(18px,1.8vw,30px);padding:clamp(5px,.7vw,10px) clamp(10px,1.3vw,22px)}
+body.tv-mode #header-terminal-title{font-size:clamp(15px,1.55vw,25px)!important;letter-spacing:.04em}
+body.tv-mode #header-terminal-sub{font-size:clamp(9px,.75vw,13px)!important}
+body.tv-mode #clock-time{font-size:clamp(19px,2vw,32px)!important}
+body.tv-mode #clock-date{font-size:clamp(9px,.7vw,12px)!important}
+body.tv-mode .glass-card{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:hidden;margin:0;padding:clamp(10px,1.4vh,22px) clamp(12px,1.5vw,26px);border-radius:0;border-left:0;border-right:0;box-shadow:none}
+body.tv-mode .screen-split-wrapper{height:100%;min-height:0;gap:clamp(10px,1vw,18px);align-items:stretch}
+body.tv-mode .fids-table-wrap{min-width:0;min-height:0;overflow:hidden}
+body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 70%;width:70%}
+body.tv-mode .ads-sidebar-wrap{flex:1 1 30%;width:30%;min-width:0;min-height:0;height:100%;border-radius:clamp(8px,1vw,18px)}
+body.tv-mode .ad-image-container{width:100%;height:100%;min-height:0;min-width:0;flex:1;overflow:hidden}
+body.tv-mode .ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center}
+body.tv-mode th{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(9px,.72vw,12px);letter-spacing:.04em}
+body.tv-mode td{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(11px,.9vw,15px)}
+body.tv-mode .badge-status{padding:clamp(4px,.4vw,7px) clamp(6px,.7vw,12px);font-size:clamp(8px,.65vw,11px)}
+body.tv-mode .ticker-footer{flex:0 0 clamp(28px,4.5vh,42px);height:clamp(28px,4.5vh,42px)}
+body.tv-mode .ticker-title{padding:0 clamp(8px,1.2vw,20px);font-size:clamp(9px,.7vw,12px)}
+body.tv-mode .ticker-content{font-size:clamp(10px,.8vw,13px)}
+body.tv-mode .qr-card{left:auto;right:clamp(12px,1.5vw,26px);bottom:clamp(38px,5vh,52px);max-width:min(390px,42vw);padding:clamp(8px,.8vw,14px);gap:clamp(8px,.8vw,14px);border-radius:12px}
+body.tv-mode #qrcode-box{padding:5px;border-radius:8px;flex:0 0 auto}
+body.tv-mode #qrcode-box canvas,body.tv-mode #qrcode-box img{width:clamp(54px,6vw,88px)!important;height:clamp(54px,6vw,88px)!important}
+body.tv-mode .qr-text{max-width:clamp(120px,16vw,190px)}
+body.tv-mode .qr-text h4{font-size:clamp(9px,.7vw,12px)}
+body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
+@media (max-aspect-ratio: 4/3){body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex-basis:64%;width:64%}body.tv-mode .ads-sidebar-wrap{flex-basis:36%;width:36%}}
+
 /* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
@@ -306,6 +336,7 @@ let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = 
 let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
 
 if(isPassenger) document.body.classList.add('passenger-mode');
+if(isTV) document.body.classList.add('tv-mode');
 
 const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
@@ -333,7 +364,7 @@ p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria
 /* Se conservan las referencias para que el navegador mantenga los MP3 en memoria */
 const preloaded=[];
 function preloadCatalogAudios(){
-  /* La pantalla de pasajero también necesita cargar los MP3 de voceo. */
+  if(isPassenger)return;
   const modes=['etiq','abord','ultima'];
   Object.keys(CAT).forEach(function(k){
     modes.forEach(function(m){
@@ -415,6 +446,7 @@ function setVoiceIndicator(show){
 }
 
 function ctx(){
+  if(isPassenger)return null;
   if(!actx){
     const C=window.AudioContext||window.webkitAudioContext;
     if(C)actx=new C();
@@ -425,7 +457,7 @@ function ctx(){
 
 function chime(){
   return new Promise(function(res){
-    if(muted)return res();
+    if(muted||isPassenger)return res();
     try{
       const c=ctx(); if(!c)return res();
       const t=c.currentTime, o1=c.createOscillator(), o2=c.createOscillator(), g=c.createGain();
@@ -458,13 +490,14 @@ function hardStop(){
 }
 
 function playVoiceImmediate(key,mode){
+  if(isPassenger)return;
   hardStop();
   aq.push([key,mode]);
   if(!playing) runQueue();
 }
 
 async function runQueue(){
-  if(playing)return;
+  if(isPassenger||playing)return;
   playing=true;
   setVoiceIndicator(true);
   try{
@@ -480,7 +513,7 @@ async function runQueue(){
 
 function playOne(key,mode){
   return new Promise(async function(res){
-    if(muted)return res();
+    if(muted||isPassenger)return res();
     const my=epoch;
     let done=false, to=null;
     const end=function(){
@@ -538,7 +571,6 @@ function attach(s){
     },6000);
 
     const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared');
-    // El monitor de pasajero también debe escuchar los avisos enviados desde taquilla.
     refs=[rd,rv,ra,rc,ru,rcl];
     let lastTs=0;
 
@@ -566,7 +598,7 @@ function attach(s){
       render(); autoCatalog();
     });
 
-    {
+    if(!isPassenger){
       rv.on('value',function(snap){
         const d=snap.val();
         if(!d||!d.timestamp||d.timestamp<=lastTs)return;
@@ -1307,12 +1339,17 @@ if(isTV && !isPassenger){
   },10000);
 }
 
-/* OCULTAR ELEMENTOS INNECESARIOS */
+/* OCULTAR CONTROLES, PERO CONSERVAR LA ACTIVACIÓN DE AUDIO EN TV.
+   Se mantienen intactas las funciones originales de voceo y sincronización. */
 if(isTV || isPassenger){
   if($('control-bar'))$('control-bar').style.display='none';
-  /* No ocultar el aviso de activación: la TV requiere una interacción real
-     para autorizar la reproducción de voz MP3. */
-  if($('audio-start-overlay'))$('audio-start-overlay').style.display='flex';
+  if($('audio-start-overlay')){
+    if(isTV){
+      $('audio-start-overlay').style.display='flex';
+    }else{
+      $('audio-start-overlay').style.display='none';
+    }
+  }
 }
 
 /* ============ EVENTOS BINDING ============ */
