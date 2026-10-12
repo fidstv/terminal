@@ -97,9 +97,12 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
 .passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
 </style>
+
+<!-- LIBRERÍAS DE FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -284,32 +287,39 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 </footer>
 
 <script>
-/* ============ REGISTRO SERVICE WORKER (ANDROID PUSH) ============ */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(function(err){ console.log('SW error:', err); });
-}
-
-/* ============ CONFIG Y UTILIDADES ============ */
-firebase.initializeApp({apiKey:"AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",databaseURL:"https://transpais-fids-default-rtdb.firebaseio.com"});
-const db=firebase.database(),auth=firebase.auth();
-const TZ='America/Matamoros';
-const $=function(id){return document.getElementById(id);};
-const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
-const vista=new URLSearchParams(location.search).get('vista')||'screen';
-const isTV=vista.startsWith('tv');
-const isPassenger=vista.startsWith('pasajero');
-let suc=null,deps={},adsData={},adsConfig={force7030:false},ready=false,srvOff=0,urgentMsg='';
+/* ============ CONFIG FIREBASE Y MESSAGING ============ */
+firebase.initializeApp({
+  apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
+  databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
+  messagingSenderId: "33890288863"
+});
+const db = firebase.database(), auth = firebase.auth();
+const messaging = firebase.messaging();
+const TZ = 'America/Matamoros';
+const $ = function(id){ return document.getElementById(id); };
+const esc = function(s){ return String(s??'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+const vista = new URLSearchParams(location.search).get('vista') || 'screen';
+const isTV = vista.startsWith('tv');
+const isPassenger = vista.startsWith('pasajero');
+let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
 let trackedBusId = localStorage.getItem('transpais_tracked_bus') || null;
 
 if(isPassenger) document.body.classList.add('passenger-mode');
 
-const viewSuc=function(){
+/* Registrar el Service Worker de Firebase */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./firebase-messaging-sw.js').then((reg) => {
+    messaging.useServiceWorker(reg);
+  }).catch((err) => console.log('Error al registrar SW:', err));
+}
+
+const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
   if(isTV||isPassenger)return'of2';
   return suc||'of2';
 };
-const canWrite=function(){return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc;};
-const fail=function(e){console.error(e.message);alert('Error al guardar: '+(e.message||e));};
+const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
+const fail = function(e){ console.error(e.message); alert('Error al guardar: '+(e.message||e)); };
 
 const CAT={
 p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -768,7 +778,7 @@ if($('btn-clear-urgent')){
   };
 }
 
-/* ============ SEGUIMIENTO Y NOTIFICACIONES DE PASAJERO ============ */
+/* ============ SEGUIMIENTO Y TOKEN PUSH (PANTALLA DE BLOQUEO) ============ */
 const prevStatuses = {};
 
 window.trackBus = function(busId) {
@@ -777,12 +787,26 @@ window.trackBus = function(busId) {
 
   if ("Notification" in window) {
     Notification.requestPermission().then((perm) => {
-      render();
       if (perm === 'granted') {
-        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas');
+        messaging.getToken({ 
+          vapidKey: 'BE9O3z2gGh2BrhY1sc4VxMPwICMNrMmf9TQ7tIAG0znTcWAX377hsgcnhWCKfhDBq5_ZGr_BPviL4LqSGeD8kso' 
+        }).then((currentToken) => {
+          if (currentToken) {
+            const cleanTokenKey = currentToken.replace(/[^a-zA-Z0-9]/g, '_');
+            db.ref('push_tokens/' + busId + '/' + cleanTokenKey).set({
+              token: currentToken,
+              timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones en pantalla de bloqueo activadas');
+          }
+        }).catch((err) => {
+          console.error('Error al generar token FCM:', err);
+          showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas en pantalla');
+        });
       } else {
         showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
       }
+      render();
     });
   } else {
     render();
@@ -808,20 +832,6 @@ function checkPassengerPushNotifs(list) {
 
     if (trackedBusId === d.id && oldSt && oldSt !== newSt) {
       if (newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA') {
-        const title = "🚌 Transpais - " + d.destination;
-        const body = "Tu autobús de las " + d.time + " está " + newSt + ". Favor de pasar a andenes.";
-
-        if ("Notification" in window && Notification.permission === "granted") {
-          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-              type: 'SHOW_NOTIFICATION',
-              title: title,
-              body: body
-            });
-          } else {
-            new Notification(title, { body: body, icon: 'https://www.transpais.com.mx/favicon.ico' });
-          }
-        }
         showPassengerInAppToast(d, newSt);
       }
     }
