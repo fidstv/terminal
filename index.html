@@ -110,6 +110,20 @@ body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
 @media (max-aspect-ratio: 4/3){body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex-basis:64%;width:64%}body.tv-mode .ads-sidebar-wrap{flex-basis:36%;width:36%}}
 
 
+/* AJUSTES DE LEGIBILIDAD Y SUPERPOSICIONES EN TV */
+body.tv-mode .fids-table-wrap{overflow-y:auto;scrollbar-width:none}
+body.tv-mode .fids-table-wrap::-webkit-scrollbar{display:none}
+body.tv-mode .badge-status{display:inline-flex;align-items:center;justify-content:center;min-width:clamp(76px,7.8vw,126px);min-height:clamp(28px,3.5vh,42px);padding:clamp(5px,.55vw,10px) clamp(8px,.8vw,13px);font-size:clamp(10px,.88vw,15px);line-height:1.12;white-space:normal;text-align:center;border-radius:999px;font-weight:900;letter-spacing:.015em;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+body.tv-mode .status-espera{background:linear-gradient(135deg,#064b88,#0879bd);color:#fff;border:1px solid #42d9ff;box-shadow:0 0 12px rgba(0,190,255,.25)}
+body.tv-mode .status-etiq{background:linear-gradient(135deg,#ffd54a,#ffad00);color:#172033;border:1px solid #ffe89a}
+body.tv-mode .status-abordaje{background:linear-gradient(135deg,#00d974,#00a86b);color:#002d24;border:1px solid #9affd5}
+body.tv-mode .status-ultima{background:linear-gradient(135deg,#ff416c,#c81e4b);color:#fff;border:1px solid #ff9bb2}
+body.tv-mode .status-demorado{background:linear-gradient(135deg,#ff623d,#c81e1e);color:#fff;border:1px solid #ffb1a3}
+body.tv-mode .status-salido{background:#243c60;color:#d9e7fb;border:1px solid #6c84a7}
+body.tv-mode .qr-card{z-index:40}
+body.tv-mode .ads-sidebar-wrap{position:relative;z-index:2}
+body.tv-mode .qr-card.show{pointer-events:none}
+
 /* VISTA MÓVIL PASAJERO */
 body.passenger-mode .glass-header{padding:10px 15px}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
@@ -1326,17 +1340,25 @@ function initQR(){
 
 function cycleQR(){
   const qrCard=$('qr-card'); if(!qrCard||isPassenger)return;
-  if(!isTV){ qrCard.classList.remove('show'); return; }
-
+  const split=$('screen-split-container');
+  /* El QR nunca se superpone al panel publicitario: se muestra solo cuando no hay anuncios laterales. */
+  if(!isTV || (split && split.classList.contains('split-active'))){
+    qrCard.classList.remove('show'); return;
+  }
   if(!qrGenerated)initQR();
   qrCard.classList.add('show');
-  setTimeout(function(){ qrCard.classList.remove('show'); },25000);
+  setTimeout(function(){ qrCard.classList.remove('show'); },18000);
 }
 
 if(isTV && !isPassenger){
   setTimeout(function(){
     cycleQR();
     setInterval(cycleQR,150000);
+    /* Si el panel de anuncios se activa mientras el QR está visible, lo retiramos enseguida. */
+    setInterval(function(){
+      const split=$('screen-split-container'), qrCard=$('qr-card');
+      if(split && split.classList.contains('split-active') && qrCard)qrCard.classList.remove('show');
+    },500);
   },10000);
 }
 
@@ -1344,6 +1366,26 @@ if(isTV && !isPassenger){
 if(isTV || isPassenger){
   if($('control-bar'))$('control-bar').style.display='none';
   if($('audio-start-overlay'))$('audio-start-overlay').style.display='none';
+}
+
+/* AUTOSCROLL DE CORRIDAS PARA TV: desplazamiento suave y reinicio al final */
+if(isTV && !isPassenger){
+  setTimeout(function(){
+    const wrap=document.querySelector('.fids-table-wrap');
+    if(!wrap)return;
+    let direction=1, pausedUntil=Date.now()+5000;
+    wrap.style.overflowY='auto';
+    wrap.style.scrollBehavior='auto';
+    setInterval(function(){
+      if(!wrap.isConnected)return;
+      const max=wrap.scrollHeight-wrap.clientHeight;
+      if(max<=8){wrap.scrollTop=0;return;}
+      if(Date.now()<pausedUntil)return;
+      wrap.scrollTop += direction*0.45;
+      if(wrap.scrollTop>=max-1){direction=-1;pausedUntil=Date.now()+1800;}
+      else if(wrap.scrollTop<=1 && direction<0){direction=1;pausedUntil=Date.now()+1800;}
+    },35);
+  },2500);
 }
 
 /* ============ EVENTOS BINDING ============ */
