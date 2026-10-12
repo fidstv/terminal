@@ -285,7 +285,7 @@ if(isTV) document.body.classList.add('tv-mode');
 
 const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
-  if(isTV||isPassenger)return'of2';
+  if(vista==='tvof2'||vista==='pasajeroof2'||vista==='pasajero'||isTV||isPassenger)return'of2';
   return suc||'of2';
 };
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
@@ -390,7 +390,7 @@ function renderAds(){
 
       try {
         const isCentral = viewSuc() === 'central';
-        const vistaPasajero = isCentral ? 'pasajerocentral' : 'pasajero';
+        const vistaPasajero = isCentral ? 'pasajerocentral' : 'pasajeroof2';
         const qrUrl = window.location.origin + window.location.pathname + '?vista=' + vistaPasajero;
 
         new QRCode(qrOverlay, {
