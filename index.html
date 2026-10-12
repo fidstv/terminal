@@ -385,19 +385,29 @@ const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!s
 const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
 
 const CAT={
-p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
-p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
-p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
-p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
-p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
-p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
-p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
-p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
-p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
-p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
-p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
+ p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
+ p02:["07:35","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Cuauhtémoc, Altamira"],
+ p03:["08:00","Ciudad Valles","Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+ p04:["09:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+ p05:["10:00","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+ p06:["10:45","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+ p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
+ p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
+ p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
+ p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"],
+ p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
+ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
+ p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"]};
+/* Catálogo propio de Central: mismos destinos/escalas y horas explícitas. */
+const CAT_CENTRAL={
+ p01:["05:00",CAT.p01[1],CAT.p01[2]], p02:["07:20",CAT.p02[1],CAT.p02[2]],
+ p03:["07:45",CAT.p03[1],CAT.p03[2]], p04:["09:00",CAT.p04[1],CAT.p04[2]],
+ p05:["09:45",CAT.p05[1],CAT.p05[2]], p06:["10:30",CAT.p06[1],CAT.p06[2]],
+ p07:["11:30",CAT.p07[1],CAT.p07[2]], p08:["13:15",CAT.p08[1],CAT.p08[2]],
+ p09:["13:30",CAT.p09[1],CAT.p09[2]], p13:["15:00",CAT.p13[1],CAT.p13[2]],
+ p10:["18:30",CAT.p10[1],CAT.p10[2]], p11:["22:45",CAT.p11[1],CAT.p11[2]],
+ p12:["23:15",CAT.p12[1],CAT.p12[2]]};
+const catalogFor=function(branch){return branch==='central'?CAT_CENTRAL:CAT;};
 
 /* Se conservan las referencias para que el navegador mantenga los MP3 en memoria */
 const preloaded=[];
@@ -510,21 +520,22 @@ function chime(){
 
 const aq=[]; let playing=false, epoch=0, stopCurrent=null;
 
-function enqueueAudio(k,m){
-  if(isPassenger)return;
-  aq.push([k,m]);
+function enqueueAudio(k,m,onResult){
+  if(isPassenger){if(onResult)onResult(false);return;}
+  aq.push([k,m,onResult||null]);
   if(!playing)runQueue();
 }
 
 /* Detiene lo que suena y libera la cola sin dejar promesas colgadas */
 function hardStop(){
   epoch++;
-  aq.length=0;
+  const cancelled=aq.splice(0,aq.length);
+  cancelled.forEach(function(item){if(item&&item[2]){try{item[2](false);}catch(e){}}});
   if(currentVoiceAudio){
     try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
     currentVoiceAudio=null;
   }
-  if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(); }
+  if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(false); }
 }
 
 function playVoiceImmediate(key,mode){
@@ -541,7 +552,8 @@ async function runQueue(){
   try{
     while(aq.length){
       const item=aq.shift();
-      await playOne(item[0],item[1]);
+      const ok=await playOne(item[0],item[1]);
+      if(item[2]){try{item[2](!!ok);}catch(e){}}
     }
   }finally{
     playing=false;
@@ -553,22 +565,22 @@ function playOne(key,mode){
   return new Promise(async function(res){
     if(muted||isPassenger)return res();
     const my=epoch;
-    let done=false, to=null;
-    const end=function(){
+    let done=false, to=null, succeeded=false;
+    const end=function(ok){
       if(done)return; done=true; clearTimeout(to);
       if(stopCurrent===end)stopCurrent=null;
       currentVoiceAudio=null;
-      res();
+      res(!!ok);
     };
     stopCurrent=end;
     await chime();
-    if(done||my!==epoch)return end();
+    if(done||my!==epoch)return end(false);
     const a=new Audio('Audio/'+key+'_'+mode+'.mp3');
     currentVoiceAudio=a;
     to=setTimeout(end,60000);
-    a.onended=end;
-    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end();};
-    a.play().catch(function(err){console.warn('Audio bloqueado por el navegador:',err&&err.message); end();});
+    a.onended=function(){end(true);};
+    a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end(false);};
+    a.play().catch(function(err){console.warn('Audio bloqueado por el navegador:',err&&err.message); end(false);});
   });
 }
 
@@ -578,9 +590,18 @@ window.unlockAudio=function(){
   try{ctx();}catch(e){}
 };
 
-function panicStop(){
+let lastPanicTs=0;
+function panicStopLocal(){
   hardStop();
   setVoiceIndicator(false);
+}
+function panicStop(){
+  panicStopLocal();
+  if(canWrite()){
+    const ts=Date.now()+srvOff;
+    lastPanicTs=ts;
+    db.ref(suc+'/panic').set({timestamp:ts,by:'taquilla'}).catch(fail);
+  }
 }
 
 function updateMuteUI(){
@@ -608,8 +629,8 @@ function attach(s){
       if(!gotServer){ offlineFallback=true; ready=true; render(); }
     },6000);
 
-    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared');
-    refs=[rd,rv,ra,rc,ru,rcl];
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared'), rp=db.ref(s+'/panic');
+    refs=[rd,rv,ra,rc,ru,rcl,rp];
     let lastTs=0;
 
     rd.on('value',function(snap){
@@ -637,9 +658,16 @@ function attach(s){
     });
 
     if(!isPassenger){
+      rp.on('value',function(snap){
+        const d=snap.val();
+        const ts=d&&Number(d.timestamp||0);
+        if(!ts||ts<=lastPanicTs)return;
+        lastPanicTs=ts;
+        panicStopLocal();
+      });
       rv.on('value',function(snap){
         const d=snap.val();
-        if(!d||!d.timestamp||d.timestamp<=lastTs)return;
+        if(!d||!d.timestamp||d.timestamp<=lastTs||Number(d.timestamp)<=lastPanicTs)return;
         lastTs=d.timestamp;
         if(Date.now()+srvOff-d.timestamp>15000)return;
         playVoiceImmediate(d.key,d.mode);
@@ -707,21 +735,17 @@ function renderUrgentMsg(){
 
 /* ============ CATÁLOGO DEL DÍA (REAL Y VIRTUAL) ============ */
 function calculateCentralTime(timeStr, presetKey){
-  if(presetKey==='p11'||presetKey==='p12')return timeStr;
-  if(presetKey==='p13')return '15:00';
-  const parts=timeStr.split(':').map(Number);
-  let totalMins=parts[0]*60+parts[1]-15;
-  if(totalMins<0)totalMins+=1440;
-  return pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
+  const row=CAT_CENTRAL[presetKey];
+  return row?row[0]:timeStr;
 }
 
 /* Catálogo generado localmente: las TVs y el celular muestran el día
    aunque la taquilla no haya cargado nada (carga automática de las 12 am). */
 function virtualDeps(){
-  const day=nowParts().key, isCentral=viewSuc()==='central', out=[];
-  Object.keys(CAT).forEach(function(k){
-    let t=CAT[k][0]; if(isCentral)t=calculateCentralTime(t,k);
-    out.push({id:k,presetKey:k,time:t,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:viewSuc(),day:day,delay:0,_virtual:true});
+  const day=nowParts().key, branch=viewSuc(), catalog=catalogFor(branch), out=[];
+  Object.keys(catalog).forEach(function(k){
+    const t=catalog[k][0];
+    out.push({id:k,presetKey:k,time:t,destination:catalog[k][1],scales:catalog[k][2],bus:'',status:'EN ESPERA',sucursal:branch,day:day,delay:0,_virtual:true});
   });
   return out;
 }
@@ -750,7 +774,7 @@ async function autoCatalog(){
 }
 
 function loadCatalog(){
-  const n=nowParts(), day=n.key, o={}, isCentral=suc==='central';
+  const n=nowParts(), day=n.key, o={}, catalog=catalogFor(suc);
   /* Las corridas de ayer que siguen vigentes después de medianoche se conservan */
   Object.values(deps).forEach(function(d){
     if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
@@ -758,10 +782,9 @@ function loadCatalog(){
       o['old_'+String(d.id).replace(/^old_/,'')]=c;
     }
   });
-  Object.keys(CAT).forEach(function(k){
-    let timeVal = CAT[k][0];
-    if(isCentral) timeVal = calculateCentralTime(timeVal, k);
-    o[k]={presetKey:k,time:timeVal,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
+  Object.keys(catalog).forEach(function(k){
+    const row=catalog[k];
+    o[k]={presetKey:k,time:row[0],destination:row[1],scales:row[2],bus:'',status:'EN ESPERA',sucursal:suc,day:day,delay:0};
   });
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
@@ -973,6 +996,8 @@ function loadFired(){
   }catch(e){ return new Set(); }
 }
 const fired=loadFired();
+const voicePending=new Set();
+const voiceRetryAfter=new Map();
 
 function autoVoice(d,diff,n){
   /* Solo suenan las TVs y la taquilla con sesión iniciada; el público y el celular no */
@@ -996,15 +1021,22 @@ function autoVoice(d,diff,n){
   /* La hora va en la clave: si la corrida se demora, vuelve a avisar en su nuevo horario */
   const baseId=String(d.id).replace(/^old_/,'');
   const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
-  if(fired.has(k))return;
-  fired.add(k);
-  const y=dayShift(n.key,-1);
-  try{
-    localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
-      const dd=x.split('|')[2]; return dd===n.key||dd===y;
-    })));
-  }catch(e){}
-  enqueueAudio(d.presetKey||'p01',mode);
+  if(fired.has(k)||voicePending.has(k))return;
+  const retryAt=voiceRetryAfter.get(k)||0;
+  if(Date.now()<retryAt)return;
+  voicePending.add(k);
+  enqueueAudio(d.presetKey||'p01',mode,function(ok){
+    voicePending.delete(k);
+    if(!ok){voiceRetryAfter.set(k,Date.now()+15000);return;}
+    voiceRetryAfter.delete(k);
+    fired.add(k);
+    const y=dayShift(n.key,-1);
+    try{
+      localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
+        const dd=x.split('|')[2]; return dd===n.key||dd===y;
+      })));
+    }catch(e){}
+  });
 }
 
 /* ============ RELOJ Y REINICIO DIARIO ============ */
@@ -1027,13 +1059,14 @@ function tick(){
       }catch(e){}
     }
 
+    /* Revisar el voceo cada segundo para no perder ventanas de activación. */
+    if(ready && (gotServer||offlineFallback)){
+      buildList(n).forEach(function(d){
+        if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
+      });
+    }
     if(n.min !== lastMinute){
       lastMinute = n.min;
-      if(ready && (gotServer||offlineFallback)){
-        buildList(n).forEach(function(d){
-          if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
-        });
-      }
       renderUrgentMsg();
       if(canWrite()&&urgentInfo().expired)db.ref(suc+'/urgent').remove().catch(function(){});
       render();
@@ -1253,13 +1286,20 @@ if($('departure-form')){
   });
 }
 
+function refreshPresetOptions(){
+  const sel=$('preset-selector'); if(!sel)return;
+  const catalog=catalogFor(suc||'of2');
+  Array.from(sel.options).forEach(function(opt){
+    const row=catalog[opt.value];
+    if(row)opt.textContent=opt.textContent.replace(/^\d{2}:\d{2}/,row[0]);
+  });
+}
 if($('preset-selector')){
   $('preset-selector').addEventListener('change',function(e){
-    const k=e.target.value; if(!CAT[k])return;
-    let timeVal = CAT[k][0];
-    if(suc === 'central') timeVal = calculateCentralTime(timeVal, k);
-    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=timeVal;
-    $('dep-destination').value=CAT[k][1]; $('dep-scales').value=CAT[k][2];
+    const k=e.target.value, catalog=catalogFor(suc||'of2'); if(!catalog[k])return;
+    const row=catalog[k];
+    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=row[0];
+    $('dep-destination').value=row[1]; $('dep-scales').value=row[2];
     $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
   });
 }
@@ -1273,10 +1313,13 @@ if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
     alert('Operación cancelada. No se eliminó ninguna corrida.');
     return;
   }
-  Promise.all([
-    db.ref(suc+'/deps').remove(),
-    db.ref(suc+'/cleared').set(nowParts().key)
-  ]).catch(fail);
+  const dayToClear=nowParts().key;
+  /* Marcar localmente antes del snapshot evita que el catálogo virtual reaparezca. */
+  clearedDay=dayToClear; gotCleared=true; deps={}; ready=true;
+  try{localStorage.setItem('transpais_offline_deps_'+suc,JSON.stringify({}));}catch(e){}
+  render();
+  const patch={}; patch[suc+'/deps']=null; patch[suc+'/cleared']=dayToClear;
+  db.ref().update(patch).catch(function(e){fail(e);});
 };
 if($('btn-reset'))$('btn-reset').onclick=resetForm;
 
@@ -1292,7 +1335,7 @@ auth.onAuthStateChanged(function(u){
   }
 
   if(viewSuc()!==prev)attach(viewSuc());
-  updateHeaderTitles(); renderAds(); renderUrgentMsg(); render(); autoCatalog();
+  updateHeaderTitles(); refreshPresetOptions(); renderAds(); renderUrgentMsg(); render(); autoCatalog();
 });
 
 function switchTab(tab){
