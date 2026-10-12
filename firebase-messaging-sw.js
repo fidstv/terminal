@@ -5,7 +5,8 @@ firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
   projectId: "transpais-fids",
-  messagingSenderId: "33890288863"
+  messagingSenderId: "562920108882",
+  appId: "1:562920108882:web:4b61a6cd076c407eb8408b"
 });
 
 const messaging = firebase.messaging();
