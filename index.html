@@ -86,6 +86,7 @@ body.passenger-mode #header-terminal-title{font-size:16px!important}
 body.passenger-mode #header-terminal-sub{font-size:10px!important}
 body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;max-height:none}
 body.passenger-mode .fids-table-wrap table{display:none!important}
+body.passenger-mode .screen-split-wrapper{min-height:0}
 
 .passenger-card-list{display:flex;flex-direction:column;gap:12px;width:100%}
 .passenger-card{background:rgba(0,20,45,.95);border:1px solid rgba(0,217,116,.3);border-radius:16px;padding:16px;box-shadow:0 8px 25px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:8px;position:relative}
@@ -293,31 +294,34 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const auth = firebase.auth();
-let messaging = null;
-
-try {
-  if (firebase.messaging.isSupported()) {
-    messaging = firebase.messaging();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./firebase-messaging-sw.js').then((reg) => {
-        if (messaging && reg) messaging.useServiceWorker(reg);
-      }).catch((err) => console.warn('SW no registrado:', err));
-    }
-  }
-} catch (e) {
-  console.warn('Messaging no soportado:', e);
-}
+let messaging = null, swReg = null;
 
 const TZ = 'America/Matamoros';
 const $ = function(id){ return document.getElementById(id); };
-const esc = function(s){ return String(s??'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+const esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+const pad = function(x){ return String(x).padStart(2,'0'); };
 const vista = new URLSearchParams(location.search).get('vista') || 'screen';
 const isTV = vista.startsWith('tv');
 const isPassenger = vista.startsWith('pasajero');
+
 let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
-let trackedBusId = localStorage.getItem('transpais_tracked_bus') || null;
+let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
+let trackedBusId = null;
 
 if(isPassenger) document.body.classList.add('passenger-mode');
+
+/* Messaging y Service Worker solo para el celular del pasajero */
+if(isPassenger){
+  try{
+    if(firebase.messaging.isSupported()) messaging = firebase.messaging();
+  }catch(e){ console.warn('Messaging no soportado:', e); }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./firebase-messaging-sw.js').then(function(reg){
+      swReg = reg;
+      if(messaging) messaging.useServiceWorker(reg);
+    }).catch(function(err){ console.warn('SW no registrado:', err); });
+  }
+}
 
 const viewSuc = function(){
   if(vista==='tvcentral'||vista==='pasajerocentral')return'central';
@@ -325,7 +329,7 @@ const viewSuc = function(){
   return suc||'of2';
 };
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
-const fail = function(e){ console.error(e.message); alert('Error al guardar: '+(e.message||e)); };
+const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
 
 const CAT={
 p01:["05:15","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula, El Huizache"],
@@ -342,6 +346,8 @@ p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
 p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"],
 p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"]};
 
+/* Se conservan las referencias para que el navegador mantenga los MP3 en memoria */
+const preloaded=[];
 function preloadCatalogAudios(){
   if(isPassenger)return;
   const modes=['etiq','abord','ultima'];
@@ -349,6 +355,7 @@ function preloadCatalogAudios(){
     modes.forEach(function(m){
       const a=new Audio('audios/'+k+'_'+m+'.mp3');
       a.preload='auto';
+      preloaded.push(a);
     });
   });
 }
@@ -367,13 +374,19 @@ function nowParts(){
       const p={}; dtf.formatToParts(now).forEach(function(x){p[x.type]=x.value;});
       if(p.year&&p.month&&p.day&&p.hour!==undefined){
         const h=+p.hour%24, m=+p.minute, s=+(p.second||0);
-        return {key:p.year+'-'+p.month+'-'+p.day,min:h*60+m,time:String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+        return {key:p.year+'-'+p.month+'-'+p.day,min:h*60+m,time:pad(h)+':'+pad(m)+':'+pad(s)};
       }
     }catch(e){}
   }
-  const y=now.getFullYear(), mo=String(now.getMonth()+1).padStart(2,'0'), da=String(now.getDate()).padStart(2,'0');
+  const y=now.getFullYear(), mo=pad(now.getMonth()+1), da=pad(now.getDate());
   const ho=now.getHours(), mi=now.getMinutes(), se=now.getSeconds();
-  return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:String(ho).padStart(2,'0')+':'+String(mi).padStart(2,'0')+':'+String(se).padStart(2,'0')};
+  return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:pad(ho)+':'+pad(mi)+':'+pad(se)};
+}
+
+/* Día anterior/posterior de una clave AAAA-MM-DD */
+function dayShift(key,delta){
+  const p=key.split('-').map(Number);
+  return new Date(Date.UTC(p[0],p[1]-1,p[2]+delta)).toISOString().slice(0,10);
 }
 
 function diffOf(d,n){
@@ -382,7 +395,8 @@ function diffOf(d,n){
   if(x<-1200)x+=1440; if(x>1200)x-=1440;
   return x;
 }
-const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===nowParts().key);};
+/* Una corrida del día anterior sigue vigente después de medianoche */
+const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
 
 function stat(d,diff){
   if(d.status==='SALIDO'||diff<0)return'SALIDO';
@@ -398,6 +412,18 @@ function stat(d,diff){
   }
   return d.status||'EN ESPERA';
 }
+
+/* Seguimiento del pasajero: solo vale el mismo día y la misma terminal */
+function readTracked(){
+  try{
+    const t=JSON.parse(localStorage.getItem('transpais_tracked_bus')||'null');
+    const n=nowParts();
+    if(t&&t.id&&t.suc===viewSuc()&&(t.day===n.key||(n.min<360&&t.day===dayShift(n.key,-1))))return t.id;
+  }catch(e){}
+  localStorage.removeItem('transpais_tracked_bus');
+  return null;
+}
+trackedBusId=readTracked();
 
 function updateHeaderTitles(){
   const c=viewSuc()==='central';
@@ -441,53 +467,67 @@ function chime(){
   });
 }
 
-const aq=[]; let playing=false;
+const aq=[]; let playing=false, epoch=0, stopCurrent=null;
 
 function enqueueAudio(k,m){
   if(isPassenger)return;
-  aq.push([k,m]); 
+  aq.push([k,m]);
   if(!playing)runQueue();
 }
 
-function playVoiceImmediate(key,mode){
-  if(isPassenger)return;
+/* Detiene lo que suena y libera la cola sin dejar promesas colgadas */
+function hardStop(){
+  epoch++;
   aq.length=0;
   if(currentVoiceAudio){
     try{ currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0; }catch(e){}
     currentVoiceAudio=null;
   }
+  if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(); }
+}
+
+function playVoiceImmediate(key,mode){
+  if(isPassenger)return;
+  hardStop();
   aq.push([key,mode]);
   if(!playing) runQueue();
 }
 
 async function runQueue(){
-  if(isPassenger)return;
+  if(isPassenger||playing)return;
   playing=true;
   setVoiceIndicator(true);
-  while(aq.length){
-    const item=aq.shift();
-    await playOne(item[0],item[1]);
+  try{
+    while(aq.length){
+      const item=aq.shift();
+      await playOne(item[0],item[1]);
+    }
+  }finally{
+    playing=false;
+    setVoiceIndicator(false);
   }
-  playing=false;
-  setVoiceIndicator(false);
 }
 
 function playOne(key,mode){
   return new Promise(async function(res){
     if(muted||isPassenger)return res();
-    await chime();
-    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
-    currentVoiceAudio=a;
-    let done=false;
+    const my=epoch;
+    let done=false, to=null;
     const end=function(){
       if(done)return; done=true; clearTimeout(to);
+      if(stopCurrent===end)stopCurrent=null;
       currentVoiceAudio=null;
       res();
     };
-    const to=setTimeout(end,60000);
+    stopCurrent=end;
+    await chime();
+    if(done||my!==epoch)return end();
+    const a=new Audio('audios/'+key+'_'+mode+'.mp3');
+    currentVoiceAudio=a;
+    to=setTimeout(end,60000);
     a.onended=end;
     a.onerror=function(){console.warn('MP3 no encontrado:',a.src); end();};
-    a.play().catch(end);
+    a.play().catch(function(err){console.warn('Audio bloqueado por el navegador:',err&&err.message); end();});
   });
 }
 
@@ -498,12 +538,7 @@ window.unlockAudio=function(){
 };
 
 function panicStop(){
-  aq.length=0;
-  if(currentVoiceAudio){
-    try{currentVoiceAudio.pause(); currentVoiceAudio.currentTime=0;}catch(e){}
-    currentVoiceAudio=null;
-  }
-  playing=false;
+  hardStop();
   setVoiceIndicator(false);
 }
 
@@ -517,25 +552,47 @@ function updateMuteUI(){
 let refs=[];
 function attach(s){
   try{
-    refs.forEach(function(r){r.off();}); deps={}; adsData={}; ready=false;
-    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'); 
-    refs=[rd,rv,ra,rc,ru];
+    refs.forEach(function(r){r.off();});
+    deps={}; adsData={}; ready=false; gotServer=false; gotCleared=false; offlineFallback=false; clearedDay=null;
+    clearTimeout(fbTimer);
+
+    /* Si hay copia local se muestra de inmediato (útil si la TV reinicia sin internet) */
+    try{
+      const cached=localStorage.getItem('transpais_offline_deps_'+s);
+      if(cached){ deps=JSON.parse(cached)||{}; ready=true; }
+    }catch(e){ deps={}; }
+
+    /* Sin respuesta del servidor en 6 s: se trabaja con catálogo local */
+    fbTimer=setTimeout(function(){
+      if(!gotServer){ offlineFallback=true; ready=true; render(); }
+    },6000);
+
+    const rd=db.ref(s+'/deps'), rv=db.ref(s+'/voice'), ra=db.ref(s+'/ads'), rc=db.ref(s+'/ads_config'), ru=db.ref(s+'/urgent'), rcl=db.ref(s+'/cleared');
+    refs=[rd,rv,ra,rc,ru,rcl];
     let lastTs=0;
-    
+
     rd.on('value',function(snap){
       const next={};
       snap.forEach(function(c){
         const v=c.val(); if(v&&typeof v==='object'){v.id=c.key; next[c.key]=v;}
       });
-      deps=next; ready=true; 
+      deps=next; ready=true; gotServer=true;
       try{ localStorage.setItem('transpais_offline_deps_'+s, JSON.stringify(deps)); }catch(e){}
       render(); autoCatalog();
     },function(err){
       console.error('Error Firebase:',err.message);
+      offlineFallback=true;
       try{
-        const cached = localStorage.getItem('transpais_offline_deps_'+s);
-        if(cached){ deps = JSON.parse(cached); ready = true; render(); }
+        const cached=localStorage.getItem('transpais_offline_deps_'+s);
+        if(cached){ deps=JSON.parse(cached)||{}; }
       }catch(e){}
+      ready=true; render();
+    });
+
+    rcl.on('value',function(snap){
+      clearedDay=snap.val();
+      gotCleared=true;
+      render(); autoCatalog();
     });
 
     if(!isPassenger){
@@ -569,18 +626,15 @@ function attach(s){
     render();
   }catch(e){
     console.error('Error attach:',e);
-    try{
-      const cached = localStorage.getItem('transpais_offline_deps_'+s);
-      if(cached){ deps = JSON.parse(cached); ready = true; render(); }
-    }catch(err){}
+    offlineFallback=true; ready=true; render();
   }
 }
 
 function renderUrgentMsg(){
   const banner=$('urgent-banner-screen'), txt=$('urgent-text-display'), inp=$('urgent-input');
   if(banner&&txt){
-    if(urgentMsg&&urgentMsg.trim()){
-      txt.textContent="⚠️ " + urgentMsg.trim();
+    if(urgentMsg&&String(urgentMsg).trim()){
+      txt.textContent="⚠️ " + String(urgentMsg).trim();
       banner.classList.remove('hidden');
     }else{
       banner.classList.add('hidden');
@@ -591,32 +645,59 @@ function renderUrgentMsg(){
   }
 }
 
-let autoBusy=false;
-async function autoCatalog(){
-  if(!canWrite()||!ready||autoBusy||viewSuc()!==suc)return;
-  const today=nowParts().key;
-  if(Object.values(deps).some(function(d){return d.day===today;}))return;
-  autoBusy=true;
-  try{
-    const c=(await db.ref(suc+'/cleared').once('value')).val();
-    if(c!==today)await loadCatalog();
-  }catch(e){console.warn('Catálogo automático:',e.message);}
-  setTimeout(function(){autoBusy=false;},10000);
-}
-
+/* ============ CATÁLOGO DEL DÍA (REAL Y VIRTUAL) ============ */
 function calculateCentralTime(timeStr, presetKey){
   if(presetKey==='p11'||presetKey==='p12')return timeStr;
   if(presetKey==='p13')return '15:00';
   const parts=timeStr.split(':').map(Number);
   let totalMins=parts[0]*60+parts[1]-15;
   if(totalMins<0)totalMins+=1440;
-  const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
-  const newM=String(totalMins%60).padStart(2,'0');
-  return newH+':'+newM;
+  return pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
+}
+
+/* Catálogo generado localmente: las TVs y el celular muestran el día
+   aunque la taquilla no haya cargado nada (carga automática de las 12 am). */
+function virtualDeps(){
+  const day=nowParts().key, isCentral=viewSuc()==='central', out=[];
+  Object.keys(CAT).forEach(function(k){
+    let t=CAT[k][0]; if(isCentral)t=calculateCentralTime(t,k);
+    out.push({id:k,presetKey:k,time:t,destination:CAT[k][1],scales:CAT[k][2],bus:'',status:'EN ESPERA',sucursal:viewSuc(),day:day,delay:0,_virtual:true});
+  });
+  return out;
+}
+
+function virtualActive(){
+  const today=nowParts().key;
+  if(!(gotCleared||offlineFallback))return false;
+  if(clearedDay===today)return false;
+  return !Object.values(deps).some(function(d){return d.day===today;});
+}
+
+/* Si la taquilla edita algo mientras el día aún es virtual, primero se guarda el catálogo */
+function ensureMat(){
+  return virtualActive()?loadCatalog():Promise.resolve();
+}
+
+let autoBusy=false;
+async function autoCatalog(){
+  if(!canWrite()||!ready||!gotServer||!gotCleared||autoBusy||viewSuc()!==suc)return;
+  const today=nowParts().key;
+  if(Object.values(deps).some(function(d){return d.day===today;}))return;
+  if(clearedDay===today)return;
+  autoBusy=true;
+  try{ await loadCatalog(); }catch(e){console.warn('Catálogo automático:',e.message);}
+  setTimeout(function(){autoBusy=false;},10000);
 }
 
 function loadCatalog(){
-  const day=nowParts().key, o={}, isCentral=suc==='central';
+  const n=nowParts(), day=n.key, o={}, isCentral=suc==='central';
+  /* Las corridas de ayer que siguen vigentes después de medianoche se conservan */
+  Object.values(deps).forEach(function(d){
+    if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
+      const c=Object.assign({},d); delete c.id; delete c._virtual;
+      o['old_'+String(d.id).replace(/^old_/,'')]=c;
+    }
+  });
   Object.keys(CAT).forEach(function(k){
     let timeVal = CAT[k][0];
     if(isCentral) timeVal = calculateCentralTime(timeVal, k);
@@ -626,17 +707,41 @@ function loadCatalog(){
 }
 
 /* ============ GESTOR DE ANUNCIOS ============ */
-let activeAdIndex=0, adCycleTimer=null, autoSplitState=false;
+let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
+
+function playIfVideo(el){
+  if(el&&el.tagName==='VIDEO'){
+    try{ el.currentTime=0; const p=el.play(); if(p&&p.catch)p.catch(function(){}); }catch(e){}
+  }
+}
+
+function startAdCycle(){
+  clearInterval(adTimer); adIdx=0;
+  const c=$('ad-image-container'); if(!c)return;
+  const items=c.querySelectorAll('.ad-img-item');
+  if(!items.length)return;
+  playIfVideo(items[0]);
+  if(items.length<2)return;
+  adTimer=setInterval(function(){
+    items[adIdx].classList.remove('active');
+    adIdx=(adIdx+1)%items.length;
+    items[adIdx].classList.add('active');
+    playIfVideo(items[adIdx]);
+  },10000);
+}
 
 function renderAds(){
   if(isPassenger)return;
   const container=$('ad-image-container'), adminBody=$('admin-ads-body');
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
-  
-  if(container){
+  const sig=activeList.map(function(a){return a.id;}).join(',');
+
+  if(container && sig!==adSig){
+    adSig=sig;
     container.innerHTML='';
     if(activeList.length===0){
       container.innerHTML='<div style="color:#93c5fd;font-size:12px;padding:20px;text-align:center">📱 TRANSPAIS<br>Ofertas y Promociones</div>';
+      clearInterval(adTimer);
     }else{
       activeList.forEach(function(ad,idx){
         let el;
@@ -652,10 +757,10 @@ function renderAds(){
           el.src = ad.dataUrl;
         }
         el.className='ad-img-item '+(idx===0?'active':'');
-        el.dataset.index=idx; 
+        el.dataset.index=idx;
         container.appendChild(el);
       });
-      activeAdIndex=0;
+      startAdCycle();
     }
   }
 
@@ -666,14 +771,15 @@ function renderAds(){
     }else{
       adminBody.innerHTML=allList.map(function(a){
         const isVid = a.isVideo || (a.dataUrl && a.dataUrl.startsWith('data:video'));
-        const preview = isVid 
-          ? '<video src="'+a.dataUrl+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)" muted loop autoplay></video>'
-          : '<img src="'+a.dataUrl+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)">';
+        const src = esc(a.dataUrl||'');
+        const preview = isVid
+          ? '<video src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)" muted loop autoplay></video>'
+          : '<img src="'+src+'" style="height:35px;width:35px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.2)">';
         return '<tr>'+
           '<td>'+preview+'</td>'+
           '<td style="font-size:11px;font-weight:700">'+esc(a.name)+'</td>'+
-          '<td class="c"><button class="btn '+(a.active?'btn-green':'btn-dark')+'" data-adact="toggle" data-adid="'+a.id+'">'+(a.active?'✅ MOSTRANDO':'⏸️ OCULTO')+'</button></td>'+
-          '<td class="c"><button class="btn btn-dark btn-red" data-adact="del" data-adid="'+a.id+'">🗑️ Eliminar</button></td>'+
+          '<td class="c"><button class="btn '+(a.active?'btn-green':'btn-dark')+'" data-adact="toggle" data-adid="'+esc(a.id)+'">'+(a.active?'✅ MOSTRANDO':'⏸️ OCULTO')+'</button></td>'+
+          '<td class="c"><button class="btn btn-dark btn-red" data-adact="del" data-adid="'+esc(a.id)+'">🗑️ Eliminar</button></td>'+
         '</tr>';
       }).join('');
     }
@@ -688,7 +794,7 @@ function update7030State(){
   const activeList=Object.values(adsData).filter(function(a){return a.active && a.dataUrl;});
   const isForced=!!adsConfig.force7030;
   const shouldSplit = activeList.length > 0 && (isForced || (isTV && autoSplitState));
-  
+
   if(wrapper){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
@@ -696,6 +802,16 @@ function update7030State(){
     btn.textContent = isForced ? '📺 75/25: FORZADO EN TV (ACTIVO)' : '📺 FORZAR 75/25 EN TV';
     btn.className = 'btn ' + (isForced ? 'btn-green' : 'btn-blue');
   }
+}
+
+/* En TV, sin forzar, los anuncios aparecen 60 s cada 2.5 min */
+function cycleSplit(){
+  if(!isTV)return;
+  autoSplitState=true; update7030State();
+  setTimeout(function(){ autoSplitState=false; update7030State(); },60000);
+}
+if(isTV){
+  setTimeout(function(){ cycleSplit(); setInterval(cycleSplit,150000); },20000);
 }
 
 if($('btn-toggle-7030-manual')){
@@ -714,7 +830,7 @@ if($('btn-toggle-7030-manual')){
 
 if($('admin-ads-body')){
   $('admin-ads-body').addEventListener('click',function(e){
-    const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
+    const b=e.target.closest('[data-adact]'); if(!b||!canWrite())return;
     const id=b.dataset.adid, act=b.dataset.adact;
     if(act==='toggle'&&adsData[id])db.ref(suc+'/ads/'+id).update({active:!adsData[id].active}).catch(fail);
     else if(act==='del'&&confirm('¿Borrar este anuncio de la lista?'))db.ref(suc+'/ads/'+id).remove().catch(fail);
@@ -726,18 +842,25 @@ if($('btn-upload-ad'))$('btn-upload-ad').onclick=function(){if($('ad-upload-inpu
 if($('ad-upload-input')){
   $('ad-upload-input').onchange=function(e){
     const file=e.target.files[0]; if(!file)return;
+    if(!canWrite()){ alert('Inicia sesión en el Panel de Taquilla para subir anuncios.'); e.target.value=''; return; }
+    const saveAd=function(dataUrl,isVideo){
+      db.ref(suc+'/ads').push().set({name:file.name,dataUrl:dataUrl,isVideo:isVideo,active:true}).then(function(){
+        e.target.value='';
+      }).catch(fail);
+    };
     if(file.type.startsWith('video/')){
-      if(file.size > 15 * 1024 * 1024){
-        alert('El video supera los 15 MB. Elige un video más corto.');
+      /* base64 pesa ~33% más; la base de datos admite ~10 MB por dato */
+      if(file.size > 6.5 * 1024 * 1024){
+        alert('El video supera los 6.5 MB. Elige un video más corto o comprímelo.');
+        e.target.value='';
         return;
       }
       const reader=new FileReader();
-      reader.onload=function(evt){
-        const newRef=db.ref(suc+'/ads').push();
-        newRef.set({name:file.name,dataUrl:evt.target.result,isVideo:true,active:true}).then(function(){
-          e.target.value='';
-        }).catch(fail);
-      };
+      reader.onload=function(evt){ saveAd(evt.target.result,true); };
+      reader.readAsDataURL(file);
+    } else if(file.type==='image/gif' && file.size <= 2*1024*1024){
+      const reader=new FileReader();
+      reader.onload=function(evt){ saveAd(evt.target.result,false); };
       reader.readAsDataURL(file);
     } else {
       const reader=new FileReader();
@@ -752,15 +875,11 @@ if($('ad-upload-input')){
             else{ w=Math.round((w*maxDim)/h); h=maxDim; }
           }
           canvas.width=w; canvas.height=h;
-          const ctx=canvas.getContext('2d');
-          ctx.drawImage(img,0,0,w,h);
-          const compressedDataUrl=canvas.toDataURL('image/jpeg',0.65);
-          
-          const newRef=db.ref(suc+'/ads').push();
-          newRef.set({name:file.name,dataUrl:compressedDataUrl,isVideo:false,active:true}).then(function(){
-            e.target.value='';
-          }).catch(fail);
+          const cx=canvas.getContext('2d');
+          cx.drawImage(img,0,0,w,h);
+          saveAd(canvas.toDataURL('image/jpeg',0.65),false);
         };
+        img.onerror=function(){ alert('No se pudo leer la imagen.'); };
         img.src=evt.target.result;
       };
       reader.readAsDataURL(file);
@@ -772,8 +891,8 @@ if($('ad-upload-input')){
 if($('btn-save-urgent')){
   $('btn-save-urgent').onclick=function(){
     if(!canWrite())return;
-    const v=$('urgent-input').value.trim();
-    db.ref(suc+'/urgent').set(v).catch(fail);
+    const v=$('urgent-input').value.trim().slice(0,300);
+    (v?db.ref(suc+'/urgent').set(v):db.ref(suc+'/urgent').remove()).catch(fail);
   };
 }
 if($('btn-clear-urgent')){
@@ -787,77 +906,78 @@ if($('btn-clear-urgent')){
 /* ============ SEGUIMIENTO Y TOKEN PUSH (PANTALLA DE BLOQUEO) ============ */
 const prevStatuses = {};
 
-window.trackBus = function(busId) {
-  trackedBusId = busId;
-  localStorage.setItem('transpais_tracked_bus', busId);
+window.trackBus = function(busKey) {
+  trackedBusId = busKey;
+  try{ localStorage.setItem('transpais_tracked_bus', JSON.stringify({id:busKey,suc:viewSuc(),day:nowParts().key})); }catch(e){}
+  render();
 
-  if ("Notification" in window) {
-    Notification.requestPermission().then((perm) => {
-      if (perm === 'granted' && messaging) {
-        messaging.getToken({ 
-          vapidKey: 'BE9O3z2gGh2BrhY1sc4VxMPwICMNrMmf9TQ7tIAG0znTcWAX377hsgcnhWCKfhDBq5_ZGr_BPviL4LqSGeD8kso' 
-        }).then((currentToken) => {
-          if (currentToken) {
-            const cleanTokenKey = currentToken.replace(/[^a-zA-Z0-9]/g, '_');
-            db.ref('push_tokens/' + busId + '/' + cleanTokenKey).set({
-              token: currentToken,
-              timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
-            showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones en pantalla de bloqueo activadas');
-          }
-        }).catch((err) => {
-          console.error('Error al generar token FCM:', err);
-          showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas en pantalla');
-        });
-      } else {
-        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
-      }
-      render();
-    });
-  } else {
-    render();
+  if (!("Notification" in window)) {
+    showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
+    return;
   }
+  Notification.requestPermission().then((perm) => {
+    if (perm === 'granted' && messaging) {
+      messaging.getToken({
+        vapidKey: 'BE9O3z2gGh2BrhY1sc4VxMPwICMNrMmf9TQ7tIAG0znTcWAX377hsgcnhWCKfhDBq5_ZGr_BPviL4LqSGeD8kso'
+      }).then((currentToken) => {
+        if (currentToken) {
+          const cleanTokenKey = currentToken.replace(/[^a-zA-Z0-9]/g, '_');
+          const parts = String(busKey).split('|');
+          const depKey = String(parts[1] || busKey).replace(/[^a-zA-Z0-9_-]/g, '_');
+          const day = parts[0] || nowParts().key;
+          /* push_tokens/<terminal>/<día>/<corrida>/<token> */
+          db.ref('push_tokens/' + viewSuc() + '/' + day + '/' + depKey + '/' + cleanTokenKey).set({
+            token: currentToken,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+          showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones en pantalla de bloqueo activadas');
+        }
+      }).catch((err) => {
+        console.error('Error al generar token FCM:', err);
+        showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Notificaciones activadas en pantalla');
+      });
+    } else {
+      showPassengerInAppToast({ destination: 'Seguimiento', time: 'Activado' }, 'Te avisaremos en esta pantalla');
+    }
+  });
 };
 
-window.untrackBus = function(){
+window.untrackBus = function(silent){
   trackedBusId = null;
   localStorage.removeItem('transpais_tracked_bus');
-  render();
+  if(!silent)render();
 };
 
 function checkPassengerPushNotifs(list) {
   if (!isPassenger) return;
 
   list.forEach(function(d) {
-    const oldSt = prevStatuses[d.id];
+    const oldSt = prevStatuses[d._k];
     const newSt = d._st;
-    
-    if (trackedBusId === d.id && newSt === 'SALIDO') {
-      untrackBus();
+
+    if (trackedBusId === d._k && newSt === 'SALIDO') {
+      untrackBus(true);
     }
 
-    if (trackedBusId === d.id && oldSt && oldSt !== newSt) {
+    if (trackedBusId === d._k && oldSt && oldSt !== newSt) {
       if (newSt === 'ETIQUETANDO PASAJE' || newSt === 'EN ABORDAJE' || newSt === 'ÚLTIMA LLAMADA') {
-        // 1. Mostrar toast dentro de la página
         showPassengerInAppToast(d, newSt);
 
-        // 2. Disparar notificación nativa en el sistema / pantalla de bloqueo del teléfono
-        if ("Notification" in window && Notification.permission === "granted") {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(function(reg) {
-              reg.showNotification("🚌 Transpais – " + d.destination, {
-                body: "¡Tu corrida (" + d.time + ") cambió a " + newSt + "!",
-                icon: "https://www.transpais.com.mx/favicon.ico",
-                vibrate: [200, 100, 200],
-                tag: d.id,
-                renotify: true
-              });
-            }).catch(function(err){ console.warn("Error mostrando notificación push:", err); });
-          }
+        if ("Notification" in window && Notification.permission === "granted" && 'serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification("🚌 Transpais – " + d.destination, {
+              body: "¡Tu corrida (" + d.time + ") cambió a " + newSt + "!",
+              icon: "https://www.transpais.com.mx/favicon.ico",
+              vibrate: [200, 100, 200],
+              tag: d._k,
+              renotify: true,
+              data: { url: location.href }
+            });
+          }).catch(function(err){ console.warn("Error mostrando notificación:", err); });
         }
       }
     }
-    prevStatuses[d.id] = newSt;
+    prevStatuses[d._k] = newSt;
   });
 }
 
@@ -871,14 +991,24 @@ function showPassengerInAppToast(d, statusText){
   }
   t.innerHTML = "🚌 <strong>" + esc(d.destination) + " (" + esc(d.time) + "):</strong> ¡" + esc(statusText) + "!";
   t.style.display = 'block';
-  setTimeout(function(){ if(t) t.style.display = 'none'; }, 8000);
+  clearTimeout(t._h);
+  t._h = setTimeout(function(){ t.style.display = 'none'; }, 8000);
 }
 
 /* ============ VOCEO AUTOMÁTICO EN TV ============ */
-const fired=new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]'));
+function loadFired(){
+  try{
+    const n=nowParts(), y=dayShift(n.key,-1);
+    return new Set(JSON.parse(localStorage.getItem('transpais_fired')||'[]').filter(function(x){
+      const dd=String(x).split('|')[2]; return dd===n.key||dd===y;
+    }));
+  }catch(e){ return new Set(); }
+}
+const fired=loadFired();
 
 function autoVoice(d,diff,n){
-  if(isPassenger)return;
+  /* Solo suenan las TVs y la taquilla con sesión iniciada; el público y el celular no */
+  if(isPassenger||(!isTV&&!canWrite()))return;
   const isCentral = viewSuc() === 'central';
   let mode = null;
   let subKey = '';
@@ -895,10 +1025,17 @@ function autoVoice(d,diff,n){
   }
 
   if(!mode)return;
-  const k=d.id+'|'+subKey+'|'+(d.day||n.key);
+  /* La hora va en la clave: si la corrida se demora, vuelve a avisar en su nuevo horario */
+  const baseId=String(d.id).replace(/^old_/,'');
+  const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
   if(fired.has(k))return;
   fired.add(k);
-  localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){return x.endsWith(n.key);})));
+  const y=dayShift(n.key,-1);
+  try{
+    localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
+      const dd=x.split('|')[2]; return dd===n.key||dd===y;
+    })));
+  }catch(e){}
   enqueueAudio(d.presetKey||'p01',mode);
 }
 
@@ -910,20 +1047,23 @@ function tick(){
     const n=nowParts();
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    
-    if(isTV && n.time === '03:00:00'){
-      location.reload(true);
-      return;
+
+    /* Recarga diaria de TV entre 03:00 y 03:09, una sola vez por día */
+    if(isTV && n.min>=180 && n.min<190){
+      try{
+        if(localStorage.getItem('transpais_reload_day')!==n.key){
+          localStorage.setItem('transpais_reload_day',n.key);
+          location.reload();
+          return;
+        }
+      }catch(e){}
     }
 
     if(n.min !== lastMinute){
       lastMinute = n.min;
-      if(ready){
-        Object.values(deps).forEach(function(d){
-          if(isLive(d,n)){
-            const x=diffOf(d,n);
-            if(x>-15&&d.status!=='SALIDO')autoVoice(d,x,n);
-          }
+      if(ready && (gotServer||offlineFallback)){
+        buildList(n).forEach(function(d){
+          if(d.status!=='SALIDO')autoVoice(d,d._diff,n);
         });
       }
       render();
@@ -946,7 +1086,7 @@ const cleanScales=function(s){return (s||'').split(',').map(function(x){return x
 
 function passengerCardHTML(d, isCentral){
   const sc = cleanScales(d.scales);
-  const isTracked = trackedBusId === d.id;
+  const isTracked = trackedBusId === d._k;
   const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
 
   return '<div class="passenger-card ' + (isTracked ? 'tracked' : '') + '">' +
@@ -962,9 +1102,9 @@ function passengerCardHTML(d, isCentral){
       '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
       '<span>📍 ' + esc(boardingPoint) + '</span>' +
     '</div>' +
-    (isTracked 
-      ? '<button class="btn btn-green passenger-track-btn" onclick="untrackBus()">✅ SIGUIENDO ESTE AUTOBÚS</button>' 
-      : '<button class="btn btn-blue passenger-track-btn" onclick="trackBus(\'' + d.id + '\')">🔔 SEGUIR MI AUTOBÚS</button>') +
+    (isTracked
+      ? '<button class="btn btn-green passenger-track-btn" data-untrack="1">✅ SIGUIENDO ESTE AUTOBÚS</button>'
+      : '<button class="btn btn-blue passenger-track-btn" data-track="' + esc(d._k) + '">🔔 SEGUIR MI AUTOBÚS</button>') +
   '</div>';
 }
 
@@ -1002,19 +1142,19 @@ function adminRow(d){
 
 function syncRows(tb, list, html){
   const sigOf = function(d){ return JSON.stringify([d.time, d.destination, d.scales, d.bus, d._st, d.presetKey]); };
-  const existingRows = new Map(Array.from(tb.children).map(function(r){ return [r.dataset.id, r]; }));
-  
+  const existingRows = new Map(Array.from(tb.children).map(function(r){ return [r.dataset.k, r]; }));
+
   list.forEach(function(d, index){
-    let r = existingRows.get(d.id);
+    let r = existingRows.get(d._k);
     const s = sigOf(d);
-    
+
     if(!r){
       r = document.createElement('tr');
-      r.dataset.id = d.id;
+      r.dataset.k = d._k;
       r.innerHTML = html(d);
       r._s = s;
     } else {
-      existingRows.delete(d.id);
+      existingRows.delete(d._k);
       if(r._s !== s){
         const f = document.activeElement, typing = f && r.contains(f) && f.classList.contains('inline-bus-input');
         const val = typing ? f.value : null, pos = typing ? f.selectionStart : 0;
@@ -1026,13 +1166,27 @@ function syncRows(tb, list, html){
         }
       }
     }
-    
+
     if(tb.children[index] !== r){
       tb.insertBefore(r, tb.children[index] || null);
     }
   });
 
   existingRows.forEach(function(r){ r.remove(); });
+}
+
+/* Lista vigente: corridas reales + catálogo virtual si el día aún no se ha cargado */
+function buildList(n){
+  let base=Object.values(deps);
+  if(virtualActive())base=base.concat(virtualDeps());
+  return base.filter(function(d){return d&&d.time&&isLive(d,n)&&diffOf(d,n)>-15;})
+    .map(function(d){
+      const o=Object.assign({},d);
+      o._diff=diffOf(d,n);
+      o._st=stat(d,o._diff);
+      o._k=(d.day||'')+'|'+d.id;
+      return o;
+    }).sort(function(a,b){return a._diff-b._diff||a.time.localeCompare(b.time);});
 }
 
 function render(){
@@ -1042,11 +1196,9 @@ function render(){
     return;
   }
   const n=nowParts();
-  const list=Object.values(deps).filter(function(d){return isLive(d,n)&&diffOf(d,n)>-15;})
-    .map(function(d){
-      const obj=Object.assign({},d); obj._st=stat(d,diffOf(d,n)); return obj;
-    }).sort(function(a,b){return a.time.localeCompare(b.time);});
-  
+  const list=buildList(n);
+  curMap={}; list.forEach(function(d){curMap[d._k]=d;});
+
   if(isPassenger && plist){
     plist.classList.remove('hidden');
     plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
@@ -1057,49 +1209,50 @@ function render(){
   }
 }
 
+if($('passenger-card-list')){
+  $('passenger-card-list').addEventListener('click',function(e){
+    const t=e.target.closest('[data-track]');
+    if(t){ trackBus(t.dataset.track); return; }
+    if(e.target.closest('[data-untrack]'))untrackBus();
+  });
+}
+
 /* ============ ACCIONES DE TAQUILLA ============ */
 const dref=function(id){return db.ref(suc+'/deps/'+id);};
 
 if($('admin-body')){
   $('admin-body').addEventListener('click',function(e){
     const b=e.target.closest('[data-act]'); if(!b||!canWrite())return;
-    const id=b.closest('tr').dataset.id, d=deps[id]; if(!d)return;
+    const tr=b.closest('tr'), d=curMap[tr.dataset.k]; if(!d)return;
     const act=b.dataset.act;
     if(act==='voz'){
       db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
     }
-    else if(act==='time')adjustTime(d,+b.dataset.v);
+    else if(act==='time')ensureMat().then(function(){adjustTime(d,+b.dataset.v);}).catch(fail);
     else if(act==='edit')editDeparture(d);
-    else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))dref(id).remove().catch(fail);
+    else if(act==='del'&&confirm('¿Eliminar esta corrida de la pantalla?'))ensureMat().then(function(){return dref(d.id).remove();}).catch(fail);
   });
 
   $('admin-body').addEventListener('change',function(e){
     if(!e.target.classList.contains('inline-bus-input')||!canWrite())return;
-    dref(e.target.closest('tr').dataset.id).update({bus:e.target.value.trim()}).catch(fail);
+    const d=curMap[e.target.closest('tr').dataset.k]; if(!d)return;
+    const v=e.target.value.trim();
+    ensureMat().then(function(){return dref(d.id).update({bus:v});}).catch(fail);
   });
 }
 
 function adjustTime(d,deltaMinutes){
   const parts=d.time.split(':').map(Number);
-  let totalMins=parts[0]*60+parts[1]+deltaMinutes;
-  if(totalMins<0)totalMins+=1440;
-  if(totalMins>=1440)totalMins%=1440;
+  const totalMins=(((parts[0]*60+parts[1]+deltaMinutes)%1440)+1440)%1440;
+  const newTime=pad(Math.floor(totalMins/60))+':'+pad(totalMins%60);
 
-  const newH=String(Math.floor(totalMins/60)).padStart(2,'0');
-  const newM=String(totalMins%60).padStart(2,'0');
-  const newTime=newH+':'+newM;
+  const newDelay=Math.max(0,(d.delay||0)+deltaMinutes);
+  const updates={time:newTime,delay:newDelay};
 
-  let updates={time:newTime};
-  let newDelay=(d.delay||0)+deltaMinutes;
-  if(newDelay<0)newDelay=0;
-  updates.delay=newDelay;
-
-  if(deltaMinutes>0){
+  if(newDelay>0){
     updates.status='DEMORADO (+'+newDelay+'m)';
-  }else{
-    if(newDelay===0&&d.status&&d.status.indexOf('DEMORADO')===0){
-      updates.status='EN ESPERA';
-    }
+  }else if(d.status&&d.status.indexOf('DEMORADO')===0){
+    updates.status='EN ESPERA';
   }
 
   dref(d.id).update(updates).catch(fail);
@@ -1123,19 +1276,21 @@ function resetForm(){
 if($('departure-form')){
   $('departure-form').addEventListener('submit',function(e){
     e.preventDefault(); if(!canWrite())return;
-    const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
-    let status=$('dep-status').value;
-    if(status==='DEMORADO'&&old&&old.status&&old.status.indexOf('DEMORADO')===0)status=old.status;
-    dref(id).set({
-      presetKey:$('dep-preset-key').value||'p01',
-      time:$('dep-time').value,
-      destination:$('dep-destination').value.trim(),
-      scales:cleanScales($('dep-scales').value),
-      bus:$('dep-bus').value.trim(),
-      status:status,
-      sucursal:suc,
-      day:old?.day||nowParts().key,
-      delay:old?.delay||0
+    ensureMat().then(function(){
+      const id=$('dep-id').value||('c'+Date.now()), old=deps[id];
+      let status=$('dep-status').value;
+      if(status==='DEMORADO'&&old&&old.status&&old.status.indexOf('DEMORADO')===0)status=old.status;
+      return dref(id).set({
+        presetKey:$('dep-preset-key').value||'p01',
+        time:$('dep-time').value,
+        destination:$('dep-destination').value.trim(),
+        scales:cleanScales($('dep-scales').value),
+        bus:$('dep-bus').value.trim(),
+        status:status,
+        sucursal:suc,
+        day:(old&&old.day)||nowParts().key,
+        delay:(old&&old.delay)||0
+      });
     }).then(resetForm).catch(fail);
   });
 }
@@ -1162,15 +1317,15 @@ if($('btn-reset'))$('btn-reset').onclick=resetForm;
 const sucFromEmail=function(em){return (em||'').toLowerCase()==='ofcentral@transpais.com'?'central':'of2';};
 
 auth.onAuthStateChanged(function(u){
-  const prev=viewSuc(); 
+  const prev=viewSuc();
   suc=(u&&!isTV&&!isPassenger)?sucFromEmail(u.email):null;
-  
+
   if($('btn-logout')){
     $('btn-logout').classList.toggle('hidden', !u || isTV || isPassenger);
   }
-  
+
   if(viewSuc()!==prev)attach(viewSuc());
-  updateHeaderTitles(); render(); autoCatalog();
+  updateHeaderTitles(); renderAds(); renderUrgentMsg(); render(); autoCatalog();
 });
 
 function switchTab(tab){
@@ -1193,13 +1348,19 @@ function openPin(){
 
 function doLogin(){
   const u=$('login-user-input').value.trim().toLowerCase(), p=$('login-pass-input').value.trim();
+  if(!u||!p){ if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden'); return; }
   let em=u;
   if(!u.includes('@')){if(u==='ofcentral')em='ofcentral@transpais.com'; if(u==='terminalof2')em='terminalof2@transpais.com';}
+  const btn=$('btn-login-ok'); if(btn)btn.disabled=true;
   auth.signInWithEmailAndPassword(em,p).then(function(){
     suc=sucFromEmail(em);
     if($('pin-modal-overlay'))$('pin-modal-overlay').classList.add('hidden');
-    attach(viewSuc()); updateHeaderTitles(); switchTab('admin');
-  }).catch(function(err){console.error('Auth:',err.message); if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');});
+    if(viewSuc()!==(suc==='central'?'central':'of2'))attach(viewSuc());
+    updateHeaderTitles(); switchTab('admin');
+  }).catch(function(err){
+    console.error('Auth:',err.message);
+    if($('pin-error-msg'))$('pin-error-msg').classList.remove('hidden');
+  }).then(function(){ if(btn)btn.disabled=false; });
 }
 
 function doLogout(){
@@ -1256,7 +1417,9 @@ if(isTV || isPassenger){
 }
 
 /* ============ EVENTOS BINDING ============ */
-document.body.addEventListener('click',function(){ctx();});
+['click','keydown','touchstart'].forEach(function(ev){
+  document.body.addEventListener(ev,function(){ctx();},{passive:true});
+});
 if($('btn-tab-screen'))$('btn-tab-screen').onclick=function(){switchTab('screen');};
 if($('btn-tab-admin'))$('btn-tab-admin').onclick=openPin;
 if($('btn-logout'))$('btn-logout').onclick=doLogout;
