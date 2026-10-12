@@ -179,6 +179,24 @@ body.tv-mode .qr-card{display:none!important}
 .vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
 
 
+
+/* Contorno azul alrededor del panel de imagen; conservar amarillos de estatus y etiquetado */
+.glass-header{border-bottom-color:#168BFF!important}
+.ticker-footer{border-top-color:#168BFF!important}
+.ads-sidebar-wrap{background:transparent!important;border:3px solid #168BFF!important;box-shadow:0 0 0 1px rgba(22,139,255,.18)!important}
+.ad-image-container{background:transparent!important;border:0!important}
+.ad-img-item{outline:0!important}
+.qr-card{border-color:#168BFF!important}
+
+/* Cuando hay una salida fija, el área de anuncios se adapta al espacio restante */
+body.tv-mode .screen-split-wrapper{height:auto!important;flex:1 1 0!important;min-height:0!important;max-height:100%!important}
+body.tv-mode .screen-split-wrapper.split-active .ads-sidebar-wrap{min-height:0!important;height:100%!important}
+body.tv-mode .screen-split-wrapper.split-active .ad-image-container{min-height:0!important;height:100%!important}
+body.tv-mode .screen-split-wrapper.split-active .ad-img-item{object-fit:contain!important;max-height:100%!important}
+body.tv-mode.has-fixed-departure .fixed-departures-wrap{flex-shrink:0!important}
+body.tv-mode.has-fixed-departure .screen-split-wrapper{flex:1 1 0!important;height:auto!important;min-height:0!important}
+body.tv-mode.has-fixed-departure .ads-sidebar-wrap{max-height:100%!important}
+
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -1228,6 +1246,7 @@ function render(){
     const moving=(isTV&&!isPassenger)?list.filter(function(d){return d._st!=='ETIQUETANDO PASAJE';}):list;
     if(fixedWrap&&fixedBody){
       fixedWrap.classList.toggle('hidden',pinned.length===0);
+      document.body.classList.toggle('has-fixed-departure',pinned.length>0);
       syncRows(fixedBody,pinned,function(d){return tvRow(d,c);});
     }
     if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
