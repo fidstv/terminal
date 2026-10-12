@@ -7,7 +7,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
 .glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
@@ -297,13 +297,13 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
       <option value="p04">09:15 - Ciudad Valles (vía San Fernando, Victoria, Mante)</option>
       <option value="p05">10:00 - Tampico - Madero (vía Soto la Marina, Aldama)</option>
       <option value="p06">10:45 - San Luis Potosí (vía Victoria y Tula)</option>
-      <option value="p07">11:45 - Ciudad Valles (vía San Fernando, Victoria y Mante)</option>
+      <option value="p07">11:45 - Ciudad Valles (vía San Fernando, Ciudad Victoria y Mante)</option>
       <option value="p08">13:30 - San Luis Potosí (vía Victoria, Jaumave, Tula)</option>
       <option value="p09">13:45 - Tampico - Madero (vía Soto la Marina, Altamira)</option>
+      <option value="p13">15:15 - Ciudad Valles</option>
       <option value="p10">18:45 - Tampico (Semi-Directa)</option>
       <option value="p11">22:45 - Ciudad Valles (Nocturna x Victoria)</option>
       <option value="p12">23:15 - Tampico - Madero (Nocturna x Estación Manuel)</option>
-      <option value="p13">15:15 - Ciudad Valles Completa</option>
     </select>
   </div>
   <form id="departure-form">
@@ -385,7 +385,7 @@ const CAT={
  p07:["11:45","Ciudad Valles","San Fernando, Ciudad Victoria, Ciudad Mante, Antiguo Morelos"],
  p08:["13:30","San Luis Potosí","San Fernando, Jiménez, Padilla, Ciudad Victoria, Jaumave, Tula"],
  p09:["13:45","Tampico - Madero","San Fernando, Soto la Marina, Aldama, Manuel Libramiento, Altamira"],
- p13:["15:15","Ciudad Valles Completa","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"],
+ p13:["15:15","Ciudad Valles","San Fernando, Jiménez, Padilla, Victoria, Mante, Antiguo Morelos"],
  p10:["18:45","Tampico","San Fernando, Jiménez, Padilla, Ciudad Victoria, Estación Manuel, Tampico"],
  p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
  p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"]};
@@ -752,59 +752,26 @@ async function autoCatalog(){
 function loadCatalog(){
   const branch = suc || viewSuc();
   const n = nowParts(), day = n.key, o = {}, catalog = catalogFor(branch);
-  
   Object.values(deps).forEach(function(d){
     if(d.day && d.day !== day && isLive(d,n) && diffOf(d,n) > -15){
       const c = Object.assign({}, d); delete c.id; delete c._virtual;
       o['old_' + String(d.id).replace(/^old_/, '')] = c;
     }
   });
-
   Object.keys(catalog).forEach(function(k){
     const row = catalog[k];
     o[k] = {presetKey: k, time: row[0], destination: row[1], scales: row[2], bus: '', status: 'EN ESPERA', sucursal: branch, day: day, delay: 0};
   });
 
-  // Actualización inmediata en memoria local y pantalla
   deps = o;
   clearedDay = null;
   try{ localStorage.setItem('transpais_offline_deps_' + branch, JSON.stringify(deps)); }catch(e){}
   render();
 
-  // Sincronización con Firebase
   return db.ref(branch + '/deps').set(o).then(function(){
     return db.ref(branch + '/cleared').remove();
   });
 }
-
-if($('btn-clear-all')) $('btn-clear-all').onclick = function(){
-  if(!canWrite()) return;
-  if(!confirm('ATENCIÓN: esto eliminará TODAS las corridas de esta sucursal. Esta acción no se puede deshacer desde la pantalla. ¿Tienes un respaldo y deseas continuar?')) return;
-  
-  const confirmation = prompt('Para confirmar, escribe BORRAR en mayúsculas:');
-  if(confirmation !== 'BORRAR') {
-    alert('Operación cancelada. No se eliminó ninguna corrida.');
-    return;
-  }
-
-  const branch = suc || viewSuc();
-  const dayToClear = nowParts().key;
-
-  // Limpieza inmediata en memoria local
-  clearedDay = dayToClear; 
-  gotCleared = true; 
-  deps = {}; 
-  ready = true;
-  
-  try{ localStorage.setItem('transpais_offline_deps_' + branch, JSON.stringify({})); }catch(e){}
-  render();
-
-  // Sincronización con Firebase
-  const patch = {}; 
-  patch[branch + '/deps'] = null; 
-  patch[branch + '/cleared'] = dayToClear;
-  db.ref().update(patch).catch(function(e){ fail(e); });
-};
 
 /* ============ GESTOR DE ANUNCIOS Y MARCO DINÁMICO ============ */
 let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
@@ -1342,11 +1309,16 @@ function refreshPresetOptions(){
 
 if($('preset-selector')){
   $('preset-selector').addEventListener('change',function(e){
-    const k=e.target.value, catalog=catalogFor(suc||'of2'); if(!catalog[k])return;
+    const k=e.target.value, catalog=catalogFor(suc||viewSuc()); if(!catalog[k])return;
     const row=catalog[k];
-    $('dep-id').value=''; $('dep-preset-key').value=k; $('dep-time').value=row[0];
-    $('dep-destination').value=row[1]; $('dep-scales').value=row[2];
-    $('dep-status').value='EN ESPERA'; $('dep-bus').value=''; $('dep-bus').focus();
+    $('dep-id').value=k;
+    $('dep-preset-key').value=k;
+    $('dep-time').value=row[0];
+    $('dep-destination').value=row[1];
+    $('dep-scales').value=row[2];
+    $('dep-status').value='EN ESPERA';
+    $('dep-bus').value='';
+    $('dep-bus').focus();
   });
 }
 
@@ -1359,11 +1331,12 @@ if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
     alert('Operación cancelada. No se eliminó ninguna corrida.');
     return;
   }
+  const branch=suc||viewSuc();
   const dayToClear=nowParts().key;
   clearedDay=dayToClear; gotCleared=true; deps={}; ready=true;
-  try{localStorage.setItem('transpais_offline_deps_'+suc,JSON.stringify({}));}catch(e){}
+  try{localStorage.setItem('transpais_offline_deps_'+branch,JSON.stringify({}));}catch(e){}
   render();
-  const patch={}; patch[suc+'/deps']=null; patch[suc+'/cleared']=dayToClear;
+  const patch={}; patch[branch+'/deps']=null; patch[branch+'/cleared']=dayToClear;
   db.ref().update(patch).catch(function(e){fail(e);});
 };
 if($('btn-reset'))$('btn-reset').onclick=resetForm;
