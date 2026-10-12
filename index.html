@@ -7,10 +7,10 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
-.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px)}
+.glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
 .control-bar{background:rgba(0,0,0,.4);padding:12px 30px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05);gap:15px;flex-wrap:wrap}
 .btn{padding:8px 12px;border-radius:8px;font-weight:800;font-size:11px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .btn-green{background:#00A859;color:#fff}.btn-green:hover{background:#008f4b}
@@ -54,16 +54,29 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .urgent-scroll-text{white-space:nowrap;display:inline-block;animation:marqueeUrgent 22s linear infinite;padding-left:100%}
 @keyframes marqueeUrgent{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 
-/* LAYOUT 75/25 */
-.screen-split-wrapper{display:flex;gap:20px;width:100%;min-height:480px;align-items:stretch;transition:all .5s cubic-bezier(.16,1,.3,1)}
-.fids-table-wrap{flex:1 1 100%;width:100%;overflow-y:auto;transition:flex .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
-.screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 75%;width:75%}
+/* LAYOUT 75/25 CON AJUSTE DINÁMICO DE MARCO AZUL */
+.screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 auto;min-height:0;align-items:stretch;transition:all .3s ease;overflow:hidden}
+.fids-table-wrap{flex:1 1 auto;min-width:0;overflow-y:auto;transition:all .3s ease}
 
-.ads-sidebar-wrap{flex:0 0 25%;width:25%;min-height:480px;background:transparent;border:2px solid #168BFF;border-radius:18px;overflow:hidden;position:relative;display:none;box-shadow:0 0 0 1px rgba(22,139,255,.18);flex-direction:column;align-items:stretch;justify-content:stretch}
+.ads-sidebar-wrap{
+  flex:0 0 auto;
+  height:100%;
+  max-height:100%;
+  max-width:40vw;
+  background:transparent;
+  border:2px solid #168BFF;
+  border-radius:18px;
+  overflow:hidden;
+  position:relative;
+  display:none;
+  box-shadow:0 0 0 1px rgba(22,139,255,.18);
+  align-self:center;
+  transition:aspect-ratio .3s ease, width .3s ease;
+}
 .screen-split-wrapper.split-active .ads-sidebar-wrap{display:flex}
 
-.ad-image-container{flex:1;width:100%;height:100%;min-height:480px;position:relative;overflow:hidden;background:transparent;display:flex;align-items:center;justify-content:center}
-.ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity 1s ease-in-out}
+.ad-image-container{width:100%;height:100%;position:relative;overflow:hidden;background:transparent;display:flex;align-items:center;justify-content:center}
+.ad-img-item{width:100%;height:100%;object-fit:fill;position:absolute;inset:0;opacity:0;transition:opacity 1s ease-in-out}
 .ad-img-item.active{opacity:1!important;z-index:2}
 
 /* WIDGET QR Y VOCEO */
@@ -79,7 +92,7 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .speaker-pulse{animation:sp 1s infinite alternate}
 @keyframes sp{0%{transform:scale(1)}100%{transform:scale(1.25)}}
 
-/* AJUSTE RESPONSIVO PARA TELEVISORES: 16:9, Full HD y 4K */
+/* AJUSTE RESPONSIVO PARA TELEVISORES */
 html:has(body.tv-mode){width:100%;height:100%;overflow:hidden}
 body.tv-mode{width:100vw;height:100vh;min-height:0;overflow:hidden;justify-content:flex-start;gap:0}
 body.tv-mode .glass-header{flex:0 0 auto;padding:clamp(8px,1.2vh,18px) clamp(16px,2vw,36px);min-height:clamp(58px,8vh,94px)}
@@ -90,11 +103,11 @@ body.tv-mode #clock-time{font-size:clamp(19px,2vw,32px)!important}
 body.tv-mode #clock-date{font-size:clamp(9px,.7vw,12px)!important}
 body.tv-mode .glass-card{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:hidden;margin:0;padding:clamp(10px,1.4vh,22px) clamp(12px,1.5vw,26px);border-radius:0;border-left:0;border-right:0;box-shadow:none}
 body.tv-mode .screen-split-wrapper{height:100%;min-height:0;gap:clamp(10px,1vw,18px);align-items:stretch}
-body.tv-mode .fids-table-wrap{min-width:0;min-height:0;overflow:hidden}
-body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex:0 0 70%;width:70%}
-body.tv-mode .ads-sidebar-wrap{flex:1 1 30%;width:30%;min-width:0;min-height:0;height:100%;border-radius:clamp(8px,1vw,18px)}
+body.tv-mode .fids-table-wrap{flex:1 1 auto;width:auto;min-width:0;min-height:0;overflow:hidden}
+body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex:1 1 auto;width:auto}
+body.tv-mode .ads-sidebar-wrap{flex:0 0 auto;width:auto;height:100%;min-width:0;min-height:0;border-radius:clamp(8px,1vw,18px)}
 body.tv-mode .ad-image-container{width:100%;height:100%;min-height:0;min-width:0;flex:1;overflow:hidden}
-body.tv-mode .ad-img-item{width:100%;height:100%;object-fit:contain;object-position:center}
+body.tv-mode .ad-img-item{width:100%;height:100%;object-fit:fill}
 body.tv-mode th{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(9px,.72vw,12px);letter-spacing:.04em}
 body.tv-mode td{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(11px,.9vw,15px)}
 body.tv-mode .badge-status{padding:clamp(4px,.4vw,7px) clamp(6px,.7vw,12px);font-size:clamp(8px,.65vw,11px)}
@@ -107,7 +120,6 @@ body.tv-mode #qrcode-box canvas,body.tv-mode #qrcode-box img{width:clamp(54px,6v
 body.tv-mode .qr-text{max-width:clamp(120px,16vw,190px)}
 body.tv-mode .qr-text h4{font-size:clamp(9px,.7vw,12px)}
 body.tv-mode .qr-text p{font-size:clamp(9px,.65vw,11px)}
-@media (max-aspect-ratio: 4/3){body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex-basis:64%;width:64%}body.tv-mode .ads-sidebar-wrap{flex-basis:36%;width:36%}}
 
 /* Salidas en etiquetado: panel fijo independiente del auto-scroll */
 .fixed-departures-wrap{display:none;flex:0 0 auto;margin:0 0 12px;border:1px solid rgba(255,184,0,.8);border-left:5px solid #ffb800;border-radius:10px;overflow:hidden;background:rgba(0,18,45,.96);box-shadow:0 5px 18px rgba(0,0,0,.28)}
@@ -156,23 +168,10 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
 .passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:12px;font-size:12px;border-radius:10px;font-weight:900}
 
-/* Anuncio promocional VistaPasajero integrado al carrusel publicitario */
+/* Anuncio promocional VistaPasajero */
 body.tv-mode .qr-card{display:none!important}
-.vista-qr-ad{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:clamp(8px,1.2vh,18px);padding:clamp(14px,1.5vw,28px);text-align:center;color:#fff;background:transparent;border:2px solid #168BFF;border-radius:clamp(10px,1vw,18px);overflow:hidden}
-.vista-qr-ad .vqa-brand{font-size:clamp(14px,1.6vw,27px);font-weight:900;font-style:italic;letter-spacing:.04em}
-.vista-qr-ad .vqa-title{font-size:clamp(17px,2vw,34px);font-weight:900;line-height:1.08}
-.vista-qr-ad .vqa-title em{font-style:normal;color:#39efff}
-.vista-qr-ad .vqa-copy{font-size:clamp(11px,1.05vw,18px);line-height:1.35;color:#dbeafe;max-width:95%}
-.vista-qr-ad .vqa-bottom{display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.3vw,22px);width:100%}
-.vista-qr-ad .vqa-qr{background:#fff;border-radius:10px;padding:clamp(5px,.7vw,10px);flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:clamp(88px,10vw,150px);min-height:clamp(88px,10vw,150px)}
-.vista-qr-ad .vqa-qr canvas,.vista-qr-ad .vqa-qr img{width:clamp(78px,9vw,132px)!important;height:clamp(78px,9vw,132px)!important}
-.vista-qr-ad .vqa-points{display:flex;flex-direction:column;gap:clamp(7px,.8vh,12px);text-align:left;font-size:clamp(10px,.95vw,16px);font-weight:800;line-height:1.2}
-.vista-qr-ad .vqa-point{border:1px solid rgba(0,220,255,.65);background:rgba(0,12,48,.65);border-radius:12px;padding:clamp(7px,.8vw,13px)}
-.vista-qr-ad .vqa-footer{font-size:clamp(9px,.8vw,13px);font-weight:800;color:#65f5cc;letter-spacing:.04em}
-
-/* Anuncio vertical con QR real superpuesto en el recuadro diseñado */
-.vista-qr-ad{display:flex;align-items:center;justify-content:center;background:transparent;overflow:hidden;padding:0!important;border:2px solid #168BFF;border-radius:clamp(10px,1vw,18px)}
-.vqa-stage{position:relative;height:100%;max-height:100%;aspect-ratio:9/16;width:auto;max-width:100%;flex:0 1 auto;overflow:hidden;background:transparent}
+.vista-qr-ad{display:flex;align-items:center;justify-content:center;background:transparent;overflow:hidden;padding:0!important;width:100%;height:100%}
+.vqa-stage{position:relative;height:100%;width:100%;aspect-ratio:9/16;overflow:hidden;background:transparent}
 .vqa-stage-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
 .vqa-qr-overlay{position:absolute;left:32.8%;top:26.5%;width:34.4%;aspect-ratio:1;background:#fff;border-radius:5%;padding:1.4%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.8)}
 .vqa-qr-overlay canvas,.vqa-qr-overlay img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
@@ -290,13 +289,13 @@ body.tv-mode .qr-card{display:none!important}
   <div style="background:rgba(0,30,68,.8);border:1px solid rgba(0,217,116,.3);padding:16px;border-radius:12px;margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
-        <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y VIDEOS (LAYOUT 75/25)</h3>
+        <h3 style="color:#00D974;font-size:14px;font-weight:900">🖼️ GESTOR DE ANUNCIOS Y VIDEOS (LAYOUT DENSIDAD ADAPTATIVA)</h3>
         <p style="font-size:11px;color:#93c5fd">Sube imágenes, GIFs o videos MP3/MP4 para proyectarlos en las Smart TV.</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="file" id="ad-upload-input" accept="image/*,video/mp4" style="display:none">
         <button class="btn btn-green" id="btn-upload-ad">🖼️ Subir Anuncio/Video</button>
-        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 FORZAR 75/25 EN TV</button>
+        <button class="btn btn-blue" id="btn-toggle-7030-manual">📺 FORZAR MODO PUBLICIDAD EN TV</button>
       </div>
     </div>
     <div style="max-height:180px;overflow-y:auto">
@@ -417,7 +416,6 @@ const CAT={
  p11:["22:45","Ciudad Valles","Ciudad Victoria, Ciudad Mante"],
  p12:["23:15","Tampico - Madero","Estación Manuel, Puente Altamira Las Piñas"]};
 
-/* Catálogo propio de Central: mismos destinos/escalas y horas explícitas. */
 const CAT_CENTRAL={
  p01:["05:00",CAT.p01[1],CAT.p01[2]], p02:["07:20",CAT.p02[1],CAT.p02[2]],
  p03:["07:45",CAT.p03[1],CAT.p03[2]], p04:["09:00",CAT.p04[1],CAT.p04[2]],
@@ -428,7 +426,6 @@ const CAT_CENTRAL={
  p12:["23:15",CAT.p12[1],CAT.p12[2]]};
 const catalogFor=function(branch){return branch==='central'?CAT_CENTRAL:CAT;};
 
-/* Se conservan las referencias para que el navegador mantenga los MP3 en memoria */
 const preloaded=[];
 function preloadCatalogAudios(){
   if(isPassenger)return;
@@ -465,7 +462,6 @@ function nowParts(){
   return {key:y+'-'+mo+'-'+da,min:ho*60+mi,time:pad(ho)+':'+pad(mi)+':'+pad(se)};
 }
 
-/* Día anterior/posterior de una clave AAAA-MM-DD */
 function dayShift(key,delta){
   const p=key.split('-').map(Number);
   return new Date(Date.UTC(p[0],p[1]-1,p[2]+delta)).toISOString().slice(0,10);
@@ -477,7 +473,6 @@ function diffOf(d,n){
   if(x<-1200)x+=1440; if(x>1200)x-=1440;
   return x;
 }
-/* Una corrida del día anterior sigue vigente después de medianoche */
 const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
 
 function stat(d,diff){
@@ -545,7 +540,6 @@ function enqueueAudio(k,m,onResult){
   if(!playing)runQueue();
 }
 
-/* Detiene lo que suena y libera la cola sin dejar promesas colgadas */
 function hardStop(){
   epoch++;
   const cancelled=aq.splice(0,aq.length);
@@ -584,7 +578,7 @@ function playOne(key,mode){
   return new Promise(async function(res){
     if(muted||isPassenger)return res();
     const my=epoch;
-    let done=false, to=null, succeeded=false;
+    let done=false, to=null;
     const end=function(ok){
       if(done)return; done=true; clearTimeout(to);
       if(stopCurrent===end)stopCurrent=null;
@@ -637,13 +631,11 @@ function attach(s){
     deps={}; adsData={}; ready=false; gotServer=false; gotCleared=false; offlineFallback=false; clearedDay=null;
     clearTimeout(fbTimer);
 
-    /* Si hay copia local se muestra de inmediato (útil si la TV reinicia sin internet) */
     try{
       const cached=localStorage.getItem('transpais_offline_deps_'+s);
       if(cached){ deps=JSON.parse(cached)||{}; ready=true; }
     }catch(e){ deps={}; }
 
-    /* Sin respuesta del servidor en 6 s: se trabaja con catálogo local */
     fbTimer=setTimeout(function(){
       if(!gotServer){ offlineFallback=true; ready=true; render(); }
     },6000);
@@ -718,7 +710,6 @@ function attach(s){
   }
 }
 
-/* El aviso urgente caduca solo a los 30 minutos si nadie lo quita */
 const URGENT_TTL_MIN=30;
 function urgentInfo(){
   if(!urgentMsg)return {text:'',expired:false};
@@ -752,14 +743,7 @@ function renderUrgentMsg(){
   }
 }
 
-/* ============ CATÁLOGO DEL DÍA (REAL Y VIRTUAL) ============ */
-function calculateCentralTime(timeStr, presetKey){
-  const row=CAT_CENTRAL[presetKey];
-  return row?row[0]:timeStr;
-}
-
-/* Catálogo generado localmente: las TVs y el celular muestran el día
-   aunque la taquilla no haya cargado nada (carga automática de las 12 am). */
+/* ============ CATÁLOGO DEL DÍA ============ */
 function virtualDeps(){
   const day=nowParts().key, branch=viewSuc(), catalog=catalogFor(branch), out=[];
   Object.keys(catalog).forEach(function(k){
@@ -776,7 +760,6 @@ function virtualActive(){
   return !Object.values(deps).some(function(d){return d.day===today;});
 }
 
-/* Si la taquilla edita algo mientras el día aún es virtual, primero se guarda el catálogo */
 function ensureMat(){
   return virtualActive()?loadCatalog():Promise.resolve();
 }
@@ -794,7 +777,6 @@ async function autoCatalog(){
 
 function loadCatalog(){
   const n=nowParts(), day=n.key, o={}, catalog=catalogFor(suc);
-  /* Las corridas de ayer que siguen vigentes después de medianoche se conservan */
   Object.values(deps).forEach(function(d){
     if(d.day&&d.day!==day&&isLive(d,n)&&diffOf(d,n)>-15){
       const c=Object.assign({},d); delete c.id; delete c._virtual;
@@ -808,8 +790,32 @@ function loadCatalog(){
   return db.ref(suc+'/deps').set(o).then(function(){return db.ref(suc+'/cleared').remove();});
 }
 
-/* ============ GESTOR DE ANUNCIOS ============ */
+/* ============ GESTOR DE ANUNCIOS Y MARCO DINÁMICO ============ */
 let adIdx=0, adTimer=null, adSig=null, autoSplitState=false;
+
+function updateSidebarAspectRatio(activeEl){
+  const sidebar=$('ads-sidebar');
+  if(!sidebar||!activeEl)return;
+  if(activeEl.classList.contains('vista-qr-ad')){
+    sidebar.style.aspectRatio='9 / 16';
+  }else if(activeEl.tagName==='IMG'){
+    if(activeEl.naturalWidth&&activeEl.naturalHeight){
+      sidebar.style.aspectRatio=activeEl.naturalWidth+' / '+activeEl.naturalHeight;
+    }else{
+      activeEl.onload=function(){
+        sidebar.style.aspectRatio=this.naturalWidth+' / '+this.naturalHeight;
+      };
+    }
+  }else if(activeEl.tagName==='VIDEO'){
+    if(activeEl.videoWidth&&activeEl.videoHeight){
+      sidebar.style.aspectRatio=activeEl.videoWidth+' / '+activeEl.videoHeight;
+    }else{
+      activeEl.onloadedmetadata=function(){
+        sidebar.style.aspectRatio=this.videoWidth+' / '+this.videoHeight;
+      };
+    }
+  }
+}
 
 function playIfVideo(el){
   if(el&&el.tagName==='VIDEO'){
@@ -822,13 +828,25 @@ function startAdCycle(){
   const c=$('ad-image-container'); if(!c)return;
   const items=c.querySelectorAll('.ad-img-item');
   if(!items.length)return;
-  playIfVideo(items[0]);
+
+  function activate(idx){
+    items.forEach(function(item,i){
+      if(i===idx){
+        item.classList.add('active');
+        playIfVideo(item);
+        updateSidebarAspectRatio(item);
+      }else{
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  activate(0);
   if(items.length<2)return;
+
   adTimer=setInterval(function(){
-    items[adIdx].classList.remove('active');
     adIdx=(adIdx+1)%items.length;
-    items[adIdx].classList.add('active');
-    playIfVideo(items[adIdx]);
+    activate(adIdx);
   },10000);
 }
 
@@ -858,7 +876,6 @@ function renderAds(){
       el.dataset.index=idx;
       container.appendChild(el);
     });
-    /* El QR aparece como anuncio propio, nunca flotando encima de otra publicidad. */
     const qrSlide=makeVistaPasajeroAd();
     if(activeList.length===0)qrSlide.classList.add('active');
     qrSlide.dataset.index=activeList.length;
@@ -901,12 +918,11 @@ function update7030State(){
     wrapper.classList.toggle('split-active', shouldSplit);
   }
   if(btn){
-    btn.textContent = isForced ? '📺 75/25: FORZADO EN TV (ACTIVO)' : '📺 FORZAR 75/25 EN TV';
+    btn.textContent = isForced ? '📺 PUBLICIDAD: FORZADA EN TV' : '📺 FORZAR MODO PUBLICIDAD EN TV';
     btn.className = 'btn ' + (isForced ? 'btn-green' : 'btn-blue');
   }
 }
 
-/* En TV, sin forzar, los anuncios aparecen 60 s cada 2.5 min */
 function cycleSplit(){
   if(!isTV)return;
   autoSplitState=true; update7030State();
@@ -1403,8 +1419,6 @@ function doLogout(){
   }
 }
 
-/* Anuncio vertical correspondiente a cada pantalla, con QR real en el recuadro blanco.
-   OF2 usa exclusivamente la imagen de Terminal Pedro Cárdenas; Central usa la imagen del andén 18. */
 function makeVistaPasajeroAd(){
   const isCentral=viewSuc()==='central';
   const slide=document.createElement('div');
@@ -1460,7 +1474,6 @@ if($('login-pass-input')) $('login-pass-input').onkeyup = function(e){
   if(e.key === 'Enter') doLogin();
 };
 
-/* Inicialización del QR en el widget emergente flotante (#qrcode-box) */
 if ($('qrcode-box') && window.QRCode) {
   const isCentral = viewSuc() === 'central';
   const qrUrl = location.origin + location.pathname + '?vista=' + (isCentral ? 'pasajerocentral' : 'pasajeroof2');
@@ -1474,7 +1487,6 @@ if ($('qrcode-box') && window.QRCode) {
   });
 }
 
-/* Renderizado inicial de pantalla */
 attach(viewSuc());
 updateHeaderTitles();
 refreshPresetOptions();
