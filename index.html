@@ -291,8 +291,26 @@ body.passenger-mode .fids-table-wrap table{display:none!important}
 firebase.initializeApp({
   apiKey: "AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ",
   databaseURL: "https://transpais-fids-default-rtdb.firebaseio.com",
+  projectId: "transpais-fids",
   messagingSenderId: "33890288863"
 });
+
+const db = firebase.database(), auth = firebase.auth();
+let messaging = null;
+
+// Inicialización blindada de Messaging para no bloquear la pantalla FIDS
+try {
+  if (firebase.messaging.isSupported()) {
+    messaging = firebase.messaging();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./firebase-messaging-sw.js').then((reg) => {
+        if (messaging && reg) messaging.useServiceWorker(reg);
+      }).catch((err) => console.warn('SW no registrado:', err));
+    }
+  }
+} catch (e) {
+  console.warn('Messaging no soportado en este navegador:', e);
+}
 const db = firebase.database(), auth = firebase.auth();
 const messaging = firebase.messaging();
 const TZ = 'America/Matamoros';
