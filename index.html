@@ -40,7 +40,7 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.05)}
 @keyframes pg{0%,100%{transform:scale(1);box-shadow:0 0 10px rgba(255,184,0,.6)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(255,184,0,.2)}}
 @keyframes pr{0%,100%{transform:scale(1.03);box-shadow:0 0 15px rgba(225,29,72,.9)}50%{transform:scale(.96);box-shadow:0 0 2px rgba(225,29,72,.3)}}
 
-/* EFECTO DORADITO EN LA SALIDA (OPCIÓN 3) */
+/* EFECTO DORADITO EN LA SALIDA */
 @keyframes goldGlow{
   0%,100%{box-shadow:0 0 10px rgba(255,184,0,0.6);border-color:#FFB800;background:rgba(255,184,0,0.12)}
   50%{box-shadow:0 0 25px rgba(255,215,0,0.95);border-color:#FFE89A;background:rgba(255,184,0,0.22)}
@@ -217,7 +217,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
       <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
       <div class="hdr-sub-row" style="display:flex;align-items:center;gap:10px">
         <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
-        <!-- INDICADOR EN VIVO (OPCIÓN 1) -->
+        <!-- INDICADOR EN VIVO -->
         <div id="net-status-badge" style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,217,116,0.15);color:#00D974;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:800;border:1px solid rgba(0,217,116,0.3)">
           <span id="net-dot" style="height:6px;width:6px;background:#00D974;border-radius:50%;display:inline-block"></span>
           <span id="net-text">ONLINE</span>
@@ -238,7 +238,6 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
     <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <!-- BOTÓN PANTALLA COMPLETA (OPCIÓN 7) -->
     <button class="btn btn-blue" onclick="toggleFullscreen()" title="Pantalla Completa">🖥️ PANTALLA COMPLETA</button>
     <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
     <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
@@ -252,7 +251,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
   </div>
 
-  <!-- BUSCADOR MÓVIL PASAJEROS (OPCIÓN 6) -->
+  <!-- BUSCADOR MÓVIL PASAJEROS -->
   <div id="passenger-search-wrap" class="hidden" style="margin-bottom:12px">
     <input type="text" id="passenger-search-input" placeholder="🔍 Buscar por destino o escala (ej. Tampico, Victoria...)" style="background:rgba(0,0,0,0.6);border:1px solid #00D974;padding:12px;border-radius:12px;color:#fff;font-size:13px" oninput="render()">
   </div>
@@ -288,7 +287,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
       <button class="btn btn-green" id="btn-save-urgent">Publicar Mensaje</button>
       <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar Alerta</button>
     </div>
-    <!-- BOTONES MENTALES DE ALERTA RÁPIDA (OPCIÓN 4) -->
+    <!-- BOTONES DE ALERTA RÁPIDA -->
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <span style="font-size:11px;color:#93c5fd;align-self:center;font-weight:700">⚡ Avisos Rápidos:</span>
       <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚧 Obras en carretera: Posibles demoras de 15 a 20 minutos.')">🚧 Obras en Carretera</button>
@@ -390,17 +389,49 @@ firebase.initializeApp({
 const db = firebase.database();
 const auth = firebase.auth();
 
-/* ============ DETECCIÓN INTELIGENTE DE RUTA ============ */
+/* ============ DETECCIÓN ESTRICTA DE RUTA (WHITELIST) ============ */
 const href = location.href.toLowerCase();
-const queryVista = new URLSearchParams(location.search).get('vista') || '';
+const rawVista = new URLSearchParams(location.search).get('vista') || '';
 
-let vista = queryVista;
-if (!vista) {
+// Mapeo / Whitelist de vistas estrictamente autorizadas
+const aliasVista = {
+  'tvof2': 'tvof2',
+  'vistaof2': 'tvof2',
+  'tvcentral': 'tvcentral',
+  'vistacentral': 'tvcentral',
+  'pasajeroof2': 'pasajeroof2',
+  'vistapasajeroof2': 'pasajeroof2',
+  'pasajerocentral': 'pasajerocentral',
+  'vistapasajerocentral': 'pasajerocentral',
+  'screen': 'screen'
+};
+
+let vista = '';
+
+if (rawVista) {
+  const normalized = rawVista.toLowerCase().trim();
+  if (aliasVista[normalized]) {
+    vista = aliasVista[normalized];
+  } else {
+    vista = 'invalid';
+  }
+} else {
   if (href.includes('tvcentral') || href.includes('vistacentral')) vista = 'tvcentral';
-  else if (href.includes('pasajerocentral')) vista = 'pasajerocentral';
+  else if (href.includes('pasajerocentral') || href.includes('vistapasajerocentral')) vista = 'pasajerocentral';
   else if (href.includes('tvof2') || href.includes('vistaof2')) vista = 'tvof2';
-  else if (href.includes('pasajeroof2') || href.includes('pasajero')) vista = 'pasajeroof2';
+  else if (href.includes('pasajeroof2') || href.includes('vistapasajeroof2')) vista = 'pasajeroof2';
   else vista = 'screen';
+}
+
+if (vista === 'invalid') {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.innerHTML = '<div style="background:#000B18;color:#f87171;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;text-align:center;padding:20px">' +
+      '<div style="font-size:50px;margin-bottom:15px">⛔</div>' +
+      '<h2 style="font-size:22px;font-weight:900;margin-bottom:10px">ACCESO DENEGADO (403)</h2>' +
+      '<p style="font-size:15px;color:#fff;margin-bottom:15px">La vista <code>"' + String(rawVista).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }) + '"</code> no existe o no está autorizada.</p>' +
+      '<p style="font-size:13px;color:#93c5fd">Vistas válidas permitidas:<br><b>vistaof2, vistacentral, vistapasajeroof2, vistapasajerocentral, tvof2, tvcentral, pasajeroof2, pasajerocentral</b></p>' +
+      '</div>';
+  });
 }
 
 const isTV = vista.startsWith('tv') || href.includes('tvof2') || href.includes('tvcentral');
@@ -425,7 +456,7 @@ const viewSuc = function(){
 const canWrite = function(){ return !isTV&&!isPassenger&&!!auth.currentUser&&!!suc; };
 const fail = function(e){ console.error(e.message||e); alert('Error al guardar: '+(e.message||e)); };
 
-/* FUNCIÓN DE PANTALLA COMPLETA (OPCIÓN 7) */
+/* FUNCIÓN DE PANTALLA COMPLETA */
 function toggleFullscreen(){
   if(!document.fullscreenElement){
     document.documentElement.requestFullscreen().catch(function(e){});
@@ -434,7 +465,7 @@ function toggleFullscreen(){
   }
 }
 
-/* INDICADOR EN VIVO ONLINE / OFFLINE (OPCIÓN 1) */
+/* INDICADOR EN VIVO ONLINE / OFFLINE */
 function updateNetStatus(isOnline){
   const badge = $('net-status-badge'), dot = $('net-dot'), txt = $('net-text');
   if(!badge) return;
@@ -532,7 +563,7 @@ function diffOf(d,n){
 }
 const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
 
-const ULTIMA_CENTRAL=3, ULTIMA_OF2=3;   // minutos antes de la salida en que se da la última llamada
+const ULTIMA_CENTRAL=3, ULTIMA_OF2=3;
 
 function stat(d,diff){
   if(d.status==='SALIDO'||diff<0)return'SALIDO';
@@ -662,7 +693,6 @@ window.unlockAudio=function(){
   try{ctx();}catch(e){}
 };
 
-/* Compuerta de audio: pasajero nunca la ve; TV la ve compacta solo si el navegador bloquea el audio */
 (function initAudioGate(){
   const ov=$('audio-start-overlay'); if(!ov)return;
   if(isPassenger){ ov.style.display='none'; return; }
@@ -827,7 +857,7 @@ function renderUrgentMsg(){
   }
 }
 
-/* MENSAJES RÁPIDOS (OPCIÓN 4) */
+/* MENSAJES RÁPIDOS */
 function setQuickUrgent(msg){
   const inp=$('urgent-input');
   if(inp) inp.value=msg;
@@ -913,7 +943,7 @@ function loadCatalog(){
     if(!d || !d.time) return;
     const c = Object.assign({}, d); delete c.id; delete c._virtual;
     if(d.day === day){
-      o[key] = c;                       // lo de hoy se conserva (unidades, ajustes, corridas manuales)
+      o[key] = c;
     } else if(isLive(d,n)){
       const diff = diffOf(d,n), hora = +String(d.time).split(':')[0];
       const salioHacePoco = diff <= 0 && diff > -15;
@@ -922,7 +952,7 @@ function loadCatalog(){
     }
   });
   Object.keys(catalog).forEach(function(k){
-    if(o[k] && o[k].day === day) return;   // ya existe hoy: no se pisa
+    if(o[k] && o[k].day === day) return;
     const row = catalog[k];
     o[k] = {presetKey: k, time: row[0], destination: row[1], scales: row[2], bus: '', status: 'EN ESPERA', sucursal: branch, day: day, delay: 0};
   });
@@ -1186,7 +1216,7 @@ function markFired(k,n){
 
 function autoVoice(d,diff,n){
   if(isPassenger||(!isTV&&!canWrite()))return;
-  if(!d.presetKey||isCustom(d))return;          // corridas manuales no tienen MP3
+  if(!d.presetKey||isCustom(d))return;
   const isCentral = viewSuc() === 'central';
   let mode = null;
   let subKey = '';
@@ -1208,7 +1238,7 @@ function autoVoice(d,diff,n){
   const baseId=baseIdOf(d);
   const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
   if(fired.has(k)||voicePending.has(k))return;
-  if(muted){ markFired(k,n); return; }           // en silencio: se descarta, no se repite después
+  if(muted){ markFired(k,n); return; }
   const retryAt=voiceRetryAfter.get(k)||0;
   if(Date.now()<retryAt)return;
   voicePending.add(k);
@@ -1216,7 +1246,7 @@ function autoVoice(d,diff,n){
   enqueueAudio(d.presetKey,mode,function(ok){
     voicePending.delete(k);
     if(!ok){
-      if(ep<panicMark){ markFired(k,n); return; } // cancelado con PÁNICO: no se repite
+      if(ep<panicMark){ markFired(k,n); return; }
       voiceRetryAfter.set(k,Date.now()+15000);
       return;
     }
@@ -1276,7 +1306,6 @@ function passengerCardHTML(d, isCentral){
   const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
   const isActive = d._st === 'ETIQUETANDO PASAJE' || d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA';
 
-  // EFECTO DORADITO (OPCIÓN 3)
   const cardClass = 'passenger-card ' + (isActive ? 'gold-card-active' : '');
 
   return '<div class="' + cardClass + '">' +
@@ -1379,7 +1408,6 @@ function render(){
     plist.classList.remove('hidden');
     if($('passenger-search-wrap')) $('passenger-search-wrap').classList.remove('hidden');
 
-    // FILTRO DE BUSCADOR (OPCIÓN 6)
     const norm = function(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); };
     const q = norm($('passenger-search-input') ? $('passenger-search-input').value : '').trim();
     const totalAntes = list.length;
