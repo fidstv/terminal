@@ -12,7 +12,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-style:space-between;user-select:none;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#000B18;color:#fff;min-height:100vh;display:flex;flex-direction:column;user-select:none;overflow-x:hidden}
 .glass-header{background:rgba(0,20,45,.95);border-bottom:3px solid #00A859;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .brand-logo{background:#fff;padding:8px 20px;border-radius:12px;font-weight:900;font-style:italic;font-size:28px;color:#002A5C;letter-spacing:-1px}
 .glass-card{background:rgba(0,30,68,.6);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.5);margin:20px 30px;flex-grow:1;overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column}
@@ -66,6 +66,10 @@ input,select{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);bo
 .overlay{position:fixed;inset:0;background:rgba(0,11,24,.92);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}
 .modal-overlay{z-index:9998;background:rgba(0,0,0,.85)}
 .card{background:rgba(0,30,68,.9);border:2px solid #00A859;border-radius:20px;padding:40px;max-width:500px;box-shadow:0 0 50px rgba(0,168,89,.4)}
+.overlay.compact{inset:auto 16px 56px auto;background:transparent;padding:0;z-index:9500}
+.overlay.compact .card{padding:8px 12px;max-width:none;border-radius:12px;box-shadow:0 0 20px rgba(0,168,89,.5)}
+.overlay.compact .ov-icon,.overlay.compact h2,.overlay.compact p{display:none}
+.overlay.compact .btn{padding:10px 16px!important;font-size:12px!important}
 .modal-card{background:#00142D;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:30px;width:360px;text-align:center}
 .hidden{display:none!important}
 
@@ -116,15 +120,14 @@ body.tv-mode #header-terminal-sub{font-size:clamp(9px,.75vw,13px)!important}
 body.tv-mode #clock-time{font-size:clamp(19px,2vw,32px)!important}
 body.tv-mode #clock-date{font-size:clamp(9px,.7vw,12px)!important}
 body.tv-mode .glass-card{flex:1 1 auto;min-height:0;max-height:none;height:auto;overflow:hidden;margin:0;padding:clamp(10px,1.4vh,22px) clamp(12px,1.5vw,26px);border-radius:0;border-left:0;border-right:0;box-shadow:none}
-body.tv-mode .screen-split-wrapper{height:100%;min-height:0;gap:clamp(10px,1vw,18px);align-items:stretch}
-body.tv-mode .fids-table-wrap{flex:1 1 auto;width:auto;min-width:0;min-height:0;overflow:hidden}
+body.tv-mode .screen-split-wrapper{height:100%;min-height:0;gap:clamp(10px,1vw,18px);align-items:stretch;flex:1 1 auto}
+body.tv-mode .fids-table-wrap{flex:1 1 auto;width:auto;min-width:0;min-height:0;overflow:hidden;overflow-y:auto;scrollbar-width:none}
 body.tv-mode .screen-split-wrapper.split-active .fids-table-wrap{flex:1 1 auto;width:auto}
-body.tv-mode .ads-sidebar-wrap{flex:0 0 auto;width:auto;height:100%;min-width:0;min-height:0;border-radius:clamp(8px,1vw,18px)}
+body.tv-mode .ads-sidebar-wrap{flex:0 0 auto;width:auto;height:100%;min-width:0;min-height:0;border-radius:clamp(8px,1vw,18px);position:relative;z-index:2}
 body.tv-mode .ad-image-container{width:100%;height:100%;min-height:0;min-width:0;flex:1;overflow:hidden}
 body.tv-mode .ad-img-item{width:100%;height:100%;object-fit:fill}
 body.tv-mode th{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(9px,.72vw,12px);letter-spacing:.04em}
 body.tv-mode td{padding:clamp(7px,.9vh,14px) clamp(5px,.65vw,12px);font-size:clamp(11px,.9vw,15px)}
-body.tv-mode .badge-status{padding:clamp(4px,.4vw,7px) clamp(6px,.7vw,12px);font-size:clamp(8px,.65vw,11px)}
 body.tv-mode .ticker-footer{flex:0 0 clamp(28px,4.5vh,42px);height:clamp(28px,4.5vh,42px)}
 body.tv-mode .ticker-title{padding:0 clamp(8px,1.2vw,20px);font-size:clamp(9px,.7vw,12px)}
 body.tv-mode .ticker-content{font-size:clamp(10px,.8vw,13px)}
@@ -140,9 +143,7 @@ body.tv-mode .fixed-departures-label{padding:clamp(4px,.45vh,7px) clamp(8px,.8vw
 body.tv-mode .fixed-departures-table th{padding:clamp(4px,.45vh,7px) clamp(5px,.6vw,10px);font-size:clamp(8px,.62vw,11px)}
 body.tv-mode .fixed-departures-table td{padding:clamp(4px,.5vh,8px) clamp(5px,.6vw,10px);font-size:clamp(10px,.82vw,14px)}
 body.tv-mode .fixed-departures-table td:first-child{font-size:clamp(14px,1.1vw,19px);font-weight:900}
-body.tv-mode .screen-split-wrapper{flex:1 1 auto;min-height:0}
 
-body.tv-mode .fids-table-wrap{overflow-y:auto;scrollbar-width:none}
 body.tv-mode .fids-table-wrap::-webkit-scrollbar{display:none}
 body.tv-mode .badge-status{display:inline-flex;align-items:center;justify-content:center;min-width:clamp(76px,7.8vw,126px);min-height:clamp(28px,3.5vh,42px);padding:clamp(5px,.55vw,10px) clamp(8px,.8vw,13px);font-size:clamp(10px,.88vw,15px);line-height:1.12;white-space:normal;text-align:center;border-radius:999px;font-weight:900;letter-spacing:.015em;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 body.tv-mode .status-espera{background:linear-gradient(135deg,#064b88,#0879bd);color:#fff;border:1px solid #42d9ff;box-shadow:0 0 12px rgba(0,190,255,.25)}
@@ -151,13 +152,17 @@ body.tv-mode .status-abordaje{background:linear-gradient(135deg,#00d974,#00a86b)
 body.tv-mode .status-ultima{background:linear-gradient(135deg,#ff416c,#c81e4b);color:#fff;border:1px solid #ff9bb2}
 body.tv-mode .status-demorado{background:linear-gradient(135deg,#ff623d,#c81e1e);color:#fff;border:1px solid #ffb1a3}
 body.tv-mode .status-salido{background:#243c60;color:#d9e7fb;border:1px solid #6c84a7}
-body.tv-mode .ads-sidebar-wrap{position:relative;z-index:2}
 
 /* VISTA MÓVIL PASAJERO CON BUSCADOR */
-body.passenger-mode .glass-header{padding:10px 15px}
+body.passenger-mode .glass-header{padding:10px 12px;gap:8px;flex-wrap:wrap}
+body.passenger-mode .glass-header>div:first-child{gap:10px!important;min-width:0;flex:1 1 auto}
+body.passenger-mode .glass-header>div:last-child{padding:5px 10px!important;margin-left:auto;flex:0 0 auto}
 body.passenger-mode .brand-logo{font-size:20px;padding:5px 12px}
-body.passenger-mode #header-terminal-title{font-size:16px!important}
+body.passenger-mode #header-terminal-title{font-size:16px!important;letter-spacing:.5px!important}
 body.passenger-mode #header-terminal-sub{font-size:10px!important}
+body.passenger-mode .hdr-sub-row{flex-wrap:wrap;gap:4px 8px!important}
+body.passenger-mode #clock-time{font-size:18px!important}
+body.passenger-mode #clock-date{font-size:9px!important}
 body.passenger-mode .glass-card{margin:10px;padding:10px;background:transparent;border:none;box-shadow:none;max-height:none}
 body.passenger-mode .fids-table-wrap table{display:none!important}
 body.passenger-mode .screen-split-wrapper{min-height:0}
@@ -169,7 +174,6 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 .passenger-card-dest{font-size:18px;font-weight:800;color:#fff;margin-top:2px}
 .passenger-card-scales{font-size:11px;color:#93c5fd}
 .passenger-card-details{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:10px 12px;border-radius:10px;font-size:12px;font-weight:700;margin-top:4px}
-.passenger-track-btn{width:100%;margin-top:6px;justify-content:center;padding:10px;font-size:11px;border-radius:10px;font-weight:900;cursor:pointer}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -180,10 +184,10 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
 
 <div id="audio-start-overlay" class="overlay">
   <div class="card">
-    <div style="font-size:48px;margin-bottom:15px">🔊</div>
+    <div class="ov-icon" style="font-size:48px;margin-bottom:15px">🔊</div>
     <h2 style="font-size:24px;font-weight:900;color:#00D974;margin-bottom:10px">SISTEMA FIDS TRANSPAIS</h2>
     <p style="font-size:14px;color:#93c5fd;margin-bottom:25px">Haz clic para habilitar el motor de audios MP3 en este navegador.</p>
-    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="document.getElementById('audio-start-overlay').style.display='none'; if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
+    <button class="btn btn-green" style="padding:15px 30px;font-size:14px;width:100%;justify-content:center" id="btn-unlock" onclick="if(window.unlockAudio) window.unlockAudio();">▶️ ACTIVAR SISTEMA DE VOCEO</button>
   </div>
 </div>
 
@@ -211,7 +215,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
     <div class="brand-logo">TRANSPAIS®</div>
     <div>
       <h1 id="header-terminal-title" style="font-size:22px;font-weight:900;letter-spacing:1px">TERMINAL PEDRO CÁRDENAS</h1>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div class="hdr-sub-row" style="display:flex;align-items:center;gap:10px">
         <div id="header-terminal-sub" style="font-size:11px;color:#00D974;font-weight:700;margin-top:3px">MATAMOROS – OFICINA DE PASO</div>
         <!-- INDICADOR EN VIVO (OPCIÓN 1) -->
         <div id="net-status-badge" style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,217,116,0.15);color:#00D974;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:800;border:1px solid rgba(0,217,116,0.3)">
@@ -409,7 +413,6 @@ const pad = function(x){ return String(x).padStart(2,'0'); };
 
 let suc = null, deps = {}, adsData = {}, adsConfig = {force7030:false}, ready = false, srvOff = 0, urgentMsg = '';
 let gotServer = false, gotCleared = false, offlineFallback = false, clearedDay = null, fbTimer = null, curMap = {};
-let trackedBuses = JSON.parse(localStorage.getItem('transpais_tracked_buses') || '{}');
 
 if(isPassenger) document.body.classList.add('passenger-mode');
 if(isTV) document.body.classList.add('tv-mode');
@@ -529,15 +532,17 @@ function diffOf(d,n){
 }
 const isLive=function(d,n){return d.day===n.key||(n.min<360&&d.day===dayShift(n.key,-1));};
 
+const ULTIMA_CENTRAL=3, ULTIMA_OF2=3;   // minutos antes de la salida en que se da la última llamada
+
 function stat(d,diff){
   if(d.status==='SALIDO'||diff<0)return'SALIDO';
   const isCentral = viewSuc() === 'central';
   if(isCentral){
-    if(diff<=5)return'ÚLTIMA LLAMADA';
+    if(diff<=ULTIMA_CENTRAL)return'ÚLTIMA LLAMADA';
     if(diff<=15)return'EN ABORDAJE';
     if(diff<=30)return'ETIQUETANDO PASAJE';
   }else{
-    if(diff===0)return'ÚLTIMA LLAMADA';
+    if(diff<=ULTIMA_OF2)return'ÚLTIMA LLAMADA';
     if(diff<=5)return'EN ABORDAJE';
     if(diff<=15)return'ETIQUETANDO PASAJE';
   }
@@ -657,8 +662,33 @@ window.unlockAudio=function(){
   try{ctx();}catch(e){}
 };
 
-let lastPanicTs=0;
+/* Compuerta de audio: pasajero nunca la ve; TV la ve compacta solo si el navegador bloquea el audio */
+(function initAudioGate(){
+  const ov=$('audio-start-overlay'); if(!ov)return;
+  if(isPassenger){ ov.style.display='none'; return; }
+  if(!isTV)return;
+  ov.classList.add('compact');
+  try{
+    const a=new Audio('data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==');
+    a.volume=0;
+    const pr=a.play();
+    if(pr&&pr.then)pr.then(function(){
+      try{ctx();}catch(e){}
+      setTimeout(function(){ if(actx&&actx.state==='running')ov.style.display='none'; },400);
+    }).catch(function(){});
+  }catch(e){}
+  const once=function(){
+    window.unlockAudio();
+    document.removeEventListener('pointerdown',once);
+    document.removeEventListener('keydown',once);
+  };
+  document.addEventListener('pointerdown',once);
+  document.addEventListener('keydown',once);
+})();
+
+let lastPanicTs=0, panicMark=0;
 function panicStopLocal(){
+  panicMark=epoch+1;
   hardStop();
   setVoiceIndicator(false);
 }
@@ -817,38 +847,39 @@ function virtualDeps(){
 }
 
 function virtualActive(){
-  if (!(gotCleared || offlineFallback)) return false;
-  if (clearedDay === nowParts().key) return false;
-  return Object.keys(deps).length === 0;
+  if (!((gotServer && gotCleared) || offlineFallback)) return false;
+  const today = nowParts().key;
+  if (clearedDay === today) return false;
+  return !Object.values(deps).some(function(d){ return d && d.day === today; });
 }
+
+const baseIdOf = function(d){ return String(d.id||'').replace(/^old_/,''); };
+const isCustom = function(d){ return /^c\d+$/.test(baseIdOf(d)); };
+const depKey = function(d){ return isCustom(d) ? baseIdOf(d) : (d.presetKey || (d.destination + '_' + d.time)); };
 
 function buildList(n){
   let base = Object.values(deps);
   if(virtualActive()){
-    const existingKeys = new Set(base.map(function(d){ return d.presetKey || (d.destination + '_' + d.time); }));
+    const existingKeys = new Set(base.filter(function(d){ return d && d.day === n.key; }).map(depKey));
     virtualDeps().forEach(function(vd){
-      const key = vd.presetKey || (vd.destination + '_' + vd.time);
-      if(!existingKeys.has(key)) base.push(vd);
+      if(!existingKeys.has(depKey(vd))) base.push(vd);
     });
   }
 
-  const mapByPreset = new Map();
+  const mapByKey = new Map();
   base.forEach(function(d){
     if(!d || !d.time || !isLive(d, n) || diffOf(d, n) <= -15) return;
-    
-    const key = d.presetKey || (d.destination + '_' + d.time);
-    
-    if(!mapByPreset.has(key)){
-      mapByPreset.set(key, d);
-    } else {
-      const existing = mapByPreset.get(key);
-      if((d.status && d.status !== 'EN ESPERA' && existing.status === 'EN ESPERA') || (String(d.id).startsWith('p') && !String(existing.id).startsWith('p'))){
-        mapByPreset.set(key, d);
-      }
+    const key = depKey(d);
+    const existing = mapByKey.get(key);
+    if(!existing){ mapByKey.set(key, d); return; }
+    const dHoy = d.day === n.key, eHoy = existing.day === n.key;
+    if(dHoy !== eHoy){ if(dHoy) mapByKey.set(key, d); return; }
+    if((d.status && d.status !== 'EN ESPERA' && existing.status === 'EN ESPERA') || (String(d.id).startsWith('p') && !String(existing.id).startsWith('p'))){
+      mapByKey.set(key, d);
     }
   });
 
-  return Array.from(mapByPreset.values())
+  return Array.from(mapByKey.values())
     .map(function(d){
       const o = Object.assign({}, d);
       o._diff = diffOf(d, n);
@@ -877,18 +908,27 @@ async function autoCatalog(){
 function loadCatalog(){
   const branch = suc || viewSuc();
   const n = nowParts(), day = n.key, o = {}, catalog = catalogFor(branch);
-  Object.values(deps).forEach(function(d){
-    if(d.day && d.day !== day && isLive(d,n) && diffOf(d,n) > -15){
-      const c = Object.assign({}, d); delete c.id; delete c._virtual;
-      o['old_' + String(d.id).replace(/^old_/, '')] = c;
+  Object.keys(deps).forEach(function(key){
+    const d = deps[key];
+    if(!d || !d.time) return;
+    const c = Object.assign({}, d); delete c.id; delete c._virtual;
+    if(d.day === day){
+      o[key] = c;                       // lo de hoy se conserva (unidades, ajustes, corridas manuales)
+    } else if(isLive(d,n)){
+      const diff = diffOf(d,n), hora = +String(d.time).split(':')[0];
+      const salioHacePoco = diff <= 0 && diff > -15;
+      const retrasadaDeMadrugada = (d.delay||0) > 0 && hora < 6 && diff > -15;
+      if(salioHacePoco || retrasadaDeMadrugada) o['old_' + key.replace(/^old_/, '')] = c;
     }
   });
   Object.keys(catalog).forEach(function(k){
+    if(o[k] && o[k].day === day) return;   // ya existe hoy: no se pisa
     const row = catalog[k];
     o[k] = {presetKey: k, time: row[0], destination: row[1], scales: row[2], bus: '', status: 'EN ESPERA', sucursal: branch, day: day, delay: 0};
   });
 
-  deps = o;
+  deps = {};
+  Object.keys(o).forEach(function(k){ deps[k] = Object.assign({id:k}, o[k]); });
   clearedDay = null;
   try{ localStorage.setItem('transpais_offline_deps_' + branch, JSON.stringify(deps)); }catch(e){}
   render();
@@ -1134,41 +1174,54 @@ const fired=loadFired();
 const voicePending=new Set();
 const voiceRetryAfter=new Map();
 
+function markFired(k,n){
+  fired.add(k);
+  const y=dayShift(n.key,-1);
+  try{
+    localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
+      const dd=x.split('|')[2]; return dd===n.key||dd===y;
+    })));
+  }catch(e){}
+}
+
 function autoVoice(d,diff,n){
   if(isPassenger||(!isTV&&!canWrite()))return;
+  if(!d.presetKey||isCustom(d))return;          // corridas manuales no tienen MP3
   const isCentral = viewSuc() === 'central';
   let mode = null;
   let subKey = '';
 
   if(isCentral){
+    const U=ULTIMA_CENTRAL;
     if(diff <= 30 && diff > 15) { mode = 'etiq'; subKey = 'etiq30'; }
     else if(diff <= 15 && diff > 10) { mode = 'abord'; subKey = 'abord15'; }
-    else if(diff <= 10 && diff > 5) { mode = 'abord'; subKey = 'abord10'; }
-    else if(diff <= 5 && diff > 0) { mode = 'ultima'; subKey = 'ultima5'; }
+    else if(diff <= 10 && diff > U) { mode = 'abord'; subKey = 'abord10'; }
+    else if(diff <= U && diff > 0) { mode = 'ultima'; subKey = 'ultima'+U; }
   } else {
+    const U=ULTIMA_OF2;
     if(diff <= 15 && diff > 10) { mode = 'etiq'; subKey = 'etiq15'; }
-    else if(diff <= 5 && diff > 1) { mode = 'abord'; subKey = 'abord5'; }
-    else if(diff <= 0 && diff > -3) { mode = 'ultima'; subKey = 'ultima0'; }
+    else if(diff <= 5 && diff > U) { mode = 'abord'; subKey = 'abord5'; }
+    else if(diff <= U && diff > 0) { mode = 'ultima'; subKey = 'ultima'+U; }
   }
 
   if(!mode)return;
-  const baseId=String(d.id).replace(/^old_/,'');
+  const baseId=baseIdOf(d);
   const k=baseId+'|'+subKey+'|'+(d.day||n.key)+'|'+d.time;
   if(fired.has(k)||voicePending.has(k))return;
+  if(muted){ markFired(k,n); return; }           // en silencio: se descarta, no se repite después
   const retryAt=voiceRetryAfter.get(k)||0;
   if(Date.now()<retryAt)return;
   voicePending.add(k);
-  enqueueAudio(d.presetKey||'p01',mode,function(ok){
+  const ep=epoch;
+  enqueueAudio(d.presetKey,mode,function(ok){
     voicePending.delete(k);
-    if(!ok){voiceRetryAfter.set(k,Date.now()+15000);return;}
+    if(!ok){
+      if(ep<panicMark){ markFired(k,n); return; } // cancelado con PÁNICO: no se repite
+      voiceRetryAfter.set(k,Date.now()+15000);
+      return;
+    }
     voiceRetryAfter.delete(k);
-    fired.add(k);
-    const y=dayShift(n.key,-1);
-    try{
-      localStorage.setItem('transpais_fired',JSON.stringify(Array.from(fired).filter(function(x){
-        const dd=x.split('|')[2]; return dd===n.key||dd===y;
-      })));
-    }catch(e){}
+    markFired(k,n);
   });
 }
 
@@ -1218,24 +1271,10 @@ function badge(st){
 }
 const cleanScales=function(s){return (s||'').split(',').map(function(x){return x.trim();}).filter(Boolean).join(', ');};
 
-/* CONMUTADOR SEGUIMIENTO EN MÓVIL (OPCIÓN 6) */
-function toggleTrackBus(presetKey){
-  if(trackedBuses[presetKey]) delete trackedBuses[presetKey];
-  else trackedBuses[presetKey] = true;
-  localStorage.setItem('transpais_tracked_buses', JSON.stringify(trackedBuses));
-  render();
-}
-
 function passengerCardHTML(d, isCentral){
   const sc = cleanScales(d.scales);
   const boardingPoint = isCentral ? 'Andén 18 (Central)' : 'Oficina Pedro Cárdenas';
-  const isTracked = !!trackedBuses[d.presetKey];
   const isActive = d._st === 'ETIQUETANDO PASAJE' || d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA';
-
-  // VIBRACIÓN SI EL AUTOBÚS SEGUIDO CAMBIA A ABORDAJE (OPCIÓN 6)
-  if(isTracked && (d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA')){
-    if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
-  }
 
   // EFECTO DORADITO (OPCIÓN 3)
   const cardClass = 'passenger-card ' + (isActive ? 'gold-card-active' : '');
@@ -1253,9 +1292,6 @@ function passengerCardHTML(d, isCentral){
       '<span>🚌 Bus: ' + esc(d.bus || '---') + '</span>' +
       '<span>📍 ' + esc(boardingPoint) + '</span>' +
     '</div>' +
-    '<button class="btn passenger-track-btn ' + (isTracked ? 'btn-green' : 'btn-dark') + '" onclick="toggleTrackBus(\'' + esc(d.presetKey) + '\')">' +
-      (isTracked ? '🔔 Siguiendo este autobús (Te avisará)' : '🔕 Notificarme para abordar') +
-    '</button>' +
   '</div>';
 }
 
@@ -1273,7 +1309,7 @@ function tvRow(d,c){
 
 function adminRow(d){
   return '<td><strong>'+esc(d.time)+'</strong></td>'+
-  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc(d.presetKey||'Sin clave')+'</div></td>'+
+  '<td><div><strong>'+esc(d.destination)+'</strong></div><div style="font-size:10px;color:#93c5fd">MP3: '+esc((d.presetKey&&!isCustom(d))?d.presetKey:'Sin audio')+'</div></td>'+
   '<td class="c"><input type="text" class="inline-bus-input" value="'+esc(d.bus||'')+'" placeholder="---"></td>'+
   '<td class="c">'+badge(d._st)+'</td>'+
   '<td>'+
@@ -1344,15 +1380,18 @@ function render(){
     if($('passenger-search-wrap')) $('passenger-search-wrap').classList.remove('hidden');
 
     // FILTRO DE BUSCADOR (OPCIÓN 6)
-    const q = ($('passenger-search-input') ? $('passenger-search-input').value : '').toLowerCase().trim();
+    const norm = function(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); };
+    const q = norm($('passenger-search-input') ? $('passenger-search-input').value : '').trim();
+    const totalAntes = list.length;
     if(q){
       list = list.filter(function(d){
-        return d.destination.toLowerCase().includes(q) || (d.scales||'').toLowerCase().includes(q);
+        return norm(d.destination).includes(q) || norm(d.scales).includes(q);
       });
     }
 
     if(list.length===0){
-      plist.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px">No se encontraron autobuses para tu búsqueda.</div>';
+      plist.innerHTML = '<div style="text-align:center;padding:30px;color:#888;font-size:13px">' +
+        (totalAntes===0 ? 'No hay salidas programadas por ahora.' : 'No se encontraron autobuses para tu búsqueda.') + '</div>';
     }else{
       plist.innerHTML = list.map(function(d){ return passengerCardHTML(d, c); }).join('');
     }
@@ -1378,6 +1417,7 @@ if($('admin-body')){
     const tr=b.closest('tr'), d=curMap[tr.dataset.k]; if(!d)return;
     const act=b.dataset.act;
     if(act==='voz'){
+      if(!d.presetKey||isCustom(d)){ alert('Esta corrida no tiene ruta con audio MP3.'); return; }
       db.ref(suc+'/voice').set({key:d.presetKey||'p01',mode:b.dataset.m,timestamp:firebase.database.ServerValue.TIMESTAMP}).catch(fail);
     }
     else if(act==='time')ensureMat().then(function(){adjustTime(d,+b.dataset.v);}).catch(fail);
@@ -1411,7 +1451,7 @@ function adjustTime(d,deltaMinutes){
 }
 
 function editDeparture(d){
-  $('dep-id').value=d.id; $('dep-preset-key').value=d.presetKey||'p01';
+  $('dep-id').value=d.id; $('dep-preset-key').value=isCustom(d)?'':(d.presetKey||'');
   $('dep-time').value=d.time; $('dep-destination').value=d.destination;
   $('dep-scales').value=d.scales||''; $('dep-bus').value=d.bus||'';
   const sel=$('dep-status'); sel.value=Array.from(sel.options).some(function(o){return o.value===d.status;})?d.status:'DEMORADO';
@@ -1435,7 +1475,7 @@ if($('departure-form')){
       let status = $('dep-status').value;
       if(status==='DEMORADO'&&old&&old.status&&(old.status.indexOf('DEMORADO')===0||old.status==='REPROGRAMADO'))status=old.status;
       return dref(id).set({
-        presetKey: presetKey || 'p01',
+        presetKey: presetKey || '',
         time: $('dep-time').value,
         destination: $('dep-destination').value.trim(),
         scales: cleanScales($('dep-scales').value),
@@ -1473,7 +1513,7 @@ if($('preset-selector')){
   });
 }
 
-if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Cargar las salidas fijas del catálogo para esta sucursal?'))loadCatalog().catch(fail);};
+if($('btn-load-all'))$('btn-load-all').onclick=function(){if(canWrite()&&confirm('¿Agregar las salidas fijas que falten del catálogo? Las que ya están cargadas hoy conservan su unidad y sus ajustes de hora.'))loadCatalog().catch(fail);};
 if($('btn-clear-all'))$('btn-clear-all').onclick=function(){
   if(!canWrite())return;
   if(!confirm('ATENCIÓN: esto eliminará TODAS las corridas de esta sucursal. Esta acción no se puede deshacer desde la pantalla. ¿Tienes un respaldo y deseas continuar?'))return;
