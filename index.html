@@ -80,7 +80,7 @@ body.passenger-mode .control-bar { display: none !important; }
 .screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 auto;min-height:0;align-items:stretch;transition:all .3s ease;overflow:hidden}
 .fids-table-wrap{flex:1 1 auto;min-width:0;overflow-y:auto;transition:all .3s ease}
 
-/* ENCABEZADOS FIJOS (STICKY) EN LA TABLA CON AUTO-SCROLL */
+/* ENCABEZADOS FIJOS (STICKY) EN LA TABLA */
 .fids-table-wrap th {
   position: sticky !important;
   top: 0 !important;
@@ -1274,41 +1274,57 @@ function autoVoice(d,diff,n){
   });
 }
 
-/* ============ AUTO-SCROLL LENTO Y SUAVE (CON ENCABEZADOS FIJOS) ============ */
+/* ============ AUTO-SCROLL CON ACUMULADOR DECIMAL (GARANTIZADO 60 FPS) ============ */
 (function initTVAutoScroll() {
-  let scrollSpeed = 0.2; // Velocidad súper lenta y fácil de leer (0.2px por frame)
-  let pauseTime = 5000;  // Pausa de 5 segundos arriba y abajo
+  let scrollPos = 0;      // Acumulador decimal en memoria JS
+  let scrollSpeed = 0.35; // Velocidad de lectura óptima (0.35px por frame)
+  let pauseTime = 5000;   // Pausa de 5 segundos arriba y abajo
   let isPaused = false;
-  let direction = 1;     // 1 = Bajar, -1 = Subir
+  let direction = 1;      // 1 = Bajar, -1 = Subir
 
   function scrollStep() {
     if (isTV) {
       const container = document.querySelector('.fids-table-wrap');
-      if (container && !isPaused) {
+      if (container) {
         const maxScroll = container.scrollHeight - container.clientHeight;
 
         if (maxScroll > 15) {
-          if (direction === 1) {
-            container.scrollTop += scrollSpeed;
-            if (container.scrollTop >= maxScroll - 1) {
-              isPaused = true;
-              setTimeout(function() {
-                direction = -1;
-                isPaused = false;
-              }, pauseTime);
+          if (!isPaused) {
+            // Sincronizar acumulador si hubo cambio externo o re-render
+            if (Math.abs(container.scrollTop - scrollPos) > 10) {
+              scrollPos = container.scrollTop;
             }
-          } else {
-            container.scrollTop -= scrollSpeed * 1.5; // Regreso suave hacia arriba
-            if (container.scrollTop <= 1) {
-              container.scrollTop = 0;
-              isPaused = true;
-              setTimeout(function() {
-                direction = 1;
-                isPaused = false;
-              }, pauseTime);
+
+            if (direction === 1) {
+              scrollPos += scrollSpeed;
+              container.scrollTop = scrollPos;
+
+              if (container.scrollTop >= maxScroll - 2 || scrollPos >= maxScroll) {
+                scrollPos = maxScroll;
+                container.scrollTop = maxScroll;
+                isPaused = true;
+                setTimeout(function() {
+                  direction = -1;
+                  isPaused = false;
+                }, pauseTime);
+              }
+            } else {
+              scrollPos -= scrollSpeed * 1.5; // Regreso suave
+              container.scrollTop = scrollPos;
+
+              if (container.scrollTop <= 2 || scrollPos <= 0) {
+                scrollPos = 0;
+                container.scrollTop = 0;
+                isPaused = true;
+                setTimeout(function() {
+                  direction = 1;
+                  isPaused = false;
+                }, pauseTime);
+              }
             }
           }
         } else {
+          scrollPos = 0;
           container.scrollTop = 0;
         }
       }
