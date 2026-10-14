@@ -1270,6 +1270,54 @@ function autoVoice(d,diff,n){
   });
 }
 
+/* ============ AUTO-SCROLL SUAVE PARA SMART TV ============ */
+let autoScrollTimer = null;
+let scrollDirection = 1; // 1 = Bajar, -1 = Subir
+let scrollPaused = false;
+
+function startFidsAutoScroll() {
+  if (!isTV) return; // Solo se ejecuta en modo TV
+  
+  const container = document.querySelector('.fids-table-wrap');
+  if (!container) return;
+
+  if (autoScrollTimer) clearInterval(autoScrollTimer);
+
+  autoScrollTimer = setInterval(function() {
+    if (scrollPaused) return;
+
+    // Calcular si la tabla desborda la pantalla
+    const maxScroll = container.scrollHeight - container.clientHeight;
+    
+    // Si caben todas las corridas en pantalla, no hace scroll
+    if (maxScroll <= 10) {
+      container.scrollTop = 0;
+      return;
+    }
+
+    if (scrollDirection === 1) {
+      container.scrollTop += 1; // Velocidad de bajada (1px por paso)
+      if (container.scrollTop >= maxScroll - 2) {
+        scrollPaused = true;
+        setTimeout(function() {
+          scrollDirection = -1; // Cambiar dirección hacia arriba
+          scrollPaused = false;
+        }, 4000); // Pausa de 4 segundos al llegar al final
+      }
+    } else {
+      container.scrollTop -= 2; // Sube un poco más rápido (2px por paso)
+      if (container.scrollTop <= 2) {
+        container.scrollTop = 0;
+        scrollPaused = true;
+        setTimeout(function() {
+          scrollDirection = 1; // Cambiar dirección hacia abajo
+          scrollPaused = false;
+        }, 4000); // Pausa de 4 segundos arriba antes de volver a bajar
+      }
+    }
+  }, 40); // Ritmo fluido (25 cuadros por segundo)
+}
+
 /* ============ RELOJ Y REINICIO DIARIO (03:00 AM REINICIO 24/7) ============ */
 let lastMinute = -1;
 
@@ -1450,6 +1498,9 @@ function render(){
     if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
     if(canWrite()&&ab)syncRows(ab,list,adminRow);
   }
+
+  // Se activa la rotación suave de scroll en Smart TV
+  startFidsAutoScroll();
 }
 
 /* ============ ACCIONES DE TAQUILLA ============ */
