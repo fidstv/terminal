@@ -1270,52 +1270,73 @@ function autoVoice(d,diff,n){
   });
 }
 
-/* ============ AUTO-SCROLL SUAVE PARA SMART TV ============ */
-let autoScrollTimer = null;
+//* ============ AUTO-SCROLL ULTRA FLUIDO (60 FPS) ============ */
+let autoScrollAnimFrame = null;
 let scrollDirection = 1; // 1 = Bajar, -1 = Subir
 let scrollPaused = false;
+let accumulatedScroll = 0;
+let isScrollRunning = false;
 
 function startFidsAutoScroll() {
-  if (!isTV) return; // Solo se ejecuta en modo TV
+  if (!isTV) return;
   
   const container = document.querySelector('.fids-table-wrap');
   if (!container) return;
 
-  if (autoScrollTimer) clearInterval(autoScrollTimer);
+  // Evitar reiniciar el ciclo de animación si ya está corriendo
+  if (isScrollRunning) return;
+  isScrollRunning = true;
+  accumulatedScroll = container.scrollTop;
 
-  autoScrollTimer = setInterval(function() {
-    if (scrollPaused) return;
+  let lastTime = performance.now();
 
-    // Calcular si la tabla desborda la pantalla
-    const maxScroll = container.scrollHeight - container.clientHeight;
-    
-    // Si caben todas las corridas en pantalla, no hace scroll
-    if (maxScroll <= 10) {
-      container.scrollTop = 0;
-      return;
-    }
+  function step(currentTime) {
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
 
-    if (scrollDirection === 1) {
-      container.scrollTop += 1; // Velocidad de bajada (1px por paso)
-      if (container.scrollTop >= maxScroll - 2) {
-        scrollPaused = true;
-        setTimeout(function() {
-          scrollDirection = -1; // Cambiar dirección hacia arriba
-          scrollPaused = false;
-        }, 4000); // Pausa de 4 segundos al llegar al final
-      }
-    } else {
-      container.scrollTop -= 2; // Sube un poco más rápido (2px por paso)
-      if (container.scrollTop <= 2) {
+    if (!scrollPaused) {
+      const maxScroll = container.scrollHeight - container.clientHeight;
+
+      if (maxScroll <= 10) {
         container.scrollTop = 0;
-        scrollPaused = true;
-        setTimeout(function() {
-          scrollDirection = 1; // Cambiar dirección hacia abajo
-          scrollPaused = false;
-        }, 4000); // Pausa de 4 segundos arriba antes de volver a bajar
+        accumulatedScroll = 0;
+      } else {
+        // Velocidad adaptativa según los milisegundos reales transcurridos
+        const speed = 0.035 * deltaTime; 
+
+        if (scrollDirection === 1) {
+          accumulatedScroll += speed;
+          container.scrollTop = accumulatedScroll;
+
+          if (container.scrollTop >= maxScroll - 2) {
+            scrollPaused = true;
+            setTimeout(function() {
+              scrollDirection = -1;
+              scrollPaused = false;
+            }, 4000); // Pausa de 4 segundos al llegar abajo
+          }
+        } else {
+          accumulatedScroll -= speed * 1.5; // Sube ligeramente más rápido
+          container.scrollTop = accumulatedScroll;
+
+          if (container.scrollTop <= 2) {
+            accumulatedScroll = 0;
+            container.scrollTop = 0;
+            scrollPaused = true;
+            setTimeout(function() {
+              scrollDirection = 1;
+              scrollPaused = false;
+            }, 4000); // Pausa de 4 segundos al llegar arriba
+          }
+        }
       }
     }
-  }, 40); // Ritmo fluido (25 cuadros por segundo)
+
+    autoScrollAnimFrame = requestAnimationFrame(step);
+  }
+
+  cancelAnimationFrame(autoScrollAnimFrame);
+  autoScrollAnimFrame = requestAnimationFrame(step);
 }
 
 /* ============ RELOJ Y REINICIO DIARIO (03:00 AM REINICIO 24/7) ============ */
