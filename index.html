@@ -420,7 +420,6 @@ if (rawVista) {
   else vista = 'screen';
 }
 
-// CORRECCIÓN PUNTO 7: PANTALLA ROJA DE ERROR SIN REVELAR VISTAS VÁLIDAS
 if (vista === 'invalid') {
   document.addEventListener('DOMContentLoaded', function() {
     document.body.innerHTML = '<div style="background:#000B18;color:#f87171;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;text-align:center;padding:20px">' +
@@ -663,7 +662,6 @@ async function runQueue(){
   }
 }
 
-/* REPRODUCCIÓN CON RUTA ESPECÍFICA DE SUCURSAL Y RESPALDO AUTOMÁTICO */
 function playOne(key,mode){
   return new Promise(async function(res){
     if(muted||isPassenger)return res();
@@ -688,7 +686,6 @@ function playOne(key,mode){
     to = setTimeout(end, 60000);
     a.onended = function(){ end(true); };
     a.onerror = function(){
-      // Intentar cargar audio de respaldo si no existe en la subcarpeta
       const fb = new Audio(fallbackSrc);
       currentVoiceAudio = fb;
       fb.onended = function(){ end(true); };
@@ -871,7 +868,6 @@ function renderUrgentMsg(){
   }
 }
 
-/* MENSAJES RÁPIDOS */
 function setQuickUrgent(msg){
   const inp=$('urgent-input');
   if(inp) inp.value=msg;
@@ -1166,7 +1162,6 @@ if($('ad-upload-input')){
       reader.onload=function(evt){ saveAd(evt.target.result,false); };
       reader.readAsDataURL(file);
     } else {
-      // COMPRESIÓN OBLIGATORIA VÍA CANVAS
       const reader=new FileReader();
       reader.onload=function(evt){
         const img=new Image();
@@ -1270,74 +1265,56 @@ function autoVoice(d,diff,n){
   });
 }
 
-//* ============ AUTO-SCROLL ULTRA FLUIDO (60 FPS) ============ */
-let autoScrollAnimFrame = null;
-let scrollDirection = 1; // 1 = Bajar, -1 = Subir
-let scrollPaused = false;
-let accumulatedScroll = 0;
-let isScrollRunning = false;
+/* ============ AUTO-SCROLL INDEPENDIENTE Y FLUIDO (SIN SATURAR LA TV) ============ */
+(function initTVAutoScroll() {
+  let scrollSpeed = 0.5;
+  let pauseTime = 4000;
+  let isPaused = false;
+  let direction = 1;
 
-function startFidsAutoScroll() {
-  if (!isTV) return;
-  
-  const container = document.querySelector('.fids-table-wrap');
-  if (!container) return;
+  function scrollStep() {
+    if (isTV) {
+      const container = document.querySelector('.fids-table-wrap');
+      if (container && !isPaused) {
+        const maxScroll = container.scrollHeight - container.clientHeight;
 
-  // Evitar reiniciar el ciclo de animación si ya está corriendo
-  if (isScrollRunning) return;
-  isScrollRunning = true;
-  accumulatedScroll = container.scrollTop;
-
-  let lastTime = performance.now();
-
-  function step(currentTime) {
-    const deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
-
-    if (!scrollPaused) {
-      const maxScroll = container.scrollHeight - container.clientHeight;
-
-      if (maxScroll <= 10) {
-        container.scrollTop = 0;
-        accumulatedScroll = 0;
-      } else {
-        // Velocidad adaptativa según los milisegundos reales transcurridos
-        const speed = 0.035 * deltaTime; 
-
-        if (scrollDirection === 1) {
-          accumulatedScroll += speed;
-          container.scrollTop = accumulatedScroll;
-
-          if (container.scrollTop >= maxScroll - 2) {
-            scrollPaused = true;
-            setTimeout(function() {
-              scrollDirection = -1;
-              scrollPaused = false;
-            }, 4000); // Pausa de 4 segundos al llegar abajo
+        if (maxScroll > 15) {
+          if (direction === 1) {
+            container.scrollTop += scrollSpeed;
+            if (container.scrollTop >= maxScroll - 1) {
+              isPaused = true;
+              setTimeout(function() {
+                direction = -1;
+                isPaused = false;
+              }, pauseTime);
+            }
+          } else {
+            container.scrollTop -= scrollSpeed * 1.8;
+            if (container.scrollTop <= 1) {
+              container.scrollTop = 0;
+              isPaused = true;
+              setTimeout(function() {
+                direction = 1;
+                isPaused = false;
+              }, pauseTime);
+            }
           }
         } else {
-          accumulatedScroll -= speed * 1.5; // Sube ligeramente más rápido
-          container.scrollTop = accumulatedScroll;
-
-          if (container.scrollTop <= 2) {
-            accumulatedScroll = 0;
-            container.scrollTop = 0;
-            scrollPaused = true;
-            setTimeout(function() {
-              scrollDirection = 1;
-              scrollPaused = false;
-            }, 4000); // Pausa de 4 segundos al llegar arriba
-          }
+          container.scrollTop = 0;
         }
       }
     }
-
-    autoScrollAnimFrame = requestAnimationFrame(step);
+    requestAnimationFrame(scrollStep);
   }
 
-  cancelAnimationFrame(autoScrollAnimFrame);
-  autoScrollAnimFrame = requestAnimationFrame(step);
-}
+  if (document.readyState === 'complete') {
+    requestAnimationFrame(scrollStep);
+  } else {
+    window.addEventListener('load', function() {
+      requestAnimationFrame(scrollStep);
+    });
+  }
+})();
 
 /* ============ RELOJ Y REINICIO DIARIO (03:00 AM REINICIO 24/7) ============ */
 let lastMinute = -1;
@@ -1348,7 +1325,6 @@ function tick(){
     if($('clock-time'))$('clock-time').textContent=n.time;
     if($('clock-date'))$('clock-date').textContent=new Date(Date.now()+srvOff).toLocaleDateString('es-MX',{timeZone:TZ,weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-    // REINICIO NOCTURNO AUTOMÁTICO PARA PANTALLAS 24/7
     if(isTV && n.min>=180 && n.min<190){
       try{
         if(localStorage.getItem('transpais_reload_day')!==n.key){
@@ -1519,9 +1495,6 @@ function render(){
     if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
     if(canWrite()&&ab)syncRows(ab,list,adminRow);
   }
-
-  // Se activa la rotación suave de scroll en Smart TV
-  startFidsAutoScroll();
 }
 
 /* ============ ACCIONES DE TAQUILLA ============ */
