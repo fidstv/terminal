@@ -80,6 +80,15 @@ body.passenger-mode .control-bar { display: none !important; }
 .screen-split-wrapper{display:flex;gap:20px;width:100%;flex:1 1 auto;min-height:0;align-items:stretch;transition:all .3s ease;overflow:hidden}
 .fids-table-wrap{flex:1 1 auto;min-width:0;overflow-y:auto;transition:all .3s ease}
 
+/* ENCABEZADOS FIJOS (STICKY) EN LA TABLA CON AUTO-SCROLL */
+.fids-table-wrap th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background: #00142D !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
 .ads-sidebar-wrap{
   flex:0 0 auto;
   height:100%;
@@ -1265,12 +1274,12 @@ function autoVoice(d,diff,n){
   });
 }
 
-/* ============ AUTO-SCROLL INDEPENDIENTE Y FLUIDO (SIN SATURAR LA TV) ============ */
+/* ============ AUTO-SCROLL LENTO Y SUAVE (CON ENCABEZADOS FIJOS) ============ */
 (function initTVAutoScroll() {
-  let scrollSpeed = 0.5;
-  let pauseTime = 4000;
+  let scrollSpeed = 0.2; // Velocidad súper lenta y fácil de leer (0.2px por frame)
+  let pauseTime = 5000;  // Pausa de 5 segundos arriba y abajo
   let isPaused = false;
-  let direction = 1;
+  let direction = 1;     // 1 = Bajar, -1 = Subir
 
   function scrollStep() {
     if (isTV) {
@@ -1289,7 +1298,7 @@ function autoVoice(d,diff,n){
               }, pauseTime);
             }
           } else {
-            container.scrollTop -= scrollSpeed * 1.8;
+            container.scrollTop -= scrollSpeed * 1.5; // Regreso suave hacia arriba
             if (container.scrollTop <= 1) {
               container.scrollTop = 0;
               isPaused = true;
