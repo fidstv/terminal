@@ -1,4 +1,4 @@
-const CACHE_NAME = 'transpais-fids-v2';
+const CACHE_NAME = 'transpais-fids-v3';
 
 // Archivos estáticos indispensables para arrancar sin internet
 const STATIC_ASSETS = [
@@ -8,16 +8,22 @@ const STATIC_ASSETS = [
   'logo.png'
 ];
 
-// 1. INSTALACIÓN: Guarda los recursos base en la memoria local de la TV
+// 1. INSTALACIÓN ROBUSTA: Guarda cada archivo individualmente sin cancelar si alguno falta
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return Promise.allSettled(
+        STATIC_ASSETS.map((asset) => {
+          return cache.add(asset).catch((err) => {
+            console.warn('No se pudo guardar en caché el archivo opcional:', asset);
+          });
+        })
+      );
     }).then(() => self.skipWaiting())
   );
 });
 
-// 2. ACTIVACIÓN: Limpia versiones antiguas de caché para liberar memoria
+// 2. ACTIVACIÓN: Limpia cachés antiguos para liberar memoria
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -32,23 +38,21 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. INTERCEPCIÓN (FETCH): Entrega archivos desde la caché local si no hay internet
+// 3. INTERCEPCIÓN (FETCH): Responde desde la memoria si no hay red
 self.addEventListener('fetch', (event) => {
   const requestUrl = event.request.url;
 
-  // No interceptar llamadas a la base de datos en tiempo real de Firebase
+  // No interceptar llamadas a la base de datos de Firebase
   if (requestUrl.includes('firebaseio.com') || requestUrl.includes('identitytoolkit')) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Si el archivo (HTML, imagen o MP3) ya está en caché, entregarlo al instante
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      // Si no está en caché, descargarlo de la red y guardar una copia para el futuro
       return fetch(event.request).then((networkResponse) => {
         if (
           networkResponse && 
@@ -62,16 +66,15 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // Fallback si la navegación falla por falta total de red
         if (event.request.mode === 'navigate') {
-          return caches.match('index.html');
+          return caches.match('index.html') || caches.match('./');
         }
       });
     })
   );
 });
 
-// 4. MANTENIMIENTO: Escuchador para notificaciones emergentes
+// 4. NOTIFICACIONES
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     self.registration.showNotification(event.data.title, {
