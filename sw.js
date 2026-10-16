@@ -1,6 +1,6 @@
-const CACHE_NAME = 'transpais-fids-v8'; // súbelo (v5, v6...) cada vez que cambies index.html
+const CACHE_NAME = 'transpais-fids-v9'; // cambia la versión para renovar la caché tras actualizar archivos
 
-const STATIC_ASSETS = ['./', 'index.html', 'manifest.json', 'logo.png'];
+const STATIC_ASSETS = ['./', 'index.html', 'manifest.json', 'icon.svg'];
 
 // Librerías de Firebase: se guardan para poder arrancar aunque no haya internet
 const FIREBASE_LIBS = [
