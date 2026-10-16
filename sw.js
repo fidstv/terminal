@@ -1,86 +1,60 @@
-const CACHE_NAME = 'transpais-fids-v3';
+const CACHE_NAME = 'transpais-fids-v5'; // súbelo (v5, v6...) cada vez que cambies index.html
 
-// Archivos estáticos indispensables para arrancar sin internet
-const STATIC_ASSETS = [
-  './',
-  'index.html',
-  'manifest.json',
-  'logo.png'
+const STATIC_ASSETS = ['./', 'index.html', 'manifest.json', 'logo.png'];
+
+// Librerías de Firebase: se guardan para poder arrancar aunque no haya internet
+const FIREBASE_LIBS = [
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js'
 ];
 
-// 1. INSTALACIÓN ROBUSTA: Guarda cada archivo individualmente sin cancelar si alguno falta
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return Promise.allSettled(
-        STATIC_ASSETS.map((asset) => {
-          return cache.add(asset).catch((err) => {
-            console.warn('No se pudo guardar en caché el archivo opcional:', asset);
-          });
-        })
-      );
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => Promise.allSettled([
+      ...STATIC_ASSETS.map((a) => cache.add(a).catch(() => console.warn('No se pudo guardar:', a))),
+      ...FIREBASE_LIBS.map((u) =>
+        fetch(new Request(u, { mode: 'no-cors' })).then((r) => cache.put(u, r)).catch(() => console.warn('No se pudo guardar:', u)))
+    ])).then(() => self.skipWaiting())
   );
 });
 
-// 2. ACTIVACIÓN: Limpia cachés antiguos para liberar memoria
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// 3. INTERCEPCIÓN (FETCH): Responde desde la memoria si no hay red
 self.addEventListener('fetch', (event) => {
-  const requestUrl = event.request.url;
+  const req = event.request;
+  const url = req.url;
+  if (req.method !== 'GET') return;
+  if (url.includes('firebaseio.com') || url.includes('identitytoolkit') || url.includes('googleapis.com')) return;
+  if (req.headers.has('range')) return; // los audios piden rangos; se dejan pasar a la red
 
-  // No interceptar llamadas a la base de datos de Firebase
-  if (requestUrl.includes('firebaseio.com') || requestUrl.includes('identitytoolkit')) {
+  const sameOrigin = url.startsWith(self.location.origin);
+
+  // Librerías de Firebase: primero caché
+  if (FIREBASE_LIBS.includes(url)) {
+    event.respondWith(caches.match(url).then((c) => c || fetch(req)));
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request).then((networkResponse) => {
-        if (
-          networkResponse && 
-          networkResponse.status === 200 && 
-          (requestUrl.startsWith(self.location.origin) || requestUrl.includes('/Audio/'))
-        ) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+  // Páginas y archivos propios: primero red (así llegan las versiones nuevas), caché si no hay internet
+  if (sameOrigin) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, copy));
         }
-        return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('index.html') || caches.match('./');
-        }
-      });
-    })
-  );
-});
-
-// 4. NOTIFICACIONES
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-    self.registration.showNotification(event.data.title, {
-      body: event.data.body,
-      icon: 'https://www.transpais.com.mx/favicon.ico',
-      vibrate: [200, 100, 200]
-    });
+        return res;
+      }).catch(() =>
+        caches.match(req).then((c) =>
+          c || (req.mode === 'navigate' ? caches.match('index.html').then((i) => i || caches.match('./')) : undefined))
+      )
+    );
   }
 });
