@@ -1,4 +1,4 @@
-const CACHE_NAME = 'transpais-fids-v5'; // súbelo (v5, v6...) cada vez que cambies index.html
+const CACHE_NAME = 'transpais-fids-v8'; // súbelo (v5, v6...) cada vez que cambies index.html
 
 const STATIC_ASSETS = ['./', 'index.html', 'manifest.json', 'logo.png'];
 
@@ -31,6 +31,18 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = req.url;
   if (req.method !== 'GET') return;
+
+  // Fuente de Google: se guarda la primera vez con internet para poder usarla sin conexión
+  if (url.startsWith('https://fonts.googleapis.com/') || url.startsWith('https://fonts.gstatic.com/')) {
+    event.respondWith(
+      caches.match(req).then((c) => c || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        return res;
+      }))
+    );
+    return;
+  }
   if (url.includes('firebaseio.com') || url.includes('identitytoolkit') || url.includes('googleapis.com')) return;
   if (req.headers.has('range')) return; // los audios piden rangos; se dejan pasar a la red
 
