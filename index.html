@@ -11,7 +11,6 @@
 
 <!-- LOGUITO EN LA PESTAÑA (Favicon) -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
-<link rel="icon" type="image/png" href="logo.png">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -670,9 +669,9 @@ function chime(){
 
 const aq=[]; let playing=false, epoch=0, stopCurrent=null;
 
-function enqueueAudio(k,m,onResult,bus){
+function enqueueAudio(k,m,onResult){
   if(isPassenger){if(onResult)onResult(false);return;}
-  aq.push([k,m,onResult||null,bus||'']);
+  aq.push([k,m,onResult||null]);
   if(!playing)runQueue();
 }
 
@@ -687,10 +686,10 @@ function hardStop(){
   if(stopCurrent){ const f=stopCurrent; stopCurrent=null; f(false); }
 }
 
-function playVoiceImmediate(key,mode,bus){
+function playVoiceImmediate(key,mode){
   if(isPassenger)return;
   hardStop();
-  aq.push([key,mode,null,bus||'']);
+  aq.push([key,mode,null]);
   if(!playing) runQueue();
 }
 
@@ -703,7 +702,6 @@ async function runQueue(){
       const item=aq.shift();
       const my=epoch;
       const ok=await playOne(item[0],item[1]);
-      if(ok&&item[3]&&item[1]!=='etiq'){ try{ await playUnit(item[3],my); }catch(e){} }
       if(item[2]){try{item[2](!!ok);}catch(e){}}
     }
   }finally{
@@ -729,66 +727,13 @@ function playOne(key,mode){
 
     const branchFolder = viewSuc() === 'central' ? 'central/' : 'of2/';
     const primarySrc = 'Audio/' + branchFolder + key + '_' + mode + '.mp3';
-    const fallbackSrc = 'Audio/' + key + '_' + mode + '.mp3';
-
     const a = new Audio(primarySrc);
     currentVoiceAudio = a;
-    to = setTimeout(end, 60000);
-    let fell = false;
+    to = setTimeout(function(){ end(false); }, 60000);
     a.onended = function(){ end(true); };
-    const useFallback = function(){
-      if(fell || done) return;
-      fell = true;
-      const fb = new Audio(fallbackSrc);
-      currentVoiceAudio = fb;
-      fb.onended = function(){ end(true); };
-      fb.onerror = function(){ console.warn('MP3 no encontrado:', primarySrc, fallbackSrc); end(false); };
-      fb.play().catch(function(err){ end(false); });
-    };
-    a.onerror = useFallback;
-    a.play().catch(useFallback);
+    a.onerror = function(){ console.warn('MP3 de ruta no encontrado:', primarySrc); end(false); };
+    a.play().catch(function(){ console.warn('No se pudo reproducir el MP3 de ruta:', primarySrc); end(false); });
   });
-}
-
-/* ---- Audio de unidad: 0.mp3 a 9.mp3 (un dígito por archivo) + unidad.mp3 opcional ("Unidad número") ---- */
-const clipOk=new Map();
-function clipExists(src){
-  const c=clipOk.get(src);
-  if(c&&(c.ok||Date.now()-c.ts<600000))return Promise.resolve(c.ok);
-  return fetch(src,{method:'HEAD'}).then(function(r){ clipOk.set(src,{ok:r.ok,ts:Date.now()}); return r.ok; })
-    .catch(function(){ clipOk.set(src,{ok:false,ts:Date.now()}); return false; });
-}
-function playClip(src,my){
-  return new Promise(function(res){
-    if(muted||isPassenger||my!==epoch)return res(false);
-    let done=false,to=null;
-    const end=function(ok){
-      if(done)return; done=true; clearTimeout(to);
-      if(stopCurrent===end)stopCurrent=null;
-      currentVoiceAudio=null; res(!!ok);
-    };
-    stopCurrent=end;
-    const a=new Audio(src); currentVoiceAudio=a;
-    to=setTimeout(end,15000);
-    a.onended=function(){ end(true); };
-    a.onerror=function(){ end(false); };
-    a.play().catch(function(){ end(false); });
-  });
-}
-async function playUnit(bus,my){
-  const b=String(bus||'').trim();
-  if(!/^\d{1,5}$/.test(b))return;
-  const folder='Audio/'+(viewSuc()==='central'?'central/':'of2/');
-  const digitUrls=b.split('').map(function(d){return folder+d+'.mp3';});
-  const introUrl=folder+'unidad.mp3';
-  const have=await Promise.all(digitUrls.concat([introUrl]).map(clipExists));
-  if(have.slice(0,digitUrls.length).some(function(x){return !x;})){ console.warn('Falta algún dígito para la unidad, se omite:',b); return; }
-  const urls=have[have.length-1]?[introUrl].concat(digitUrls):digitUrls;
-  for(let i=0;i<urls.length;i++){
-    if(my!==epoch)return;
-    const ok=await playClip(urls[i],my);
-    if(!ok)return;
-  }
 }
 
 window.unlockAudio=function(){
@@ -899,7 +844,7 @@ function attach(s){
         if(!d||!d.timestamp||d.timestamp<=lastTs||Number(d.timestamp)<=lastPanicTs)return;
         lastTs=d.timestamp;
         if(Date.now()+srvOff-d.timestamp>15000)return;
-        playVoiceImmediate(d.key,d.mode,d.bus);
+        playVoiceImmediate(d.key,d.mode);
       });
 
       ra.on('value',function(snap){
@@ -1355,7 +1300,7 @@ function autoVoice(d,diff,n){
     }
     voiceRetryAfter.delete(k);
     markFired(k,n);
-  },d.bus);
+  });
 }
 
 /* ============ AUTO-SCROLL CON ACUMULADOR DECIMAL (GARANTIZADO 60 FPS) ============ */
@@ -1745,22 +1690,18 @@ if($('btn-reset'))$('btn-reset').onclick=resetForm;
 if($('btn-check-audio'))$('btn-check-audio').onclick=async function(){
   const out=$('audio-check-result'), btn=$('btn-check-audio');
   const branch=viewSuc(), folder='Audio/'+(branch==='central'?'central/':'of2/');
-  const modes=['etiq','abord','ultima'], routes=[], units=[];
+  const modes=['etiq','abord','ultima'], routes=[];
   Object.keys(CAT).sort().forEach(function(k){ modes.forEach(function(m){ routes.push(k+'_'+m); }); });
-  for(let i=0;i<10;i++)units.push(String(i));
-  btn.disabled=true; out.classList.remove('hidden'); out.textContent='Revisando…';
+  btn.disabled=true; out.classList.remove('hidden'); out.textContent='Revisando audios de ruta…';
   const test=function(f){ return fetch(folder+f+'.mp3',{method:'HEAD',cache:'no-store'}).then(function(r){return r.ok;}).catch(function(){return null;}); };
   try{
-    const rr=await Promise.all(routes.map(test)), ur=await Promise.all(units.map(test)), intro=await test('unidad');
-    if(rr.concat(ur).every(function(x){return x===null;})){ out.textContent='No se pudo revisar (sin conexión).'; return; }
-    const missR=routes.filter(function(f,i){return !rr[i];}), missU=units.filter(function(f,i){return !ur[i];});
+    const rr=await Promise.all(routes.map(test));
+    if(rr.every(function(x){return x===null;})){ out.textContent='No se pudo revisar (sin conexión o servidor no disponible).'; return; }
+    const missR=routes.filter(function(f,i){return rr[i]===false;});
     const name=branch==='central'?'Audio/central/':'Audio/of2/';
     let html=missR.length?'<div style="color:#f87171;font-weight:800">❌ Faltan '+missR.length+' audios de ruta en '+name+':</div><div>'+esc(missR.map(function(f){return f+'.mp3';}).join(', '))+'</div>'
       :'<div style="color:#00D974;font-weight:800">✅ Están los '+routes.length+' audios de ruta en '+name+'</div>';
-    html+=missU.length===units.length?'<div style="color:#FFB800;margin-top:6px">ℹ️ Audios de unidad: aún no hay ninguno (opcional).</div>'
-      :missU.length?'<div style="color:#FFB800;margin-top:6px">⚠️ Faltan audios de unidad: '+esc(missU.map(function(f){return f+'.mp3';}).join(', '))+' (si falta un dígito de la unidad, esa unidad no se dice).</div>'
-      :'<div style="color:#00D974;margin-top:6px">✅ Audios de unidad (0 al 9) completos.</div>';
-    html+='<div style="color:#93c5fd;margin-top:4px">'+(intro?'🔊 unidad.mp3 encontrado: dirá "Unidad número" antes de los dígitos.':'ℹ️ unidad.mp3 no está (opcional): dirá solo los dígitos.')+'</div>';
+    html+='<div style="color:#93c5fd;margin-top:6px">El voceo de unidades está desactivado; solo se revisan audios de ruta.</div>';
     out.innerHTML=html;
   }catch(e){ out.textContent='No se pudo revisar.'; }
   finally{ btn.disabled=false; }
