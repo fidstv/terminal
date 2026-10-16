@@ -242,7 +242,7 @@ body.passenger-mode .screen-split-wrapper{min-height:0}
   <div style="display:flex;align-items:center;gap:10px">
     <button class="btn btn-blue" onclick="toggleFullscreen()" title="Pantalla Completa">🖥️ PANTALLA COMPLETA</button>
     <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
-    <button id="btn-mute-local" class="btn btn-green">🔊 AUDIO COMPU: ACTIVADO</button>
+    <button id="btn-mute-local" class="btn btn-green" title="Activa o desactiva que el voceo manual también suene en esta computadora">🔊 VOCEO EN TAQUILLA: ACTIVADO</button>
     <div style="background:rgba(0,168,89,.2);color:#00D974;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
     <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
   </div>
@@ -468,8 +468,7 @@ function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   if (auth.currentUser && !isTV && !isPassenger) {
     inactivityTimer = setTimeout(function() {
-      alert('Sesión de taquilla cerrada por inactividad.');
-      doLogout();
+      doLogout(true);
     }, 15 * 60 * 1000);
   }
 }
@@ -693,17 +692,19 @@ function playOne(key,mode){
     const a = new Audio(primarySrc);
     currentVoiceAudio = a;
     to = setTimeout(end, 60000);
+    let fell = false;
     a.onended = function(){ end(true); };
-    a.onerror = function(){
+    const useFallback = function(){
+      if(fell || done) return;
+      fell = true;
       const fb = new Audio(fallbackSrc);
       currentVoiceAudio = fb;
       fb.onended = function(){ end(true); };
       fb.onerror = function(){ console.warn('MP3 no encontrado:', primarySrc, fallbackSrc); end(false); };
       fb.play().catch(function(err){ end(false); });
     };
-    a.play().catch(function(err){
-      a.onerror();
-    });
+    a.onerror = useFallback;
+    a.play().catch(useFallback);
   });
 }
 
@@ -753,7 +754,7 @@ function panicStop(){
 
 function updateMuteUI(){
   const b=$('btn-mute-local'); if(!b)return;
-  b.textContent=muted?'🔇 AUDIO COMPU: SILENCIADO':'🔊 AUDIO COMPU: ACTIVADO';
+  b.textContent=muted?'🔇 VOCEO EN TAQUILLA: DESACTIVADO':'🔊 VOCEO EN TAQUILLA: ACTIVADO';
   b.className=muted?'btn btn-dark btn-red':'btn btn-green';
 }
 
@@ -1234,7 +1235,7 @@ function markFired(k,n){
 }
 
 function autoVoice(d,diff,n){
-  if(isPassenger||(!isTV&&!canWrite()))return;
+  if(!isTV)return; /* el voceo automático es solo de la TV; en taquilla solo suena el voceo manual */
   if(!d.presetKey||isCustom(d))return;
   const isCentral = viewSuc() === 'central';
   let mode = null;
@@ -1381,7 +1382,7 @@ function badge(st){
   if(st==='ETIQUETANDO PASAJE')return'<span class="badge-status status-etiq">ETIQUETANDO PASAJE</span>';
   if(st==='EN ABORDAJE')return'<span class="badge-status status-abordaje">EN ABORDAJE</span>';
   if(st==='ÚLTIMA LLAMADA')return'<span class="badge-status status-ultima">ÚLTIMA LLAMADA</span>';
-  if(st&&(st.indexOf('REPROGRAMADO')!==-1||st==='REPROGRAMADO'))return'<span class="badge-status status-reprogramado">REPROGRAMADO</span>';
+  if(st&&st.indexOf('REPROGRAMADO')!==-1)return'<span class="badge-status status-reprogramado">REPROGRAMADO</span>';
   if(st==='SALIDO')return'<span class="badge-status status-salido">SALIDO</span>';
   return'<span class="badge-status status-espera">EN ESPERA</span>';
 }
@@ -1518,6 +1519,11 @@ function render(){
       syncRows(fixedBody,pinned,function(d){return tvRow(d,c);});
     }
     if(fb)syncRows(fb,moving,function(d){return tvRow(d,c);});
+    if(fb&&list.length===0){
+      const er=document.createElement('tr'); er.dataset.k='__empty';
+      er.innerHTML='<td colspan="5" class="c" style="color:#93c5fd;padding:40px;font-size:clamp(14px,1.6vw,26px);font-weight:800">No hay salidas programadas por ahora.</td>';
+      fb.appendChild(er);
+    }
     if(canWrite()&&ab)syncRows(ab,list,adminRow);
   }
 }
@@ -1557,7 +1563,7 @@ function adjustTime(d,deltaMinutes){
 
   if(newDelay>=60){
     updates.status='REPROGRAMADO';
-  }else if(d.status&&(d.status.indexOf('REPROGRAMADO')===0||d.status==='REPROGRAMADO')){
+  }else if(d.status&&d.status.indexOf('REPROGRAMADO')===0){
     updates.status='EN ESPERA';
   }
 
@@ -1587,7 +1593,7 @@ if($('departure-form')){
       const id = $('dep-id').value || presetKey || ('c' + Date.now());
       const old = deps[id];
       let status = $('dep-status').value;
-      if(status==='REPROGRAMADO'&&old&&old.status&&(old.status.indexOf('REPROGRAMADO')===0||old.status==='REPROGRAMADO'))status=old.status;
+      if(status==='REPROGRAMADO'&&old&&old.status&&old.status.indexOf('REPROGRAMADO')===0)status=old.status;
       return dref(id).set({
         presetKey: presetKey || '',
         time: $('dep-time').value,
@@ -1618,11 +1624,12 @@ if($('preset-selector')){
     const row=catalog[k];
     $('dep-id').value=k;
     $('dep-preset-key').value=k;
-    $('dep-time').value=row[0];
+    const ex=deps[k]&&deps[k].day===nowParts().key?deps[k]:null;
+    $('dep-time').value=ex?ex.time:row[0];
     $('dep-destination').value=row[1];
     $('dep-scales').value=row[2];
-    $('dep-status').value='EN ESPERA';
-    $('dep-bus').value='';
+    $('dep-status').value=ex&&ex.status&&Array.from($('dep-status').options).some(function(o){return o.value===ex.status;})?ex.status:'EN ESPERA';
+    $('dep-bus').value=ex?(ex.bus||''):'';
     $('dep-bus').focus();
   });
 }
@@ -1697,12 +1704,11 @@ function doLogin(){
   }).then(function(){ if(btn)btn.disabled=false; });
 }
 
-function doLogout(){
-  if(confirm('¿Deseas cerrar la sesión de taquilla?')){
+function doLogout(force){
+  if(force===true||confirm('¿Deseas cerrar la sesión de taquilla?')){
     auth.signOut().then(function(){
       suc=null;
       switchTab('screen');
-      attach(viewSuc());
       updateHeaderTitles();
     }).catch(fail);
   }
@@ -1710,7 +1716,7 @@ function doLogout(){
 
 if($('btn-tab-screen')) $('btn-tab-screen').onclick = function(){ switchTab('screen'); };
 if($('btn-tab-admin')) $('btn-tab-admin').onclick = function(){ openPin(); };
-if($('btn-logout')) $('btn-logout').onclick = function(){ doLogout(); };
+if($('btn-logout')) $('btn-logout').onclick = function(){ doLogout(false); };
 if($('btn-panic')) $('btn-panic').onclick = function(){ panicStop(); };
 if($('btn-mute-local')) $('btn-mute-local').onclick = function(){
   muted = !muted;
