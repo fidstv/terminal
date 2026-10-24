@@ -11,7 +11,7 @@ document.title = CFG.cliente.tituloPagina;
 /* ============ REGISTRO SERVICE WORKER (PWA) ============ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').catch(function(err){ console.warn('PWA SW Registro omitido/falló:', err); });
+    navigator.serviceWorker.register('sw.js?v='+encodeURIComponent(window.FIDS_VERSION||'dev')).catch(function(err){ console.warn('PWA SW Registro omitido/falló:', err); });
   });
 }
 

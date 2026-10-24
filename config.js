@@ -5,7 +5,7 @@
    Importante: los identificadores de sucursal "central" y "of2" no se
    renombran; lo que se cambia son sus nombres, rutas, horarios y textos.
    ===================================================================== */
-window.FIDS_VERSION = '16';   /* súbelo junto con sw.js cada vez que publiques cambios */
+window.FIDS_VERSION = '17';   /* súbelo junto con los ?v= de index.html (el sw.js ya toma la versión de aquí) */
 
 window.FIDS_CONFIG = {
   cliente: {

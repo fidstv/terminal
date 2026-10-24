@@ -1,7 +1,7 @@
-const V = '16'; // súbelo junto con window.FIDS_VERSION en config.js y con los ?v= de index.html cada vez que publiques cambios
+const V = (new URL(self.location.href).searchParams.get('v')) || '17'; // viene de window.FIDS_VERSION (app.js registra sw.js?v=...)
 const CACHE_NAME = 'transpais-fids-v' + V;
 
-const STATIC_ASSETS = ['./', 'index.html', 'styles.css?v=' + V, 'config.js?v=' + V, 'demo.js?v=' + V, 'app.js?v=' + V, 'manifest.json', 'icon.svg'];
+const STATIC_ASSETS = ['./', 'index.html', 'styles.css?v=' + V, 'config.js?v=' + V, 'demo.js?v=' + V, 'app.js?v=' + V, 'manifest.json', 'manifest-generico.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 
 // Librerías de Firebase: se guardan para poder arrancar aunque no haya internet
 const FIREBASE_LIBS = [
