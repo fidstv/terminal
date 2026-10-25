@@ -7,12 +7,15 @@
 
 <!-- PWA & METADATOS OFFLINE -->
 <link rel="manifest" href="manifest.json">
+<script>(function(){var v=(new URLSearchParams(location.search).get('vista')||'').toLowerCase();if(v!=='pasajerovialtis')return;var l=document.querySelector('link[rel="manifest"]');if(l)l.href='manifest-pasajero.json';
+function a(t,k,x){var e=document.createElement(t);for(var i in x)e.setAttribute(i,x[i]);document.head.appendChild(e);}
+a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{name:'mobile-web-app-capable',content:'yes'});a('meta',0,{name:'apple-mobile-web-app-capable',content:'yes'});a('meta',0,{name:'apple-mobile-web-app-title',content:'Vialtis'});a('meta',0,{name:'apple-mobile-web-app-status-bar-style',content:'black-translucent'});})();</script>
 <meta name="theme-color" content="#000B18">
 
 <!-- LOGUITO EN LA PESTAÑA (Favicon) -->
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="styles.css?v=20">
+<link rel="stylesheet" href="styles.css?v=26">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -88,19 +91,15 @@
 <div class="hdr-road"><span>🚌</span></div>
 
 <div class="control-bar" id="control-bar">
-  <div style="display:flex;gap:10px;align-items:center">
-    <button id="btn-tab-screen" class="btn btn-green">Pantalla Sala de Espera</button>
-    <button id="btn-tab-admin" class="btn btn-dark">Panel Taquilla / Operaciones</button>
-    <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 Cerrar Sesión</button>
+  <div class="cb-left">
+    <button id="btn-tab-screen" class="btn btn-green"><span class="l-full">Pantalla Sala de Espera</span><span class="l-short">👁️ Sala</span></button>
+    <button id="btn-tab-admin" class="btn btn-dark"><span class="l-full">Panel Taquilla / Operaciones</span><span class="l-short">🚌 Panel</span></button>
+    <button id="btn-logout" class="btn btn-red hidden" title="Cerrar la sesión actual">🚪 <span class="l-full">Cerrar Sesión</span><span class="l-short">Salir</span></button>
     <span id="tv-alert-badge" class="hidden" style="padding:6px 12px;border-radius:8px;font-size:11px;font-weight:900"></span>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button class="btn btn-blue" onclick="toggleFullscreen()" title="Pantalla Completa">🖥️ PANTALLA COMPLETA</button>
-    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente">🛑 PÁNICO / DETENER VOCEO</button>
+  <div class="cb-right">
     <button id="btn-mute-local" class="btn btn-green" title="Activa o desactiva que el voceo manual también suene en esta computadora">🔊 VOCEO EN TAQUILLA: ACTIVADO</button>
-    <div style="background:rgba(0,168,89,.2);color:var(--ok,#00D974);padding:6px 12px;border-radius:8px;font-size:11px;font-weight:800;border:1px solid rgba(0,217,116,.3)">✓ REPRODUCTOR MP3 NUBE</div>
-    <button class="btn btn-blue" id="btn-chime">Probador Tono</button>
-    <button class="btn btn-blue" id="btn-test-tv" title="Hace sonar un tono en las TVs de esta sucursal">🔊 Probar sonido en TV</button>
+    <button id="btn-panic" class="btn btn-panic" title="Detener reproducción inmediatamente"><span class="l-full">🛑 PÁNICO / DETENER VOCEO</span><span class="l-short">🛑</span></button>
   </div>
 </div>
 
@@ -109,6 +108,12 @@
     <div class="urgent-scroll-text" id="urgent-text-display"></div>
   </div>
 
+  <div id="install-banner" class="install-banner hidden">
+    <img src="logo.svg" alt="">
+    <div class="ib-txt"><strong>📲 Instala la app de Vialtis</strong><span id="ib-sub">Ten las salidas de la Central a un toque.</span></div>
+    <button type="button" class="btn btn-green" id="ib-btn">Instalar</button>
+    <button type="button" class="ib-x" id="ib-close" aria-label="Cerrar">✕</button>
+  </div>
   <div id="passenger-search-wrap" class="hidden" style="margin-bottom:12px">
     <input type="text" id="passenger-search-input" placeholder="🔍 Buscar por destino o escala (ej. Tampico, Victoria...)" style="background:rgba(0,0,0,0.6);border:1px solid var(--ok,#00D974);padding:12px;border-radius:12px;color:#fff;font-size:13px" oninput="render()">
   </div>
@@ -137,23 +142,18 @@
   </div>
 </main>
 
+<nav id="adm-tabs" class="adm-tabs hidden" aria-label="Secciones del panel">
+  <button type="button" class="adm-tab on" data-tab="salidas"><b>🚌</b><span>Salidas</span></button>
+  <button type="button" class="adm-tab" data-tab="avisos"><b>📢</b><span>Avisos</span></button>
+  <button type="button" class="adm-tab" data-tab="sistema"><b>⚙️</b><span>Sistema</span></button>
+</nav>
 <main id="view-admin" class="glass-card hidden">
-  <div id="ops-summary" class="hidden adm-ops"></div>
-
-  <details class="adm-sec adm-ai" id="sec-copilot" data-open>
-    <summary>🤖 Copiloto Vialtis <small>automático</small></summary>
-    <div class="adm-body">
-      <div id="copilot-body" class="cp-body"></div>
-      <div class="cp-toggles">
-        <label class="sw"><input type="checkbox" id="vx-dem"><span>⏱️ Auto-aviso de demoras en TV</span></label>
-        <label class="sw"><input type="checkbox" id="vx-cat"><span>🗓️ Cargar el itinerario solo cada día</span></label>
-        <label class="sw"><input type="checkbox" id="vx-wx"><span>🌦️ Clima del destino en pantallas</span></label>
-      </div>
-    </div>
-  </details>
-
-  <details class="adm-sec adm-runs" id="sec-runs" data-open>
-    <summary>🚌 Corridas activas en pantalla</summary>
+  <section class="adm-pane" id="pane-salidas">
+    <div id="ops-summary" class="hidden adm-ops"></div>
+    <div class="adm-top"><button type="button" class="btn btn-green" id="btn-add-run">➕ Agregar corrida</button></div>
+    <div id="vialtis-guided-slot"></div>
+    <details class="adm-sec adm-runs" id="sec-runs">
+    <summary>📋 Tabla completa de corridas <small>avanzado</small></summary>
     <div class="adm-body">
       <table class="runs-table">
         <thead><tr><th>Hora</th><th>Destino / Ruta</th><th class="c">Unidad</th><th class="c">Estatus</th><th class="c">Ajuste de Tiempo</th><th class="c">Voceo MP3 Manual</th><th class="c">Acciones</th></tr></thead>
@@ -161,25 +161,7 @@
       </table>
     </div>
   </details>
-
-  <details class="adm-sec adm-danger" id="sec-urgent" data-open>
-    <summary>📢 Aviso urgente en TV</summary>
-    <div class="adm-body">
-      <p class="adm-hint">Escribe una alerta o usa los botones de 1 clic para proyectarla en tiempo real en las TV.</p>
-      <div class="row">
-        <input type="text" id="urgent-input" placeholder="Ej. Atención: Reprogramaciones por obras en carretera..." style="flex:1 1 260px">
-        <button class="btn btn-green" id="btn-save-urgent">Publicar</button>
-        <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar alerta</button>
-      </div>
-      <div class="row quick">
-        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚧 Obras en carretera: Posibles corridas reprogramadas de 15 a 20 minutos.')">🚧 Obras en carretera</button>
-        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🎫 Favor de tener su boleto e identificación oficial a la mano para abordar.')">🎫 Boleto e identificación</button>
-        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚪 Abordaje únicamente por la puerta principal de la sala.')">🚪 Puerta principal</button>
-      </div>
-    </div>
-  </details>
-
-  <details class="adm-sec" id="sec-form">
+    <details class="adm-sec" id="sec-form">
     <summary>✏️ Agregar o editar corrida</summary>
     <div class="adm-body">
       <label class="lbl" style="color:var(--gold,#FFB800)">Ruta del catálogo (asigna el MP3 en automático)</label>
@@ -202,17 +184,41 @@
       </form>
     </div>
   </details>
-
-  <details class="adm-sec adm-ok" id="sec-day">
-    <summary>⚡ Itinerario y audios</summary>
+  </section>
+  <section class="adm-pane hidden" id="pane-avisos">
+    <details class="adm-sec adm-danger" id="sec-urgent" data-open>
+    <summary>📢 Aviso urgente en TV</summary>
     <div class="adm-body">
-      <p class="adm-hint">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
-      <div class="row"><button class="btn btn-green" id="btn-load-all">🚀 Cargar todas las salidas</button><button type="button" class="btn btn-blue" id="btn-check-audio">🔎 Revisar audios</button></div>
-      <div id="audio-check-result" class="hidden" style="font-size:12px;margin-top:10px;line-height:1.5"></div>
+      <p class="adm-hint">Escribe una alerta o usa los botones de 1 clic para proyectarla en tiempo real en las TV.</p>
+      <div class="row">
+        <input type="text" id="urgent-input" placeholder="Ej. Atención: Reprogramaciones por obras en carretera..." style="flex:1 1 260px">
+        <button class="btn btn-green" id="btn-save-urgent">Publicar</button>
+        <button class="btn btn-dark btn-red" id="btn-clear-urgent">Borrar alerta</button>
+      </div>
+      <div class="row quick">
+        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚧 Obras en carretera: Posibles corridas reprogramadas de 15 a 20 minutos.')">🚧 Obras en carretera</button>
+        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🎫 Favor de tener su boleto e identificación oficial a la mano para abordar.')">🎫 Boleto e identificación</button>
+        <button class="btn btn-dark" type="button" onclick="setQuickUrgent('🚪 Abordaje únicamente por la puerta principal de la sala.')">🚪 Puerta principal</button>
+      </div>
     </div>
   </details>
-
-  <details class="adm-sec" id="sec-ads">
+    <details class="adm-sec" id="sec-av">
+    <summary>🗓️ Avisos programados</summary>
+    <div class="adm-body">
+      <p class="adm-hint">Salen solos en la barra de abajo de la TV dentro del horario y los días que elijas.</p>
+      <input type="text" id="av-text" maxlength="160" placeholder="Texto del aviso (ej. Cuide su equipaje y sus pertenencias)" style="margin-bottom:8px">
+      <div class="row">
+        <label class="lbl">Desde <input type="time" id="av-from" value="08:00" style="width:auto"></label>
+        <label class="lbl">Hasta <input type="time" id="av-to" value="20:00" style="width:auto"></label>
+      </div>
+      <div class="row days">
+        <button type="button" class="btn av-day on" id="av-d1">L</button><button type="button" class="btn av-day on" id="av-d2">M</button><button type="button" class="btn av-day on" id="av-d3">M</button><button type="button" class="btn av-day on" id="av-d4">J</button><button type="button" class="btn av-day on" id="av-d5">V</button><button type="button" class="btn av-day on" id="av-d6">S</button><button type="button" class="btn av-day on" id="av-d0">D</button>
+      </div>
+      <button type="button" class="btn btn-green" id="btn-av-save">Guardar aviso</button>
+      <div id="av-list" style="font-size:12px;margin-top:10px"></div>
+    </div>
+  </details>
+    <details class="adm-sec" id="sec-ads">
     <summary>🖼️ Anuncios y videos</summary>
     <div class="adm-body">
       <p class="adm-hint">Sube imágenes, GIFs o videos MP4 (optimización automática en Canvas).</p>
@@ -229,16 +235,46 @@
       </div>
     </div>
   </details>
-
-  <details class="adm-sec" id="sec-tv">
+  </section>
+  <section class="adm-pane hidden" id="pane-sistema">
+    <details class="adm-sec adm-ai" id="sec-copilot" data-open>
+    <summary>🤖 Copiloto Vialtis <small>automático</small></summary>
+    <div class="adm-body">
+      <div id="copilot-body" class="cp-body"></div>
+      <div class="cp-toggles">
+        <label class="sw"><input type="checkbox" id="vx-dem"><span>⏱️ Auto-aviso de demoras en TV</span></label>
+        <label class="sw"><input type="checkbox" id="vx-cat"><span>🗓️ Cargar el itinerario solo cada día</span></label>
+        <label class="sw"><input type="checkbox" id="vx-wx"><span>🌦️ Clima del destino en pantallas</span></label>
+      </div>
+    </div>
+  </details>
+    <details class="adm-sec adm-ok" id="sec-day">
+    <summary>⚡ Itinerario y audios</summary>
+    <div class="adm-body">
+      <p class="adm-hint">Carga todas las corridas fijas con sus audios MP3 enlazados automáticamente.</p>
+      <div class="row"><button class="btn btn-green" id="btn-load-all">🚀 Cargar todas las salidas</button><button type="button" class="btn btn-blue" id="btn-check-audio">🔎 Revisar audios</button></div>
+      <div id="audio-check-result" class="hidden" style="font-size:12px;margin-top:10px;line-height:1.5"></div>
+    </div>
+  </details>
+    <details class="adm-sec" id="sec-tv">
     <summary id="tv-status-title">📺 Estado de TVs</summary>
     <div class="adm-body">
       <p class="adm-hint">Cada TV avisa cada minuto que sigue viva. Sin señal = más de 2 minutos y medio sin avisar.</p>
       <div id="tv-status-list" style="font-size:12px"></div>
     </div>
   </details>
-
-  <details class="adm-sec" id="sec-theme">
+    <details class="adm-sec" id="sec-sound">
+      <summary>🔊 Pruebas de sonido y pantalla</summary>
+      <div class="adm-body">
+        <p class="adm-hint">Comprueba el audio de esta computadora o de las TVs, o pon el panel en pantalla completa.</p>
+        <div class="row">
+          <button class="btn btn-blue" id="btn-chime">Probador de tono</button>
+          <button class="btn btn-blue" id="btn-test-tv" title="Hace sonar un tono en las TVs de esta sucursal">🔊 Probar sonido en TV</button>
+          <button class="btn btn-blue" onclick="toggleFullscreen()" title="Pantalla completa">🖥️ Pantalla completa</button>
+        </div>
+      </div>
+    </details>
+    <details class="adm-sec" id="sec-theme">
     <summary>🎨 Tema y marca</summary>
     <div class="adm-body">
       <p class="adm-hint">Aplica a las TVs y pasajeros de esta sucursal. En automático baja el brillo de noche y viste las fechas especiales.</p>
@@ -253,23 +289,7 @@
       </select>
     </div>
   </details>
-
-  <details class="adm-sec" id="sec-av">
-    <summary>🗓️ Avisos programados</summary>
-    <div class="adm-body">
-      <p class="adm-hint">Salen solos en la barra de abajo de la TV dentro del horario y los días que elijas.</p>
-      <input type="text" id="av-text" maxlength="160" placeholder="Texto del aviso (ej. Cuide su equipaje y sus pertenencias)" style="margin-bottom:8px">
-      <div class="row">
-        <label class="lbl">Desde <input type="time" id="av-from" value="08:00" style="width:auto"></label>
-        <label class="lbl">Hasta <input type="time" id="av-to" value="20:00" style="width:auto"></label>
-      </div>
-      <div class="row days">
-        <button type="button" class="btn av-day on" id="av-d1">L</button><button type="button" class="btn av-day on" id="av-d2">M</button><button type="button" class="btn av-day on" id="av-d3">M</button><button type="button" class="btn av-day on" id="av-d4">J</button><button type="button" class="btn av-day on" id="av-d5">V</button><button type="button" class="btn av-day on" id="av-d6">S</button><button type="button" class="btn av-day on" id="av-d0">D</button>
-      </div>
-      <button type="button" class="btn btn-green" id="btn-av-save">Guardar aviso</button>
-      <div id="av-list" style="font-size:12px;margin-top:10px"></div>
-    </div>
-  </details>
+  </section>
 </main>
 
 <footer class="ticker-footer">
@@ -278,8 +298,9 @@
 </footer>
 
 <div id="tv-toast" class="tv-toast hidden"></div>
-<script src="config.js?v=20"></script>
-<script src="demo.js?v=20"></script>
-<script src="app.js?v=20"></script>
+<main id="view-general" class="gen-wrap"></main>
+<script src="config.js?v=26"></script>
+<script src="demo.js?v=26"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>

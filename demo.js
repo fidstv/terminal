@@ -3,10 +3,13 @@
    Reemplaza Firebase por una base de datos de ejemplo guardada en este
    navegador: no toca los datos reales ni pide internet.
    Ejemplos:
-     index.html?demo=1                        -> taquilla (usuario: ofcentral o terminalof2, contraseña: cualquiera)
-     index.html?demo=1&vista=tvcentral        -> TV Central
-     index.html?demo=1&vista=tvof2            -> TV Pedro Cárdenas
-     index.html?demo=1&vista=pasajerocentral  -> vista de pasajero
+     index.html?demo=1                        -> taquilla (usuario: ofcentral, terminalof2 o admin; contraseña: cualquiera)
+     index.html?demo=1&vista=tvcentral        -> TV Central (Transpais)
+     index.html?demo=1&vista=tvof2            -> TV Pedro Cárdenas (Transpais)
+     index.html?demo=1&vista=pasajerocentral  -> vista de pasajero (Transpais)
+     index.html?demo=1&vista=tvvialtis        -> TV Vialtis
+     index.html?demo=1&vista=pasajerovialtis  -> app de pasajeros Vialtis
+     index.html?demo=1&vista=tv2026           -> vista general (todas las empresas)
      agrega &reset=1 para reiniciar los datos de ejemplo
    Abre taquilla y TV en dos pestañas del mismo navegador: se sincronizan.
    ===================================================================== */
@@ -22,7 +25,7 @@
   }
   function seed(){
     const n=parts(), offsets=[2,9,14,25,40,70], buses=['9548','7721','','4103','6650','8812'], out={__ts:Date.now()};
-    ['central','of2'].forEach(function(b){
+    Object.keys(CFG.sucursales).forEach(function(b){
       const rutas=CFG.sucursales[b].rutas, keys=Object.keys(rutas), deps={};
       offsets.forEach(function(off,i){
         const k=keys[i]; if(!k)return; const r=rutas[k], t=(n.min+off)%1440;
@@ -110,7 +113,7 @@
   window.firebase={initializeApp:function(){},database:database,auth:function(){return auth;}};
 
   const b=document.createElement('div');
-  b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:#FFB800;color:#000;font:700 11px sans-serif;padding:5px 10px;border-radius:8px;opacity:.92;pointer-events:none';
+  b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:3px;z-index:99999;background:#FFB800;color:#000;font:700 10px sans-serif;padding:2px 10px;border-radius:0 0 8px 8px;opacity:.92;pointer-events:none;white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis';
   b.textContent='MODO DEMO · datos de ejemplo · login: '+CFG.accesos.map(function(a){return a.usuario;}).join(' / ')+' + cualquier contraseña';
   document.body.appendChild(b);
 })();

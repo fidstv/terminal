@@ -354,3 +354,76 @@ body.tv-mode .hdr-road{display:none}
   body:not(.tv-mode) .wx{font-size:.6em}
   .gate-brand{font-size:26px}
 }
+
+/* ===== V22: vista general (tv2026) y app de pasajeros instalable ===== */
+.gen-wrap{display:none}
+body.general-mode .gen-wrap{display:flex;flex-direction:column;height:100vh;box-sizing:border-box;padding:2vh 2vw;gap:1vh;background:var(--bg,#000B18);color:var(--text,#fff)}
+body.general-mode .glass-header,body.general-mode .control-bar,body.general-mode #view-screen,body.general-mode #view-admin,body.general-mode .ticker-footer,body.general-mode #audio-start-overlay,body.general-mode #login-gate{display:none!important}
+.gen-head{display:flex;align-items:center;gap:1.4vw;border-bottom:3px solid var(--accent,#00A859);padding-bottom:1.2vh}
+.gen-head img{width:clamp(40px,5vh,72px);height:clamp(40px,5vh,72px)}
+.gen-head h1{margin:0;font-size:clamp(18px,3.2vh,44px);font-weight:900;letter-spacing:.04em}
+.gen-head p{margin:2px 0 0;font-size:clamp(11px,1.6vh,20px);color:var(--muted,#93c5fd)}
+.gen-clock{margin-left:auto;font-family:monospace;font-weight:900;font-size:clamp(28px,5.5vh,76px);color:var(--gold,#FFB800)}
+.gen-cols,.gen-row{display:grid;grid-template-columns:8% 17% 30% 10% 14% 21%;align-items:center;gap:1vw}
+.gen-cols{padding:0 1vw;font-size:clamp(10px,1.5vh,18px);font-weight:800;letter-spacing:.12em;color:var(--muted,#93c5fd)}
+.gen-body{display:flex;flex-direction:column;gap:.8vh;flex:1 1 auto;min-height:0}
+.gen-row{padding:1vh 1vw;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:clamp(14px,2.6vh,34px);font-weight:800}
+.gen-time{font-family:monospace;font-weight:900}
+.gen-co{display:inline-block;justify-self:start;padding:.25em .7em;border-radius:99px;border:1px solid;font-size:.62em;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.gen-dest small{display:block;font-size:.5em;font-weight:600;color:var(--muted,#93c5fd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gen-gate{color:var(--ok,#00D974)}
+.gen-empty{margin:auto;text-align:center;font-size:clamp(20px,4vh,56px);font-weight:900;color:var(--muted,#93c5fd)}
+.install-banner{position:fixed;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:80;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:rgba(0,20,45,.97);border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 34px rgba(0,0,0,.55)}
+.install-banner.hidden{display:none!important}
+.install-banner img{width:38px;height:38px;border-radius:9px;flex:0 0 auto}
+.install-banner .ib-txt{flex:1 1 auto;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted,#93c5fd);min-width:0}
+.install-banner .ib-txt strong{color:#fff;font-size:13px}
+.install-banner .btn{padding:9px 14px;font-size:12px}
+.install-banner .ib-x{background:none;border:0;color:var(--muted,#93c5fd);font-size:18px;padding:6px;cursor:pointer}
+
+/* ===== V23: panel en pestañas (fácil en teléfono, simple en computadora) ===== */
+.adm-tabs{display:flex;gap:8px;margin:20px 30px 0;padding:6px;border-radius:16px;background:rgba(0,20,45,.7);border:1px solid rgba(255,255,255,.1)}
+.adm-tabs.hidden{display:none!important}
+.adm-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted,#93c5fd);font-weight:900;font-size:14px;cursor:pointer;font-family:inherit}
+.adm-tab b{font-size:18px;font-weight:400}
+.adm-tab.on{background:var(--accent,#00A859);color:#fff;border-color:transparent}
+.adm-pane.hidden{display:none!important}
+.adm-top{display:flex;gap:8px;margin:0 0 12px}
+.adm-top .btn{flex:1;justify-content:center;min-height:46px;font-size:14px}
+body.gate-on #adm-tabs,body.general-mode #adm-tabs{display:none!important}
+@keyframes vh-travel{0%{left:0}100%{left:calc(100% - 1.3em)}}
+@media (max-width:768px){
+  body:not(.tv-mode) #view-admin{max-height:none!important;overflow:visible!important;flex-grow:0!important;margin:8px!important;padding:10px 10px 96px!important}
+  body:not(.tv-mode) .adm-tabs{position:fixed;left:0;right:0;bottom:0;margin:0;z-index:90;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));border-radius:0;border:0;border-top:1px solid rgba(255,255,255,.18);background:rgba(0,11,24,.97)}
+  body:not(.tv-mode) .adm-tab{flex-direction:column;gap:2px;min-height:56px;font-size:12px}
+  body:not(.tv-mode) .adm-tab b{font-size:22px;line-height:1}
+}
+
+/* ===== V24: encabezado y barra de controles compactos (teléfono) ===== */
+.l-short{display:none}
+.control-bar .cb-left,.control-bar .cb-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+@media (max-width:768px){
+  body:not(.tv-mode) .glass-header{position:sticky;top:0;z-index:50;padding:8px 12px!important;gap:8px;flex-wrap:nowrap}
+  body:not(.tv-mode) .glass-header>div:first-child{gap:10px!important;min-width:0;flex:1 1 auto}
+  body:not(.tv-mode) .glass-header>div:first-child>div:last-child{min-width:0;flex:1 1 auto}
+  body:not(.tv-mode) #header-terminal-title{font-size:15px!important;letter-spacing:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body:not(.tv-mode) #header-terminal-sub{display:none}
+  body:not(.tv-mode) .brand-logo{font-size:15px;padding:4px 9px;border-radius:9px;letter-spacing:-.5px;flex:0 0 auto}
+  body:not(.tv-mode) .glass-header>div:last-child{padding:4px 9px!important;flex:0 0 auto}
+  body:not(.tv-mode) #clock-time{font-size:17px!important}
+  body:not(.tv-mode) #clock-date{display:none}
+  body:not(.tv-mode) .control-bar{position:static!important;display:flex;flex-wrap:wrap;gap:8px;padding:8px 10px}
+  body:not(.tv-mode) .control-bar>div{display:flex;flex-wrap:nowrap;gap:8px;flex:1 1 100%}
+  body:not(.tv-mode) .control-bar .btn{flex:1 1 0;min-height:42px;padding:8px 6px;font-size:12px}
+  body:not(.tv-mode) .l-full{display:none}
+  body:not(.tv-mode) .l-short{display:inline}
+  body:not(.tv-mode) #btn-panic{position:fixed;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));flex:none;width:54px;height:54px;min-height:0;padding:0;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;z-index:95}
+}
+
+/* ===== V25: resumen compacto y botón de pánico en su lugar ===== */
+.adm-ops{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.ops-chip{display:inline-block;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:800;color:var(--muted,#93c5fd)}
+.ops-chip.bad{background:rgba(225,29,72,.18);border-color:rgba(255,65,108,.6);color:#ff9bb2}
+@media (max-width:768px){
+  body:not(.tv-mode) .control-bar,body:not(.tv-mode) .glass-header{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+}

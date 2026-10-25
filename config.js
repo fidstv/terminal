@@ -5,7 +5,7 @@
    Importante: los identificadores de sucursal "central" y "of2" no se
    renombran; lo que se cambia son sus nombres, rutas, horarios y textos.
    ===================================================================== */
-window.FIDS_VERSION = '20';   /* súbelo junto con sw.js cada vez que publiques cambios */
+window.FIDS_VERSION = '26';   /* súbelo junto con sw.js cada vez que publiques cambios */
 
 window.FIDS_CONFIG = {
   cliente: {
@@ -84,8 +84,21 @@ window.FIDS_CONFIG = {
     /* marca = identidad fija de la empresa dueña de ese usuario (id de 'marcas').
        elegirMarca: true solo si quieres que ese usuario pueda cambiarla desde Admin; por defecto NO. */
     { usuario: 'ofcentral',   correo: 'ofcentral@transpais.com',   sucursal: 'central', marca: 'transpais', elegirMarca: false },
-    { usuario: 'terminalof2', correo: 'terminalof2@transpais.com', sucursal: 'of2',     marca: 'transpais', elegirMarca: false }
+    { usuario: 'terminalof2', correo: 'terminalof2@transpais.com', sucursal: 'of2',     marca: 'transpais', elegirMarca: false },
+    /* Vialtis: un único usuario, el administrador. Se crea en Firebase Authentication con este correo y su contraseña
+       (las contraseñas no se guardan en estos archivos). Debe coincidir con reglas-firebase.json. */
+    { usuario: 'admin',       correo: 'admin@vialtis.mx',        sucursal: 'vialtis', marca: 'vialtis',   elegirMarca: false }
   ],
+
+  /* ===== VISTAS NUEVAS (las de Transpais siguen siendo las de siempre: tvcentral, tvof2, pasajerocentral, pasajeroof2) =====
+     tipo: 'tv' o 'pasajero'. suc: sucursal que muestran. app: true = app instalable de pasajeros.
+     general: true = vista general, junta las salidas de las sucursales de "sucs" (cada una con el nombre de su empresa). */
+  vistas: {
+    tvvialtis:       { tipo: 'tv',       suc: 'vialtis', nombre: 'TV Vialtis' },
+    pasajerovialtis: { tipo: 'pasajero', suc: 'vialtis', nombre: 'Pasajero Vialtis', app: true, manifest: 'manifest-pasajero.json' },
+    tv2026:          { tipo: 'tv', general: true, sucs: ['vialtis'],      /* para sumar otras empresas, agrégalas aquí cuando haya convenio: 'central', 'of2' */
+                        nombre: 'TV general', titulo: 'SALIDAS · CENTRAL DE AUTOBUSES MATAMOROS' }
+  },
 
   sucursales: {
     central: {
@@ -93,6 +106,7 @@ window.FIDS_CONFIG = {
       subtitulo: 'MATAMOROS – TERMINAL CENTRAL',
       subtituloPasajero: 'PASAJERO – CENTRAL',
       rotuloAviso: 'CENTRAL DE AUTOBUSES',
+      empresa: 'Transpais',
       origen: 'Matamoros',
       puntoAbordaje: 'Andén 18',
       puntoAbordajePasajero: 'Andén 18 (Central)',
@@ -127,6 +141,7 @@ window.FIDS_CONFIG = {
       subtitulo: 'MATAMOROS – OFICINA DE PASO',
       subtituloPasajero: 'PASAJERO – PEDRO CÁRDENAS',
       rotuloAviso: 'OFICINA PEDRO CÁRDENAS',
+      empresa: 'Transpais · Pedro Cárdenas',
       origen: 'Matamoros',
       puntoAbordaje: 'Oficina Pedro Cárdenas',
       puntoAbordajePasajero: 'Oficina Pedro Cárdenas',
@@ -151,9 +166,31 @@ window.FIDS_CONFIG = {
         p11: ["22:45", "Ciudad Valles", "Ciudad Victoria, Ciudad Mante"],
         p12: ["23:15", "Tampico - Madero", "Estación Manuel, Puente Altamira Las Piñas"]
       }
+    },
+    /* ===== VIALTIS: una sola oficina, Central Matamoros. Datos separados de Transpais (nodo "vialtis" en Firebase).
+       Por ahora usa las mismas rutas (se copian más abajo) y los mismos audios (carpeta Audio/central/). ===== */
+    vialtis: {
+      titulo: 'CENTRAL MATAMOROS',
+      subtitulo: 'CENTRAL DE AUTOBUSES · MATAMOROS',
+      subtituloPasajero: 'PASAJERO – VIALTIS',
+      rotuloAviso: 'VIALTIS · CENTRAL MATAMOROS',
+      empresa: 'Vialtis',
+      origen: 'Matamoros',
+      puntoAbordaje: 'Andén 18',
+      puntoAbordajePasajero: 'Andén 18 (Central)',
+      audioDir: 'central',          /* carpeta de audios dentro de Audio/ (por ahora los mismos que Transpais Central) */
+      estados: { ultima: 3, abordaje: 15, etiquetado: 30 },
+      avisos: [
+        { id: 'etiq30',  modo: 'etiq',   desde: 30, hasta: 15 },
+        { id: 'abord15', modo: 'abord',  desde: 15, hasta: 10 },
+        { id: 'abord10', modo: 'abord',  desde: 10, hasta: 3 },
+        { id: 'ultima3', modo: 'ultima', desde: 3,  hasta: 0 }
+      ]
+      /* rutas: se copian de Transpais Central justo después de este bloque; edítalas cuando Vialtis tenga las suyas */
     }
   }
 };
+window.FIDS_CONFIG.sucursales.vialtis.rutas = JSON.parse(JSON.stringify(window.FIDS_CONFIG.sucursales.central.rutas));
 
 /* =====================================================================
    MARCAS E IDENTIDADES
@@ -172,7 +209,9 @@ window.FIDS_CONFIG = {
       central:{ titulo:'TERMINAL CENTRAL', subtitulo:'SALIDAS DE AUTOBUSES', subtituloPasajero:'PASAJERO – TERMINAL CENTRAL',
                 rotuloAviso:'TERMINAL CENTRAL', puntoAbordaje:'Andén 18', puntoAbordajePasajero:'Andén 18' },
       of2:    { titulo:'OFICINA DE PASO', subtitulo:'SALIDAS DE AUTOBUSES', subtituloPasajero:'PASAJERO – OFICINA DE PASO',
-                rotuloAviso:'OFICINA DE PASO', puntoAbordaje:'Abordaje en oficina', puntoAbordajePasajero:'Abordaje en oficina' }
+                rotuloAviso:'OFICINA DE PASO', puntoAbordaje:'Abordaje en oficina', puntoAbordajePasajero:'Abordaje en oficina' },
+      vialtis:{ titulo:'TERMINAL CENTRAL', subtitulo:'SALIDAS DE AUTOBUSES', subtituloPasajero:'PASAJERO – TERMINAL CENTRAL',
+                rotuloAviso:'TERMINAL CENTRAL', puntoAbordaje:'Andén 18', puntoAbordajePasajero:'Andén 18' }
     },
     audioBase:null,                 /* sin voces grabadas de otra empresa: solo suena el tono de aviso */
     manifest:'manifest-generico.json'
@@ -180,6 +219,7 @@ window.FIDS_CONFIG = {
   function gen(nombre,paleta){ var m=JSON.parse(JSON.stringify(GEN)); m.nombre=nombre; m.paleta=paleta; return m; }
   C.marcas={
     transpais:  { nombre:'Vialtis (marca del sistema)' },
+    vialtis:    { nombre:'Vialtis', cliente:{ nombreSaludo:'Vialtis' }, audioBase:'Audio/' },   /* audioBase: los audios suenan siempre en Vialtis */
     generico:   gen('Genérico · Azul',     {'--bg':'#020f1f','--navy':'#0a3d73','--accent':'#2563eb','--muted':'#93c5fd'}),
     esmeralda:  gen('Genérico · Esmeralda',{'--bg':'#02150f','--navy':'#0b4a3a','--accent':'#10b981','--muted':'#86efac'}),
     carbon:     gen('Genérico · Carbón',   {'--bg':'#0b0d10','--navy':'#2b3138','--accent':'#94a3b8','--muted':'#cbd5e1'}),
