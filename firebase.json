@@ -1,5 +1,0 @@
-{
-  "functions": [
-    { "source": "functions", "codebase": "avisos", "ignore": ["node_modules", ".git", "*.local"] }
-  ]
-}
