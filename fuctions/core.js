@@ -69,6 +69,19 @@ async function runOnce(ctx){
         else if(Object.keys(upd).length){ await db.update('pushstate/'+b+'/'+tid,upd); }
       }
     }
+    /* Aviso al dueño: una TV lleva más de 10 minutos sin señal (y avisa cuando vuelve) */
+    const dueno=await db.get('push/dueno');
+    if(dueno&&Object.keys(dueno).length){
+      const tvs=(await db.get(b+'/tvs'))||{}, tst=(await db.get('pushstate/_tv/'+b))||{}, upd={}, dgone=[];
+      const sendAll=async function(msg,tag){ for(const id of Object.keys(dueno)){ const r=await ctx.send(dueno[id].s,{title:cfg.titulo||'Aviso',body:msg,tag:tag,url:cfg.urlDueno||'./?vista=dueno'}); if(r&&r.gone)dgone.push(id); else if(r&&r.ok)out.enviados++; } };
+      for(const tid of Object.keys(tvs)){
+        const t=tvs[tid]; if(!t||!t.ts)continue; const age=ctx.nowMs-t.ts, key=safe(tid), name=(B.empresa||b)+' · '+(t.view||tid);
+        if(age>10*60000&&age<12*3600000&&!tst[key]){ upd[key]=1; await sendAll('📺 TV sin señal: '+name+' lleva '+Math.round(age/60000)+' min desconectada','tv-'+key); }
+        else if(age<=3*60000&&tst[key]){ upd[key]=null; await sendAll('✅ TV de nuevo en línea: '+name,'tv-'+key); }
+      }
+      if(Object.keys(upd).length)await db.update('pushstate/_tv/'+b,upd);
+      for(const id of dgone)await db.remove('push/dueno/'+id);
+    }
     /* Autochequeo diario: deja el resultado en <sucursal>/chequeo para la lista de apertura del panel */
     if(cfg.chequeoHora){
       const last=await db.get('pushstate/_chequeo/'+b);

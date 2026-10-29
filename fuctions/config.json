@@ -5,6 +5,33 @@
   "margenCasaMin": 20,
   "chequeoHora": "05:30",
   "branches": {
-    "vialtis": { "puntoAbordaje": "Andén 18 (Central)", "estados": { "ultima": 3, "abordaje": 15, "etiquetado": 30 } }
-  }
+    "vialtis": {
+      "empresa": "Vialtis",
+      "puntoAbordaje": "Andén 18 (Central)",
+      "estados": {
+        "ultima": 3,
+        "abordaje": 15,
+        "etiquetado": 30
+      }
+    },
+    "central": {
+      "empresa": "Transpais",
+      "puntoAbordaje": "Andén 18",
+      "estados": {
+        "ultima": 3,
+        "abordaje": 15,
+        "etiquetado": 30
+      }
+    },
+    "of2": {
+      "empresa": "Transpais · Pedro Cárdenas",
+      "puntoAbordaje": "Abordaje en oficina",
+      "estados": {
+        "ultima": 3,
+        "abordaje": 5,
+        "etiquetado": 15
+      }
+    }
+  },
+  "urlDueno": "./?vista=dueno"
 }
