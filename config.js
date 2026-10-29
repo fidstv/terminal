@@ -35,7 +35,7 @@ window.FIDS_CONFIG = {
   franjaPrincipal: 'abordaje',
 
   /* TV: la tabla pasa de página cada N segundos (false = deslizar como antes) */
-  paginar: true, paginaSeg: 10,
+  paginar: false, paginaSeg: 10,
   /* TV: pantalla de clima cada cierto tiempo (necesita internet y el clima activado en el panel) */
   clima: { escena: true, cadaMin: 15, segundos: 12 },
 
