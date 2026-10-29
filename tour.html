@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demostración guiada</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000B18;color:#fff;font-family:system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:3px solid #00A859;background:rgba(0,20,45,.9)}
+header img{width:40px;height:40px}header h1{font-size:18px;margin:0}header p{margin:2px 0 0;font-size:12px;color:#93c5fd}
+.stage{flex:1;display:flex;gap:20px;align-items:center;justify-content:center;padding:20px;flex-wrap:wrap}
+.tv{width:min(960px,92vw);aspect-ratio:16/9;border:6px solid #1c2b3f;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.phone{width:300px;height:620px;border:8px solid #1c2b3f;border-radius:34px;overflow:hidden;background:#000;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+iframe{width:100%;height:100%;border:0;display:block}
+.tv iframe{width:1920px;height:1080px;transform-origin:0 0}
+footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.12);background:rgba(0,20,45,.9)}
+#cap{font-size:clamp(15px,2vw,22px);font-weight:800;min-height:2.6em;text-align:center}
+.bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+button{min-height:44px;padding:0 18px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+button.go{background:#00A859;border-color:transparent}
+.dots{display:flex;gap:6px;justify-content:center;margin-bottom:8px}.dots i{width:28px;height:5px;border-radius:5px;background:#ffffff30}.dots i.on{background:#00A859}
+</style>
+</head>
+<body>
+<header><img src="logo.svg" alt=""><div><h1>Demostración guiada</h1><p>Datos de ejemplo · no toca información real</p></div></header>
+<div class="stage">
+  <div class="tv" id="tvbox"><iframe id="tv" title="TV"></iframe></div>
+  <div class="phone"><iframe id="ph" title="App de pasajeros"></iframe></div>
+</div>
+<footer>
+  <div class="dots" id="dots"></div>
+  <div id="cap"></div>
+  <div class="bar">
+    <button id="b-prev">◀ Anterior</button>
+    <button id="b-play" class="go">⏸ Pausar</button>
+    <button id="b-next">Siguiente ▶</button>
+    <button id="b-delay">⏱️ Simular +15 min de retraso</button>
+    <button id="b-adv">⏩ Adelantar 10 minutos</button>
+    <button id="b-reset">🔄 Reiniciar demo</button>
+  </div>
+</footer>
+<script>
+(function(){
+  var KEY='fids_demo_db_v1', BR='vialtis';
+  var base=location.pathname.replace(/[^\/]*$/,'')+'index.html';
+  var TV=document.getElementById('tv'), PH=document.getElementById('ph'), box=document.getElementById('tvbox');
+  function load(){ TV.src=base+'?demo=1&marca=vialtis&vista=tvvialtis'; PH.src=base+'?demo=1&marca=vialtis&vista=pasajerovialtis'; }
+  function fit(){ var s=box.clientWidth/1920; TV.style.transform='scale('+s+')'; }
+  window.addEventListener('resize',fit); fit();
+  var steps=[
+    '1 · La pantalla de la terminal muestra todas las salidas en vivo, con su unidad, andén y estado.',
+    '2 · Cuando una salida entra a abordaje aparece el aviso grande con el plano de andenes y el autobús recorriendo la ruta.',
+    '3 · En el celular el pasajero ve lo mismo y toca “Seguir mi salida” para recibir avisos, también con la app cerrada.',
+    '4 · Si hay un retraso, la taquilla lo captura y la TV y la app se actualizan solas (prueba el botón de abajo).',
+    '5 · La TV avisa en voz alta, repite la última llamada en inglés y lee los avisos urgentes.'
+  ];
+  var i=0, playing=true, timer=null, dots=document.getElementById('dots'), cap=document.getElementById('cap');
+  dots.innerHTML=steps.map(function(){return '<i></i>';}).join('');
+  function show(n){ i=(n+steps.length)%steps.length; cap.textContent=steps[i]; Array.prototype.forEach.call(dots.children,function(d,k){ d.className=k===i?'on':''; }); }
+  function tick(){ clearInterval(timer); if(playing)timer=setInterval(function(){ show(i+1); },12000); }
+  function db(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+  function save(d){ localStorage.setItem(KEY,JSON.stringify(d)); }
+  function shift(mins,onlyNext){
+    var d=db(); if(!d||!d[BR]||!d[BR].deps)return;
+    var deps=d[BR].deps, keys=Object.keys(deps);
+    keys.forEach(function(k,idx){
+      var x=deps[k], p=String(x.time).split(':').map(Number), t=((p[0]*60+p[1]+mins)%1440+1440)%1440;
+      if(onlyNext&&idx!==onlyNext.idx)return;
+      x.time=('0'+Math.floor(t/60)).slice(-2)+':'+('0'+t%60).slice(-2);
+      if(onlyNext){ x.delay=(x.delay||0)+mins; x.motivo='Clima'; }
+    });
+    save(d);
+  }
+  document.getElementById('b-next').onclick=function(){ show(i+1); tick(); };
+  document.getElementById('b-prev').onclick=function(){ show(i-1); tick(); };
+  document.getElementById('b-play').onclick=function(){ playing=!playing; this.textContent=playing?'⏸ Pausar':'▶ Seguir'; tick(); };
+  document.getElementById('b-delay').onclick=function(){
+    var d=db(); if(!d||!d[BR]||!d[BR].deps)return;
+    var keys=Object.keys(d[BR].deps).sort(function(a,b){ return d[BR].deps[a].time<d[BR].deps[b].time?-1:1; });
+    var best=-1; Object.keys(d[BR].deps).forEach(function(k,idx){ if(k===keys[1])best=idx; });
+    shift(15,{idx:best<0?0:best}); show(3);
+  };
+  document.getElementById('b-adv').onclick=function(){ shift(-10); };
+  document.getElementById('b-reset').onclick=function(){ localStorage.removeItem(KEY); load(); };
+  show(0); tick(); load();
+})();
+</script>
+</body>
+</html>

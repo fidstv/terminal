@@ -1,0 +1,315 @@
+{
+  "rules": {
+    "central": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'ofcentral@transpais.com'",
+      "urgent": {
+        ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 300"
+      },
+      "voice": {
+        ".validate": "newData.child('key').val().matches(/^p[0-9]{2}$/) && newData.child('mode').val().matches(/^(etiq|abord|ultima)$/) && newData.child('timestamp').isNumber() && (!newData.hasChild('bus') || (newData.child('bus').isString() && newData.child('bus').val().length <= 10))"
+      },
+      "tvs": {
+        "$tv": {
+          ".write": "newData.exists()",
+          ".validate": "$tv.matches(/^tv[a-z0-9]{3,10}$/) && newData.hasChildren(['ts']) && newData.child('ts').isNumber() && newData.child('ts').val() <= now + 60000",
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "view": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "ver": {
+            ".validate": "newData.isString() && newData.val().length <= 10"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "audio": {
+            ".validate": "newData.isBoolean()"
+          },
+          "drift": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      },
+      "ping": {
+        ".validate": "newData.child('ts').isNumber()"
+      },
+      "theme": {
+        ".validate": "newData.child('mode').isString() && newData.child('mode').val().matches(/^(auto|clasico|noche|contraste)$/)"
+      },
+      "log": {
+        "$id": {
+          ".validate": "newData.hasChildren(['ts','text']) && newData.child('ts').isNumber() && newData.child('text').isString() && newData.child('text').val().length <= 120 && (!newData.hasChild('by') || (newData.child('by').isString() && newData.child('by').val().length <= 30))"
+        }
+      },
+      "avisos": {
+        "$id": {
+          ".validate": "newData.hasChildren(['text','desde','hasta'])",
+          "text": {
+            ".validate": "newData.isString() && newData.val().length <= 160"
+          },
+          "desde": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "hasta": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "dias": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-6]{1,7}$/)"
+          },
+          "activo": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "marca": {
+        ".validate": "newData.child('id').isString() && newData.child('id').val().matches(/^[a-z0-9]{1,20}$/)"
+      }
+    },
+    "of2": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'terminalof2@transpais.com'",
+      "urgent": {
+        ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 300"
+      },
+      "voice": {
+        ".validate": "newData.child('key').val().matches(/^p[0-9]{2}$/) && newData.child('mode').val().matches(/^(etiq|abord|ultima)$/) && newData.child('timestamp').isNumber() && (!newData.hasChild('bus') || (newData.child('bus').isString() && newData.child('bus').val().length <= 10))"
+      },
+      "tvs": {
+        "$tv": {
+          ".write": "newData.exists()",
+          ".validate": "$tv.matches(/^tv[a-z0-9]{3,10}$/) && newData.hasChildren(['ts']) && newData.child('ts').isNumber() && newData.child('ts').val() <= now + 60000",
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "view": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "ver": {
+            ".validate": "newData.isString() && newData.val().length <= 10"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "audio": {
+            ".validate": "newData.isBoolean()"
+          },
+          "drift": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      },
+      "ping": {
+        ".validate": "newData.child('ts').isNumber()"
+      },
+      "theme": {
+        ".validate": "newData.child('mode').isString() && newData.child('mode').val().matches(/^(auto|clasico|noche|contraste)$/)"
+      },
+      "log": {
+        "$id": {
+          ".validate": "newData.hasChildren(['ts','text']) && newData.child('ts').isNumber() && newData.child('text').isString() && newData.child('text').val().length <= 120 && (!newData.hasChild('by') || (newData.child('by').isString() && newData.child('by').val().length <= 30))"
+        }
+      },
+      "avisos": {
+        "$id": {
+          ".validate": "newData.hasChildren(['text','desde','hasta'])",
+          "text": {
+            ".validate": "newData.isString() && newData.val().length <= 160"
+          },
+          "desde": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "hasta": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "dias": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-6]{1,7}$/)"
+          },
+          "activo": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "marca": {
+        ".validate": "newData.child('id').isString() && newData.child('id').val().matches(/^[a-z0-9]{1,20}$/)"
+      }
+    },
+    "vialtis": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'admin@vialtis.mx'",
+      "urgent": {
+        ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 300"
+      },
+      "voice": {
+        ".validate": "newData.child('key').val().matches(/^p[0-9]{2}$/) && newData.child('mode').val().matches(/^(etiq|abord|ultima)$/) && newData.child('timestamp').isNumber() && (!newData.hasChild('bus') || (newData.child('bus').isString() && newData.child('bus').val().length <= 10))"
+      },
+      "tvs": {
+        "$tv": {
+          ".write": "newData.exists()",
+          ".validate": "$tv.matches(/^tv[a-z0-9]{3,10}$/) && newData.hasChildren(['ts']) && newData.child('ts').isNumber() && newData.child('ts').val() <= now + 60000",
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "view": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "ver": {
+            ".validate": "newData.isString() && newData.val().length <= 10"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "audio": {
+            ".validate": "newData.isBoolean()"
+          },
+          "drift": {
+            ".validate": "newData.isNumber()"
+          }
+        }
+      },
+      "ping": {
+        ".validate": "newData.child('ts').isNumber()"
+      },
+      "theme": {
+        ".validate": "newData.child('mode').isString() && newData.child('mode').val().matches(/^(auto|clasico|noche|contraste)$/)"
+      },
+      "avisos": {
+        "$id": {
+          ".validate": "newData.hasChildren(['text','desde','hasta'])",
+          "text": {
+            ".validate": "newData.isString() && newData.val().length <= 160"
+          },
+          "desde": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "hasta": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-2][0-9]:[0-5][0-9]$/)"
+          },
+          "dias": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-6]{1,7}$/)"
+          },
+          "activo": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "marca": {
+        ".validate": "newData.child('id').isString() && newData.child('id').val().matches(/^[a-z0-9]{1,20}$/)"
+      }
+    },
+    "push": {
+      ".read": false,
+      ".write": false,
+      "$branch": {
+        "$id": {
+          ".write": true,
+          ".validate": "($branch === 'vialtis' || $branch === 'central' || $branch === 'of2' || $branch === 'dueno') && newData.hasChildren(['s','ts'])",
+          "s": {
+            ".validate": "newData.hasChildren(['endpoint','keys']) && newData.child('endpoint').isString() && newData.child('endpoint').val().length <= 600 && newData.child('endpoint').val().matches(/^https:\\/\\/(fcm\\.googleapis\\.com|updates\\.push\\.services\\.mozilla\\.com|[a-z0-9.-]+\\.push\\.apple\\.com|[a-z0-9.-]+\\.notify\\.windows\\.com)\\//) && newData.child('keys/p256dh').isString() && newData.child('keys/auth').isString()",
+            "endpoint": {
+              ".validate": true
+            },
+            "keys": {
+              ".validate": true
+            }
+          },
+          "f": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().length <= 40"
+            }
+          },
+          "v": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 240"
+          },
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "pairing": {
+      "$code": {
+        ".validate": "$code.matches(/^[0-9]{6}$/)",
+        ".read": true,
+        "info": {
+          ".write": "!data.exists()",
+          ".validate": "newData.hasChild('ts')"
+        },
+        "assigned": {
+          ".write": "auth != null && (auth.token.email === 'ofcentral@transpais.com' || auth.token.email === 'terminalof2@transpais.com' || auth.token.email === 'admin@vialtis.mx')",
+          ".validate": "newData.hasChildren(['vista','ts']) && newData.child('vista').isString() && newData.child('vista').val().length <= 30"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "ratings": {
+      ".read": "auth != null && auth.token.email === 'dueno@vialtis.mx'",
+      "$branch": {
+        ".validate": "($branch === 'vialtis' || $branch === 'central' || $branch === 'of2')",
+        "$day": {
+          ".validate": "$day.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)",
+          "$id": {
+            ".write": "!data.exists()",
+            ".validate": "newData.hasChildren(['r','ts']) && newData.child('r').isNumber() && newData.child('r').val() >= 1 && newData.child('r').val() <= 3",
+            "r": {
+              ".validate": true
+            },
+            "k": {
+              ".validate": "newData.isString() && newData.val().length <= 12"
+            },
+            "ts": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    },
+    "lost": {
+      "$branch": {
+        ".validate": "($branch === 'vialtis' || $branch === 'central' || $branch === 'of2')",
+        ".read": "auth != null && (auth.token.email === 'ofcentral@transpais.com' || auth.token.email === 'terminalof2@transpais.com' || auth.token.email === 'admin@vialtis.mx')",
+        "$id": {
+          ".write": "!data.exists() || (auth != null && (auth.token.email === 'ofcentral@transpais.com' || auth.token.email === 'terminalof2@transpais.com' || auth.token.email === 'admin@vialtis.mx'))",
+          ".validate": "newData.hasChildren(['w','c','ts']) && newData.child('w').isString() && newData.child('w').val().length <= 80 && newData.child('c').isString() && newData.child('c').val().length <= 20",
+          "w": {
+            ".validate": true
+          },
+          "c": {
+            ".validate": true
+          },
+          "wh": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "st": {
+            ".validate": "newData.val() === 'abierto' || newData.val() === 'resuelto'"
+          },
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}
