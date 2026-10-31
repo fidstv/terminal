@@ -537,11 +537,14 @@ function attach(s){
       applyBrand(effectiveBrandId());
     });
 
+    const rtz=db.ref(s+'/tvzoom'); refs.push(rtz);
+    rtz.on('value',function(snap){ tvZoomData=snap.val(); applyTvZoom(); });
+
     const rvx=db.ref(s+'/voceo'); refs.push(rvx);
     rvx.on('value',function(snap){ voceoData=snap.val(); voxApply(s,voceoData); voxFill(); render(); });
 
     const rfr=db.ref(s+'/franja'); refs.push(rfr);
-    rfr.on('value',function(snap){ const v=snap.val(); frMode=v&&v.modo?v.modo:null; const sel=$('franja-select'); if(sel)sel.value=franjaModo(); render(); });
+    rfr.on('value',function(snap){ const v=snap.val(); frMode=(v&&v.v===2&&v.modo)?v.modo:null;   /* v:2 = elegido desde la versión 34; un ajuste viejo se ignora y vale el valor de config.js (nunca) */ const sel=$('franja-select'); if(sel)sel.value=franjaModo(); render(); });
 
     const rmc=db.ref(s+'/marca_custom'); refs.push(rmc);
     rmc.on('value',function(snap){ customBrand=snap.val(); fillMarcaForm(); applyBrand(effectiveBrandId()); });
@@ -1016,7 +1019,7 @@ function autoVoice(d,diff,n){
   let direction = 1;      // 1 = Bajar, -1 = Subir
 
   function scrollStep() {
-    if (isTV && CFG.paginar === false) {   /* con páginas (por defecto) ya no se desliza */
+    if (isTV && CFG.paginar === false && CFG.desplazamiento === 'continuo') {   /* con páginas (por defecto) ya no se desliza */
       const container = document.querySelector('.fids-table-wrap');
       if (container) {
         const maxScroll = container.scrollHeight - container.clientHeight;
@@ -1167,10 +1170,10 @@ function tvRow(d,c){
   const isActive = d._st === 'ETIQUETANDO PASAJE' || d._st === 'EN ABORDAJE' || d._st === 'ÚLTIMA LLAMADA';
   const rowClass = isActive ? 'gold-row-active' : '';
 
-  return '<td style="font-size:24px;font-weight:900;font-family:monospace" class="'+rowClass+'">'+esc(d.time)+'</td>'+
-  '<td class="'+rowClass+'"><div style="font-size:20px;font-weight:900">'+esc(d.destination)+' '+wxChip(d.destination)+'</div>'+(sc?'<div style="font-size:12px;color:var(--muted,#93c5fd);margin-top:4px">Escalas: '+esc(sc)+'</div>':'')+'</td>'+
+  return '<td style="font-size:calc(24px*var(--tvz,1));font-weight:900;font-family:monospace" class="'+rowClass+'">'+esc(d.time)+'</td>'+
+  '<td class="'+rowClass+'"><div style="font-size:calc(20px*var(--tvz,1));font-weight:900">'+esc(d.destination)+' '+wxChip(d.destination)+'</div>'+(sc?scalesHTML(sc):'')+'</td>'+
   '<td class="c '+rowClass+'">'+(d.bus?'<span class="bus-badge">'+esc(d.bus)+'</span>':'<span class="bus-none">---</span>')+'</td>'+
-  '<td class="c '+rowClass+'" style="font-size:16px;font-weight:800;color:var(--ok,#00D974)">'+esc(d.gate||CFG.sucursales[viewSuc()].puntoAbordaje)+'</td>'+
+  '<td class="c '+rowClass+'" style="font-size:calc(16px*var(--tvz,1));font-weight:800;color:var(--ok,#00D974)">'+esc(d.gate||CFG.sucursales[viewSuc()].puntoAbordaje)+'</td>'+
   '<td class="c '+rowClass+'">'+badge(d._st)+etaHTML(d)+'</td>';
 }
 
@@ -2757,7 +2760,7 @@ var frMode;
 function franjaModo(){ const m=frMode||CFG.franjaPrincipal||'abordaje'; return (m==='siempre'||m==='nunca')?m:'abordaje'; }
 if($('franja-select'))$('franja-select').onchange=function(e){
   if(!canWrite()){ alert('Inicia sesión de taquilla para cambiar la franja.'); e.target.value=franjaModo(); return; }
-  db.ref(suc+'/franja').set({modo:e.target.value}).then(function(){ showToast('📺 Franja de la TV actualizada'); }).catch(fail);
+  db.ref(suc+'/franja').set({modo:e.target.value,v:2}).then(function(){ showToast('📺 Franja de la TV actualizada'); }).catch(fail);
 };
 (function(){ const sel=$('franja-select'); if(sel)sel.value=franjaModo(); })();
 
@@ -3076,3 +3079,61 @@ document.addEventListener('click',function(e){
   if(err){ say('⚠️ '+err,true); return; }
   db.ref(suc+'/voceo').set(v).then(function(){ say('✅ Guardado: las TVs de esta sucursal ya usan estos tiempos.',false); showToast('🔊 Voceos actualizados'); }).catch(fail);
 });
+
+/* =====================================================================
+   TAMAÑO DE LA PANTALLA (zoom de lo importante), ESCALAS MÁS VISIBLES Y DESLIZAMIENTO POR FILAS
+   ===================================================================== */
+var tvZoomData;
+const ZOOM_F={normal:1,grande:1.25,muygrande:1.5}, ESC_PX={normal:12,grande:17,muygrande:22};
+function tvSizes(){ return Object.assign({zoom:'normal',escalas:'grande'},CFG.tamano||{},tvZoomData||{}); }
+function applyTvZoom(){
+  const s=tvSizes(), r=document.documentElement.style;
+  r.setProperty('--tvz',String(ZOOM_F[s.zoom]||1)); r.setProperty('--escz',(ESC_PX[s.escalas]||17)+'px');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-zv]'),function(b){
+    const g=b.parentElement&&b.parentElement.dataset.zgroup; b.classList.toggle('on',s[g]===b.dataset.zv);
+  });
+}
+function noAcc(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function scalesHTML(sc){
+  const mains=(CFG.ciudadesPrincipales||[]).map(noAcc).filter(Boolean);
+  const stops=String(sc).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+  return '<div class="tv-scales"><span class="tv-sc-lbl">Escalas:</span>'+stops.map(function(s,i){
+    const main=mains.some(function(m){ return noAcc(s).indexOf(m)!==-1; });
+    return (i?'<i>•</i>':'')+(main?'<b class="tv-sc-main">'+esc(s)+'</b>':'<span>'+esc(s)+'</span>');
+  }).join('')+'</div>';
+}
+document.addEventListener('click',function(e){
+  const b=e.target.closest&&e.target.closest('[data-zv]'); if(!b)return;
+  if(!canWrite()){ alert('Inicia sesión de taquilla para cambiar el tamaño.'); return; }
+  const g=b.parentElement.dataset.zgroup, o={}; o[g]=b.dataset.zv;
+  db.ref(suc+'/tvzoom').update(o).then(function(){ showToast('🔎 Tamaño actualizado en las TVs'); }).catch(fail);
+});
+applyTvZoom();
+
+/* deslizamiento por filas: avanza media pantalla, se detiene en una fila completa y vuelve arriba al final */
+(function initTVRowStep(){
+  if(!isTV)return;
+  let idx=0, moveAt=Date.now(), hold=6000;
+  setInterval(function(){
+    if(isGeneral||isAnden||isPairing)return;
+    if(CFG.paginar!==false||(CFG.desplazamiento||'filas')!=='filas')return;
+    const c=document.querySelector('.fids-table-wrap'); if(!c)return;
+    const rows=Array.prototype.slice.call(c.querySelectorAll('tbody tr')).filter(function(r){ return r.offsetHeight>0; });
+    if(rows.length<2){ c.style.paddingBottom='0px'; c.scrollTop=0; idx=0; return; }
+    const cr=c.getBoundingClientRect(), f=rows[0].getBoundingClientRect(), h0=f.top-cr.top+c.scrollTop, avail=c.clientHeight-h0;
+    const rel=rows.map(function(r){ return r.getBoundingClientRect().top-f.top; });
+    const last=rows[rows.length-1].getBoundingClientRect(), total=rel[rows.length-1]+last.height;
+    if(total<=avail+2){ c.style.paddingBottom='0px'; c.scrollTop=0; idx=0; return; }
+    let fin=rel.findIndex(function(v){ return total-v<=avail+1; }); if(fin<0)fin=rows.length-1;
+    c.style.paddingBottom=Math.max(0,Math.ceil(rel[fin]-(total-avail)))+'px';   /* para poder detenerse justo en la última fila completa */
+    if(idx>fin)idx=fin;
+    const now=Date.now();
+    if(now-moveAt>1200&&Math.abs(c.scrollTop-rel[idx])>2)c.scrollTop=rel[idx];
+    if(now-moveAt<hold)return;
+    let nx;
+    if(idx>=fin)nx=0;
+    else{ nx=rel.findIndex(function(v){ return v>=rel[idx]+avail*0.45; }); if(nx<0||nx>fin)nx=fin; if(nx<=idx)nx=Math.min(fin,idx+1); }
+    idx=nx; moveAt=now; hold=(idx===0||idx===fin)?6000:((CFG.pasoFilasSeg||4)*1000);
+    c.scrollTop=rel[idx];
+  },500);
+})();

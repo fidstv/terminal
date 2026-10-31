@@ -15,7 +15,7 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
 <!-- LOGUITO EN LA PESTAÑA (Favicon) -->
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="styles.css?v=34">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -328,14 +328,24 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
         <button type="button" class="btn btn-green" id="btn-pair">Vincular</button>
       </div>
     </details>
+    <details class="adm-sec" id="sec-zoom">
+      <summary>🔎 Tamaño de la pantalla (TV)</summary>
+      <div class="adm-body">
+        <p class="adm-hint">Agranda lo importante de la tabla (hora, destino, unidad y estado) en las TVs de esta sucursal. Cuanto más grande, menos salidas caben a la vez.</p>
+        <div class="zm-lbl">Tamaño general</div>
+        <div class="zm-group" data-zgroup="zoom"><button type="button" data-zv="normal">Normal</button><button type="button" data-zv="grande">Grande</button><button type="button" data-zv="muygrande">Muy grande</button></div>
+        <div class="zm-lbl">Tamaño de las escalas</div>
+        <div class="zm-group" data-zgroup="escalas"><button type="button" data-zv="normal">Normal</button><button type="button" data-zv="grande">Grande</button><button type="button" data-zv="muygrande">Muy grande</button></div>
+      </div>
+    </details>
     <details class="adm-sec" id="sec-franja">
       <summary>📺 Franja grande de la TV</summary>
       <div class="adm-body">
         <p class="adm-hint">La franja de arriba muestra la ruta con el autobús y el andén. Elige cuándo aparece; sin ella, la tabla de salidas usa toda la pantalla.</p>
         <select id="franja-select">
-          <option value="abordaje">Solo en abordaje y última llamada (recomendado)</option>
+          <option value="abordaje">Solo en abordaje y última llamada</option>
           <option value="siempre">Siempre (también etiquetando y próxima salida)</option>
-          <option value="nunca">Nunca</option>
+          <option value="nunca">Nunca (recomendado: la tabla usa toda la pantalla)</option>
         </select>
       </div>
     </details>
@@ -379,8 +389,8 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
 <main id="view-pair" class="pr-wrap"></main>
 <main id="view-dueno" class="dn-wrap"></main>
 <div id="idle-screen" class="idle-screen hidden"></div>
-<script src="config.js?v=33"></script>
-<script src="demo.js?v=33"></script>
-<script src="app.js?v=33"></script>
+<script src="config.js?v=34"></script>
+<script src="demo.js?v=34"></script>
+<script src="app.js?v=34"></script>
 </body>
 </html>

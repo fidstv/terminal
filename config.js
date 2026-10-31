@@ -5,7 +5,7 @@
    Importante: los identificadores de sucursal "central" y "of2" no se
    renombran; lo que se cambia son sus nombres, rutas, horarios y textos.
    ===================================================================== */
-window.FIDS_VERSION = '33';   /* súbelo junto con sw.js cada vez que publiques cambios */
+window.FIDS_VERSION = '34';   /* súbelo junto con sw.js cada vez que publiques cambios */
 
 window.FIDS_CONFIG = {
   cliente: {
@@ -31,11 +31,17 @@ window.FIDS_CONFIG = {
   llegadaEstimada: true,
   duraciones: { 'San Luis Potosí': 660, 'Tampico': 480, 'Madero': 480, 'Ciudad Valles': 540 },
 
-  /* Franja grande de la TV: 'abordaje' (solo abordaje y última llamada), 'siempre' o 'nunca'. Se puede cambiar desde el panel (Sistema). */
-  franjaPrincipal: 'abordaje',
+  /* Franja grande de la TV (arriba de la tabla): 'nunca' (la tabla usa toda la pantalla, recomendado), 'abordaje' (solo abordaje y última llamada) o 'siempre'. Se puede cambiar desde el panel (Sistema). */
+  franjaPrincipal: 'nunca',
 
   /* TV: la tabla pasa de página cada N segundos (false = deslizar como antes) */
   paginar: false, paginaSeg: 10,
+  /* TV (cuando paginar es false): 'filas' = avanza media pantalla y se detiene en una fila completa (recomendado) · 'continuo' = deslizamiento lento de antes */
+  desplazamiento: 'filas', pasoFilasSeg: 4,
+  /* TV: tamaño inicial (se cambia desde el panel → Sistema → Tamaño de la pantalla): zoom y escalas = 'normal' | 'grande' | 'muygrande' */
+  tamano: { zoom: 'normal', escalas: 'grande' },
+  /* TV: ciudades que se destacan en dorado dentro de las escalas (basta una parte del nombre, sin importar acentos) */
+  ciudadesPrincipales: ['Victoria', 'Mante'],
   /* TV: pantalla de clima cada cierto tiempo (necesita internet y el clima activado en el panel) */
   clima: { escena: true, cadaMin: 15, segundos: 12 },
 

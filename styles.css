@@ -605,3 +605,16 @@ body.tv-mode.theme-noche .fids-table-wrap{zoom:1.08}
 .vx-msg{min-height:20px;margin-bottom:8px;font-size:13px;font-weight:800}.vx-msg.bad{color:#ff9bb2}.vx-msg.ok{color:var(--ok,#00D974)}
 .vx-actions .btn{flex:1;min-height:48px;justify-content:center}
 @media (max-width:768px){ body:not(.tv-mode) .adm-tab{font-size:11px} }
+
+/* ===== V34: tamaño de la pantalla, escalas visibles ===== */
+body.tv-mode .badge-status,body.tv-mode .bus-badge,body.tv-mode .eta{zoom:var(--tvz,1)}
+body.tv-mode.theme-noche .fids-table-wrap{zoom:1}
+body.tv-mode.theme-noche .fids-table-wrap td{font-size:inherit}
+.tv-scales{margin-top:4px;font-size:var(--escz,17px);line-height:1.3;color:#fff;font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .4em}
+.tv-scales .tv-sc-lbl{color:var(--muted,#93c5fd);font-weight:700;margin-right:.15em}
+.tv-scales i{font-style:normal;color:var(--muted,#93c5fd);opacity:.85}
+.tv-scales .tv-sc-main{color:var(--gold,#FFB800);font-weight:900}
+.zm-lbl{font-size:12px;font-weight:800;color:var(--muted,#93c5fd);margin:12px 0 6px}
+.zm-group{display:flex;gap:8px}
+.zm-group button{flex:1;min-height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
+.zm-group button.on{background:var(--accent,#00A859);border-color:transparent}
