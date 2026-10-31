@@ -41,6 +41,8 @@ async function runOnce(ctx){
     const tokens=await db.get('push/'+b);
     if(tokens&&Object.keys(tokens).length){
       const deps=(await db.get(b+'/deps'))||{}, state=(await db.get('pushstate/'+b))||{};
+      const vc=await db.get(b+'/voceo');   /* minutos ajustados desde el panel (pestaña Voceo) */
+      const est=(vc&&vc.sync!==false&&vc.etiq&&vc.abord&&vc.ultima&&+vc.etiq.min>+vc.abord.min&&+vc.abord.min>+vc.ultima.min&&+vc.ultima.min>=1)?{etiquetado:+vc.etiq.min,abordaje:+vc.abord.min,ultima:+vc.ultima.min}:B.estados;
       for(const tid of Object.keys(tokens)){
         const rec=tokens[tid]||{}, mine=state[tid]||{}, upd={};
         let gone=false;
@@ -51,7 +53,7 @@ async function runOnce(ctx){
         for(const k of asList(rec.f)){
           const parts=String(k).split('|'), id=parts[1], d=deps[id];
           if(!d||!d.time||d.day!==parts[0])continue;
-          const diff=diffOf(d,n), st=statOf(d,diff,B.estados), sig=st+'|'+d.time, sk=safe(k), prev=mine[sk];
+          const diff=diffOf(d,n), st=statOf(d,diff,est), sig=st+'|'+d.time, sk=safe(k), prev=mine[sk];
           if(prev===undefined){ upd[sk]=sig; }
           else if(prev!==sig){
             const msg=message(d,st,prev.split('|')[1],d.gate||B.puntoAbordaje);
