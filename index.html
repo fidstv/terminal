@@ -15,7 +15,7 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
 <!-- LOGUITO EN LA PESTAÑA (Favicon) -->
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -149,6 +149,7 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
 <nav id="adm-tabs" class="adm-tabs hidden" aria-label="Secciones del panel">
   <button type="button" class="adm-tab on" data-tab="salidas"><b>🚌</b><span>Salidas</span></button>
   <button type="button" class="adm-tab" data-tab="avisos"><b>📢</b><span>Avisos</span></button>
+  <button type="button" class="adm-tab" data-tab="voceo"><b>🔊</b><span>Voceo</span></button>
   <button type="button" class="adm-tab" data-tab="sistema"><b>⚙️</b><span>Sistema</span></button>
 </nav>
 <main id="view-admin" class="glass-card hidden">
@@ -247,6 +248,38 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
       <div class="adm-body"><div id="lost-list"></div></div>
     </details>
     </section>
+  <section class="adm-pane hidden" id="pane-voceo">
+    <div class="vx-intro"><h2>🔊 Voceos automáticos</h2>
+      <p>Enciende o apaga cada voceo y elige con cuántos minutos de anticipación suena en las TVs de esta sucursal. <span id="vx-state"></span></p></div>
+    <div class="vx-card" id="vx-card-etiq">
+      <div class="vx-head"><span class="vx-ico">🧳</span><div class="vx-tt"><b>Etiquetado</b><small>Pasajeros a documentar y etiquetar su equipaje</small></div>
+        <label class="vx-sw" title="Encender o apagar este voceo"><input type="checkbox" id="vx-etiq-on" checked><i></i></label></div>
+      <div class="vx-min"><label for="vx-etiq-min">Sonar cuando falten</label><input type="number" id="vx-etiq-min" min="1" max="240" step="1" inputmode="numeric"><span>min</span>
+        <button type="button" class="btn btn-dark vx-test" data-vxtest="etiq">▶ Probar</button></div>
+    </div>
+    <div class="vx-card" id="vx-card-abord">
+      <div class="vx-head"><span class="vx-ico">🚌</span><div class="vx-tt"><b>Abordaje</b><small>Abordaje en el andén</small></div>
+        <label class="vx-sw" title="Encender o apagar este voceo"><input type="checkbox" id="vx-abord-on" checked><i></i></label></div>
+      <div class="vx-min"><label for="vx-abord-min">Sonar cuando falten</label><input type="number" id="vx-abord-min" min="1" max="240" step="1" inputmode="numeric"><span>min</span>
+        <button type="button" class="btn btn-dark vx-test" data-vxtest="abord">▶ Probar</button></div>
+    </div>
+    <div class="vx-card" id="vx-card-ultima">
+      <div class="vx-head"><span class="vx-ico">🔔</span><div class="vx-tt"><b>Última llamada</b><small>Última llamada para abordar</small></div>
+        <label class="vx-sw" title="Encender o apagar este voceo"><input type="checkbox" id="vx-ultima-on" checked><i></i></label></div>
+      <div class="vx-min"><label for="vx-ultima-min">Sonar cuando falten</label><input type="number" id="vx-ultima-min" min="1" max="240" step="1" inputmode="numeric"><span>min</span>
+        <button type="button" class="btn btn-dark vx-test" data-vxtest="ultima">▶ Probar</button></div>
+    </div>
+    <div class="vx-card vx-sub" id="vx-card-rep">
+      <div class="vx-head"><span class="vx-ico">🔁</span><div class="vx-tt"><b>Repetir el abordaje (opcional)</b><small>Segundo aviso de abordaje, entre el abordaje y la última llamada</small></div>
+        <label class="vx-sw" title="Encender o apagar este voceo"><input type="checkbox" id="vx-rep-on" checked><i></i></label></div>
+      <div class="vx-min"><label for="vx-rep-min">Sonar cuando falten</label><input type="number" id="vx-rep-min" min="1" max="240" step="1" inputmode="numeric"><span>min</span>
+        </div>
+    </div>
+    <label class="vx-check"><input type="checkbox" id="vx-sync" checked> Cambiar también el estado que se ve en pantalla (ETIQUETANDO, ABORDAJE, ÚLTIMA LLAMADA) con estos mismos minutos</label>
+    <div id="vx-preview" class="vx-prev"></div>
+    <div id="vx-msg" class="vx-msg"></div>
+    <div class="row vx-actions"><button type="button" class="btn btn-green" id="btn-vx-save">Guardar cambios</button><button type="button" class="btn btn-dark btn-red" id="btn-vx-reset">Restaurar originales</button></div>
+  </section>
   <section class="adm-pane hidden" id="pane-sistema">
     <div id="guide-box" class="sc-card hidden"></div>
     <details class="adm-sec adm-ai" id="sec-copilot" data-open>
@@ -346,8 +379,8 @@ a('link',0,{rel:'apple-touch-icon',href:'apple-touch-icon.png'});a('meta',0,{nam
 <main id="view-pair" class="pr-wrap"></main>
 <main id="view-dueno" class="dn-wrap"></main>
 <div id="idle-screen" class="idle-screen hidden"></div>
-<script src="config.js?v=32"></script>
-<script src="demo.js?v=32"></script>
-<script src="app.js?v=32"></script>
+<script src="config.js?v=33"></script>
+<script src="demo.js?v=33"></script>
+<script src="app.js?v=33"></script>
 </body>
 </html>

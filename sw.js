@@ -1,4 +1,4 @@
-const V = '32'; // súbelo junto con window.FIDS_VERSION en config.js y con los ?v= de index.html cada vez que publiques cambios
+const V = '33'; // súbelo junto con window.FIDS_VERSION en config.js y con los ?v= de index.html cada vez que publiques cambios
 const CACHE_NAME = 'vialtis-v' + V;
 
 const STATIC_ASSETS = ['./', 'index.html', 'styles.css?v=' + V, 'config.js?v=' + V, 'demo.js?v=' + V, 'app.js?v=' + V, 'manifest.json', 'manifest-pasajero.json', 'icon.svg', 'logo.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];

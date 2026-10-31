@@ -537,6 +537,9 @@ function attach(s){
       applyBrand(effectiveBrandId());
     });
 
+    const rvx=db.ref(s+'/voceo'); refs.push(rvx);
+    rvx.on('value',function(snap){ voceoData=snap.val(); voxApply(s,voceoData); voxFill(); render(); });
+
     const rfr=db.ref(s+'/franja'); refs.push(rfr);
     rfr.on('value',function(snap){ const v=snap.val(); frMode=v&&v.modo?v.modo:null; const sel=$('franja-select'); if(sel)sel.value=franjaModo(); render(); });
 
@@ -2376,7 +2379,7 @@ function initGeneral(){
 
 /* ============ PANEL EN PESTAÑAS: Salidas / Avisos / Sistema ============ */
 function admTab(name){
-  ['salidas','avisos','sistema'].forEach(function(n){ const p=$('pane-'+n); if(p)p.classList.toggle('hidden',n!==name); });
+  ['salidas','avisos','voceo','sistema'].forEach(function(n){ const p=$('pane-'+n); if(p)p.classList.toggle('hidden',n!==name); });
   Array.prototype.forEach.call(document.querySelectorAll('.adm-tab'),function(b){ b.classList.toggle('on',b.dataset.tab===name); });
   try{ localStorage.setItem('vialtis_adm_tab',name); }catch(e){}
   if(name==='sistema')pairUI();
@@ -2389,7 +2392,7 @@ document.addEventListener('click',function(e){
   const t=e.target.closest&&e.target.closest('.adm-tab'); if(t&&t.dataset.tab)admTab(t.dataset.tab);
 });
 if($('btn-add-run'))$('btn-add-run').onclick=function(){ try{ if($('btn-reset'))$('btn-reset').click(); }catch(e){} openForm(); };
-(function(){ let t='salidas'; try{ t=localStorage.getItem('vialtis_adm_tab')||'salidas'; }catch(e){} admTab(['salidas','avisos','sistema'].indexOf(t)!==-1?t:'salidas'); })();
+(function(){ let t='salidas'; try{ t=localStorage.getItem('vialtis_adm_tab')||'salidas'; }catch(e){} admTab(['salidas','avisos','voceo','sistema'].indexOf(t)!==-1?t:'salidas'); })();
 
 
 /* ============ TECLADO GRANDE (unidad) Y RETRASO CON OPCIONES ============ */
@@ -2986,3 +2989,90 @@ function dunoPush(){
       .then(function(){ showToast('🔔 Te avisaremos si una TV se cae'); });
   }).catch(function(e){ alert('No se pudo activar: '+(e&&e.message||e)); });
 }
+
+/* =====================================================================
+   VOCEOS AUTOMÁTICOS: interruptores y minutos de cada voceo (pestaña "Voceo" del panel)
+   Se guarda por sucursal en <sucursal>/voceo y lo leen las TVs al instante.
+   ===================================================================== */
+var voceoData, VOX_BASE;
+function voxBase(b){
+  VOX_BASE=VOX_BASE||{};
+  const S=CFG.sucursales[b];
+  if(!VOX_BASE[b])VOX_BASE[b]={avisos:JSON.parse(JSON.stringify(S.avisos||[])),estados:Object.assign({},S.estados)};
+  return VOX_BASE[b];
+}
+function voxDefaults(b){
+  const base=voxBase(b), ab=base.avisos.filter(function(a){ return a.modo==='abord'; }), e=base.estados;
+  return {etiq:{on:true,min:e.etiquetado},abord:{on:true,min:e.abordaje},ultima:{on:true,min:e.ultima},
+    rep:{on:ab.length>1,min:ab.length>1?ab[1].desde:Math.max(e.ultima+1,Math.round((e.abordaje+e.ultima)/2))},sync:true};
+}
+function voxMerge(b,v){
+  const d=voxDefaults(b); v=v||{}; const o={};
+  ['etiq','abord','ultima','rep'].forEach(function(k){ o[k]={on:(v[k]&&v[k].on!==undefined)?!!v[k].on:d[k].on,min:(v[k]&&v[k].min!==undefined)?+v[k].min:d[k].min}; });
+  o.sync=v.sync!==false; return o;
+}
+function voxCheck(v){
+  const E=+v.etiq.min, A=+v.abord.min, U=+v.ultima.min, R=+v.rep.min;
+  if([E,A,U].some(function(x){ return !(x>=1&&x<=240&&Math.floor(x)===x); }))return 'Escribe minutos enteros entre 1 y 240 en los tres voceos.';
+  if(!(E>A&&A>U))return 'Los minutos deben ir de mayor a menor: etiquetado › abordaje › última llamada.';
+  if(v.rep.on&&!(R>U&&R<A&&Math.floor(R)===R))return 'La repetición del abordaje debe quedar entre la última llamada ('+U+' min) y el abordaje ('+A+' min).';
+  return '';
+}
+function voxApply(b,saved){
+  const S=CFG.sucursales[b]; if(!S)return;
+  const base=voxBase(b);
+  if(!saved||!saved.etiq||!saved.abord||!saved.ultima){ S.avisos=JSON.parse(JSON.stringify(base.avisos)); S.estados=Object.assign({},base.estados); return; }
+  const v=voxMerge(b,saved);
+  if(voxCheck(v)){ S.avisos=JSON.parse(JSON.stringify(base.avisos)); S.estados=Object.assign({},base.estados); return; }
+  const E=+v.etiq.min, A=+v.abord.min, U=+v.ultima.min, R=+v.rep.min, av=[];
+  /* los id se conservan (etiq30, abord15, abord10, ultima3) para que no se repita un voceo ya dado */
+  if(v.etiq.on)av.push({id:'etiq30',modo:'etiq',desde:E,hasta:A});
+  if(v.abord.on){
+    if(v.rep.on){ av.push({id:'abord15',modo:'abord',desde:A,hasta:R}); av.push({id:'abord10',modo:'abord',desde:R,hasta:U}); }
+    else av.push({id:'abord15',modo:'abord',desde:A,hasta:U});
+  }
+  if(v.ultima.on)av.push({id:'ultima3',modo:'ultima',desde:U,hasta:0});
+  S.avisos=av;
+  S.estados=(v.sync===false)?Object.assign({},base.estados):{etiquetado:E,abordaje:A,ultima:U};
+}
+function voxRead(){
+  const g=function(id){ return $(id); };
+  return {etiq:{on:g('vx-etiq-on').checked,min:+g('vx-etiq-min').value},abord:{on:g('vx-abord-on').checked,min:+g('vx-abord-min').value},
+    ultima:{on:g('vx-ultima-on').checked,min:+g('vx-ultima-min').value},rep:{on:g('vx-rep-on').checked,min:+g('vx-rep-min').value},sync:g('vx-sync').checked};
+}
+function voxPreview(){
+  const box=$('vx-preview'); if(!box||!$('vx-etiq-min'))return;
+  const v=voxRead(), err=voxCheck(v), msg=$('vx-msg');
+  const at=function(min){ const t=(14*60-min+1440)%1440; return pad(Math.floor(t/60))+':'+pad(t%60); };
+  if(msg&&!voxPreview._keep){ msg.textContent=err; msg.className='vx-msg'+(err?' bad':''); }
+  const item=function(ico,name,x){ return '<span class="vx-pv'+(x.on?'':' off')+'">'+ico+' '+name+' <b>'+(x.on?at(x.min):'apagado')+'</b></span>'; };
+  box.innerHTML='<div class="vx-pv-t">Ejemplo: para una salida a las <b>14:00</b> sonaría así</div>'+item('🧳','Etiquetado',v.etiq)+item('🚌','Abordaje',v.abord)+(v.abord.on&&v.rep.on?item('🔁','Repetición',v.rep):'')+item('🔔','Última llamada',v.ultima);
+  const st=$('vx-state'); if(st)st.textContent=(voceoData&&voceoData.etiq)?'Personalizado para esta sucursal':'Valores originales del sistema';
+}
+function voxFill(){
+  if(!$('vx-etiq-min')||!suc)return;
+  const v=voxMerge(suc,voceoData);
+  $('vx-etiq-on').checked=v.etiq.on; $('vx-etiq-min').value=v.etiq.min;
+  $('vx-abord-on').checked=v.abord.on; $('vx-abord-min').value=v.abord.min;
+  $('vx-ultima-on').checked=v.ultima.on; $('vx-ultima-min').value=v.ultima.min;
+  $('vx-rep-on').checked=v.rep.on; $('vx-rep-min').value=v.rep.min; $('vx-sync').checked=v.sync;
+  voxPreview();
+}
+document.addEventListener('input',function(e){ if(e.target.closest&&e.target.closest('#pane-voceo')){ voxPreview._keep=false; voxPreview(); } });
+document.addEventListener('change',function(e){ if(e.target.closest&&e.target.closest('#pane-voceo')){ voxPreview._keep=false; voxPreview(); } });
+document.addEventListener('click',function(e){
+  const t=e.target.closest&&e.target.closest('#btn-vx-save,#btn-vx-reset,[data-vxtest]'); if(!t)return;
+  const msg=$('vx-msg'), say=function(txt,bad){ voxPreview._keep=true; if(msg){ msg.textContent=txt; msg.className='vx-msg'+(bad?' bad':' ok'); } };
+  if(t.dataset.vxtest){
+    if(muted){ alert('La voz de taquilla está apagada. Actívala arriba (Voz) para probar el sonido aquí.'); return; }
+    const k=Object.keys(catalogFor(suc))[0]; playVoiceImmediate(k,t.dataset.vxtest,'1234'); showToast('🔊 Probando el voceo…'); return;
+  }
+  if(!canWrite()){ alert('Inicia sesión de taquilla para cambiar los voceos.'); return; }
+  if(t.id==='btn-vx-reset'){
+    if(!confirm('¿Volver a los tiempos originales del sistema?'))return;
+    db.ref(suc+'/voceo').remove().then(function(){ say('Se restauraron los valores originales.',false); showToast('Voceos restaurados'); }).catch(fail); return;
+  }
+  const v=voxRead(), err=voxCheck(v);
+  if(err){ say('⚠️ '+err,true); return; }
+  db.ref(suc+'/voceo').set(v).then(function(){ say('✅ Guardado: las TVs de esta sucursal ya usan estos tiempos.',false); showToast('🔊 Voceos actualizados'); }).catch(fail);
+});
