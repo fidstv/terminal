@@ -5,7 +5,7 @@
    Importante: los identificadores de sucursal "central" y "of2" no se
    renombran; lo que se cambia son sus nombres, rutas, horarios y textos.
    ===================================================================== */
-window.FIDS_VERSION = '34';   /* súbelo junto con sw.js cada vez que publiques cambios */
+window.FIDS_VERSION = '35';   /* súbelo junto con sw.js cada vez que publiques cambios */
 
 window.FIDS_CONFIG = {
   cliente: {
@@ -36,8 +36,8 @@ window.FIDS_CONFIG = {
 
   /* TV: la tabla pasa de página cada N segundos (false = deslizar como antes) */
   paginar: false, paginaSeg: 10,
-  /* TV (cuando paginar es false): 'filas' = avanza media pantalla y se detiene en una fila completa (recomendado) · 'continuo' = deslizamiento lento de antes */
-  desplazamiento: 'filas', pasoFilasSeg: 4,
+  /* TV (cuando paginar es false): 'suave' = deslizamiento continuo y fluido, con pausa arriba y abajo (recomendado) · 'filas' = avanza media pantalla y se detiene en una fila completa. velocidadPxSeg = velocidad; pausaSeg = pausa arriba y abajo */
+  desplazamiento: 'suave', velocidadPxSeg: 40, pausaSeg: 5, pasoFilasSeg: 4,
   /* TV: tamaño inicial (se cambia desde el panel → Sistema → Tamaño de la pantalla): zoom y escalas = 'normal' | 'grande' | 'muygrande' */
   tamano: { zoom: 'normal', escalas: 'grande' },
   /* TV: ciudades que se destacan en dorado dentro de las escalas (basta una parte del nombre, sin importar acentos) */

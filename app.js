@@ -1019,7 +1019,7 @@ function autoVoice(d,diff,n){
   let direction = 1;      // 1 = Bajar, -1 = Subir
 
   function scrollStep() {
-    if (isTV && CFG.paginar === false && CFG.desplazamiento === 'continuo') {   /* con páginas (por defecto) ya no se desliza */
+    if (isTV && CFG.paginar === false && CFG.desplazamiento === 'continuo-antiguo') {   /* con páginas (por defecto) ya no se desliza */
       const container = document.querySelector('.fids-table-wrap');
       if (container) {
         const maxScroll = container.scrollHeight - container.clientHeight;
@@ -2123,6 +2123,13 @@ editDeparture=function(d){
   function mount(id,parent){
     let el=$(id); if(!el&&parent){el=document.createElement('section');el.id=id;parent.prepend(el);}return el;
   }
+  let vgAll=false, scOpen=false; const vgOpen={};
+  document.addEventListener('click',function(e){
+    const t=e.target.closest&&e.target.closest('[data-vgall],[data-scopen],.vg-more summary'); if(!t)return;
+    if(t.matches('.vg-more summary')){ const dt=t.parentElement; vgOpen[dt.dataset.k]=!dt.open; return; }
+    if(t.hasAttribute('data-vgall'))vgAll=!vgAll; else scOpen=!scOpen;
+    const p=$('vialtis-guided'); if(p)p._html=null; const s=$('shift-check'); if(s)s._h=null; render();
+  });
   function drawShiftCheck(list){
     const el=$('shift-check'); if(!el)return;
     if(!canWrite()||isTV){ el.classList.add('hidden'); return; }
@@ -2139,10 +2146,10 @@ editDeparture=function(d){
     ];
     if(chequeoData&&chequeoData.fecha===n.key)items.push({ok:!!chequeoData.ok,t:'Autochequeo de las '+chequeoData.hora+(chequeoData.ok?'':': '+asArr(chequeoData.problemas).join('; '))});
     const done=items.filter(function(i){return i.ok;}).length;
-    const html=done===items.length?'<div class="sc-ok">✅ Turno listo · todo en orden</div>'
-      :'<div class="sc-head">✅ Apertura de turno <b>'+done+' de '+items.length+'</b></div>'+items.map(function(i){
-        return '<div class="sc-item '+(i.ok?'ok':'no')+'"><span>'+(i.ok?'✔':'○')+' '+esc(i.t)+'</span>'+(!i.ok&&i.fix?'<button type="button" class="btn btn-dark" data-sc="'+i.fix[1]+'">'+i.fix[0]+'</button>':'')+'</div>';
-      }).join('');
+    const lista=items.map(function(i){
+      return '<div class="sc-item '+(i.ok?'ok':'no')+'"><span>'+(i.ok?'✔':'○')+' '+esc(i.t)+'</span>'+(!i.ok&&i.fix?'<button type="button" class="btn btn-dark" data-sc="'+i.fix[1]+'">'+i.fix[0]+'</button>':'')+'</div>';
+    }).join('');
+    const html='<button type="button" class="sc-sum'+(done===items.length?' ok':'')+'" data-scopen>'+(done===items.length?'✅ Turno listo':'✅ Apertura de turno · '+done+' de '+items.length)+'<span>'+(scOpen?'▲':'▼')+'</span></button>'+(scOpen?lista:'');
     if(el._h!==html){ el.innerHTML=html; el._h=html; }
     el.classList.remove('hidden');
   }
@@ -2155,14 +2162,16 @@ editDeparture=function(d){
     if(panel){
       panel.hidden=!canWrite();
       const active=list.filter(function(d){return d._st!=='SALIDO';});
-      const html='<h2>Operación guiada</h2><div class="vg-grid">'+active.map(function(d){
+      const shown=vgAll?active:active.slice(0,6);
+      const html='<h2>Salidas de hoy</h2><div class="vg-grid">'+shown.map(function(d){
         const idx=Math.max(0,stages.indexOf(d.status));
         const button=function(action,label){return '<button type="button" class="btn btn-dark" data-vg="'+action+'" data-key="'+esc(d._k)+'">'+label+'</button>';};
         const late=d._diff>=0&&d._diff<=15&&!d.bus;
-        const chip=function(ok,t){return '<span class="vg-chip '+(ok?'ok':'no')+'">'+(ok?'✔ ':'○ ')+t+'</span>';};
-        const light=chip(!!d.bus,'Unidad')+chip(idx>=1,'Equipaje')+chip(idx>=2,'Abordaje');
-        return '<article class="vg-card'+(late?' vg-alert':'')+(d.bus&&idx>=2?' vg-ready':'')+'"><div class="vg-top"><span class="vg-time">'+esc(d.time)+'</span>'+badge(d._st)+'</div><h3>'+esc(d.destination)+'</h3><div class="vg-meta">🚌 '+esc(d.bus||'Unidad pendiente')+' · 📍 '+esc(d.gate||CFG.sucursales[viewSuc()].puntoAbordaje)+'</div>'+(late?'<div class="vg-warn">⚠️ Sale en '+d._diff+' min y no tiene unidad</div>':'')+'<div class="vg-lights">'+light+'</div>'+(d.delay>0?'<div class="vg-meta">⏱ Retraso +'+d.delay+' min'+(d.motivo?' · '+esc(d.motivo):'')+'</div>':'')+'<div class="vg-flow" aria-label="Etapas confirmadas">'+stages.slice(1).map(function(_,i){return '<span class="'+(idx>i?'done':'')+'"></span>';}).join('')+'</div><div class="vg-actions">'+button('bus',d.bus?'Cambiar unidad':'Asignar unidad')+button('gate','Andén')+button('next',labels[Math.min(idx,3)])+button('delay','Retraso +15')+button('edit','Corregir / editar')+'</div></article>';
-      }).join('')+'</div>'+(active.length?'':'<p>No hay corridas pendientes.</p>');
+        const needsBus=!d.bus&&d.presetKey&&!isCustom(d)&&d._diff>=0&&d._diff<=90;
+        const main=needsBus?'<button type="button" class="btn vg-primary warn" data-vg="bus" data-key="'+esc(d._k)+'">🚌 Asignar unidad</button>'
+          :'<button type="button" class="btn vg-primary" data-vg="next" data-key="'+esc(d._k)+'">▶ '+labels[Math.min(idx,3)]+'</button>';
+        return '<article class="vg-card vg-simple'+(late?' vg-alert':'')+'"><div class="vg-top"><span class="vg-time">'+esc(d.time)+'</span>'+badge(d._st)+'</div><h3>'+esc(d.destination)+'</h3><div class="vg-meta">🚌 '+(d.bus?esc(d.bus):'<b class="vg-nobus">sin unidad</b>')+' · 📍 '+esc(d.gate||CFG.sucursales[viewSuc()].puntoAbordaje)+'</div>'+(late?'<div class="vg-warn">⚠️ Sale en '+d._diff+' min y no tiene unidad</div>':'')+(d.delay>0?'<div class="vg-meta">⏱ Retraso +'+d.delay+' min'+(d.motivo?' · '+esc(d.motivo):'')+'</div>':'')+'<div class="vg-main">'+main+'</div><details class="vg-more" data-k="'+esc(d._k)+'"'+(vgOpen[d._k]?' open':'')+'><summary>Más opciones</summary><div class="vg-actions">'+button('bus',d.bus?'Cambiar unidad':'Asignar unidad')+button('gate','Andén')+button('delay','Retraso')+button('edit','Corregir / editar')+'</div></details></article>';
+      }).join('')+'</div>'+(active.length>6?'<button type="button" class="btn btn-dark vg-all" data-vgall>'+(vgAll?'Mostrar menos':'Ver las '+(active.length-6)+' salidas siguientes')+'</button>':'')+(active.length?'':'<p>No hay salidas pendientes.</p>');
       if(panel._html!==html){panel.innerHTML=html;panel._html=html;}
     }
     if(isTV){
@@ -3116,7 +3125,7 @@ applyTvZoom();
   let idx=0, moveAt=Date.now(), hold=6000;
   setInterval(function(){
     if(isGeneral||isAnden||isPairing)return;
-    if(CFG.paginar!==false||(CFG.desplazamiento||'filas')!=='filas')return;
+    if(CFG.paginar!==false||CFG.desplazamiento!=='filas')return;
     const c=document.querySelector('.fids-table-wrap'); if(!c)return;
     const rows=Array.prototype.slice.call(c.querySelectorAll('tbody tr')).filter(function(r){ return r.offsetHeight>0; });
     if(rows.length<2){ c.style.paddingBottom='0px'; c.scrollTop=0; idx=0; return; }
@@ -3137,3 +3146,47 @@ applyTvZoom();
     c.scrollTop=rel[idx];
   },500);
 })();
+
+/* =====================================================================
+   V35 · deslizamiento suave de la TV y panel de salidas más sencillo
+   ===================================================================== */
+/* deslizamiento continuo y suave: velocidad constante por segundo (no por cuadro), pausa arriba y abajo */
+(function initTVSmooth(){
+  if(!isTV)return;
+  const activo=function(){ return !(isGeneral||isAnden||isPairing)&&CFG.paginar===false&&(CFG.desplazamiento||'suave')==='suave'; };
+  if(activo())document.body.classList.add('scroll-suave');
+  let pos=0, last=0, estado='arriba', desde=Date.now();
+  function cuadro(ts){
+    requestAnimationFrame(cuadro);
+    if(!activo()){ last=0; return; }
+    const c=document.querySelector('.fids-table-wrap'); if(!c)return;
+    if(c.style.paddingBottom)c.style.paddingBottom='0px';
+    const max=c.scrollHeight-c.clientHeight, now=Date.now(), pausa=(CFG.pausaSeg||5)*1000;
+    if(max<=2){ if(c.scrollTop)c.scrollTop=0; pos=0; last=0; estado='arriba'; desde=now; return; }
+    if(!last){ last=ts; return; }
+    const dt=Math.min(100,ts-last)/1000; last=ts;
+    if(estado==='arriba'){ if(now-desde>=pausa){ estado='bajando'; pos=c.scrollTop; } return; }
+    if(estado==='bajando'){
+      pos+=(CFG.velocidadPxSeg||40)*dt;
+      if(pos>=max){ pos=max; estado='abajo'; desde=now; }
+      c.scrollTop=Math.round(pos); return;
+    }
+    if(now-desde>=pausa){ pos=0; c.scrollTop=0; estado='arriba'; desde=now; }
+  }
+  requestAnimationFrame(cuadro);
+})();
+
+/* agregar salida: un solo botón que pregunta qué tipo */
+if($('btn-add-run'))$('btn-add-run').onclick=function(){
+  if(!canWrite()){ alert('Inicia sesión de taquilla.'); return; }
+  const m=vqOpen('<div class="vq-title">➕ Agregar una salida</div>'+
+    '<button type="button" class="vq-big" data-a="extra">🚌 Refuerzo de una ruta<small>Elige la ruta y la hora</small></button>'+
+    '<button type="button" class="vq-big" data-a="custom">✏️ Salida personalizada<small>Escribe destino, hora y escalas</small></button>'+
+    '<div class="vq-row" style="margin-top:12px"><button type="button" class="vq-cancel" data-a="c">Cancelar</button></div>');
+  m.addEventListener('click',function(e){
+    if(e.target===m)return m.remove();
+    const b=e.target.closest('[data-a]'); if(!b)return; m.remove();
+    if(b.dataset.a==='extra'&&$('btn-extra'))$('btn-extra').click();
+    else if(b.dataset.a==='custom'){ try{ if($('btn-reset'))$('btn-reset').click(); }catch(x){} openForm(); }
+  });
+};

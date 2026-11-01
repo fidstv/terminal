@@ -618,3 +618,22 @@ body.tv-mode.theme-noche .fids-table-wrap td{font-size:inherit}
 .zm-group{display:flex;gap:8px}
 .zm-group button{flex:1;min-height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
 .zm-group button.on{background:var(--accent,#00A859);border-color:transparent}
+
+/* ===== V35: deslizamiento suave y salidas más sencillas ===== */
+body.scroll-suave .fids-table-wrap{scroll-behavior:auto!important}
+body.scroll-suave .fids-table-wrap thead th{box-shadow:0 14px 12px -6px var(--bg,#000B18)}
+.vg-simple h3{margin:2px 0 6px}
+.vg-nobus{color:#ff9bb2}
+.vg-main{margin:12px 0 8px}
+.vg-primary{width:100%;min-height:56px;font-size:17px!important;font-weight:900;border-radius:14px;background:var(--accent,#00A859);color:#fff;border:0}
+.vg-primary.warn{background:#c81e4b}
+.vg-more summary{cursor:pointer;color:var(--muted,#93c5fd);font-weight:800;font-size:13px;padding:8px 0;list-style:none}
+.vg-more summary::-webkit-details-marker{display:none}
+.vg-more summary::before{content:"▸ "}.vg-more[open] summary::before{content:"▾ "}
+.vg-more .vg-actions{margin-top:6px}
+.vg-all{width:100%;min-height:50px;margin-top:12px}
+.sc-sum{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
+.sc-sum.ok{color:var(--ok,#00D974)}
+#shift-check.sc-card{padding:8px}
+.vq-big{display:block;width:100%;text-align:left;margin-bottom:10px;padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-weight:900;font-size:17px;font-family:inherit;cursor:pointer}
+.vq-big small{display:block;margin-top:4px;font-weight:600;font-size:12px;color:var(--muted,#93c5fd)}
