@@ -66,6 +66,7 @@ async function prepararPerfil(user) {
     const pend = JSON.parse(lsGet('vialtis_pend', 'null') || 'null') || {};
     try {
       const up = {};
+      if (pend.code && !/^[A-Za-z0-9]{8,24}$/.test(pend.code)) { lsDel('vialtis_pend'); gateShow('sinempresa'); return gateMsg('El código de invitación no es válido.'); }
       if (pend.code) {
         const inv = (await db.ref('invitaciones/' + pend.code).once('value')).val();
         if (!inv || inv.exp < Date.now()) { lsDel('vialtis_pend'); return gateShow('sinempresa'), gateMsg('El código de invitación no es válido o ya venció. Pídele uno nuevo a tu administrador.'); }
@@ -79,6 +80,7 @@ async function prepararPerfil(user) {
         up['plataforma/empresas/' + user.uid] = { nombre: nombre, plan: 'gratis', creada: TS() };
       }
       await db.ref().update(up);
+      if (pend.code) db.ref('invitaciones/' + pend.code).remove().catch(function () {});   /* la invitación es de un solo uso */
       lsDel('vialtis_pend');
       u = (await uref.once('value')).val();
     } catch (e) { gateShow('sinempresa'); return gateMsg(errTxt(e)); }

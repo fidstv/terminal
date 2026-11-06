@@ -45,7 +45,14 @@ function renderActual(forzar) {
 }
 
 /* ---------- Salidas ---------- */
+function limpiarViejas() {
+  if (!got.deps) return; const n = nowParts(), lim = dayShift(n.key, -2), up = {};
+  if (lsGet('vialtis_limpio_' + S.e, '') === n.key) return; lsSet('vialtis_limpio_' + S.e, n.key);
+  Object.keys(S.deps).forEach(function (k) { const d = S.deps[k]; if (!d || !d.day || d.day < lim) up[k] = null; });
+  if (Object.keys(up).length) eref('deps').update(up).catch(function () {});
+}
 function autoCargar() {
+  limpiarViejas();
   /* Una vez por día, y otra vez si cambian las rutas (así no reaparece lo que se borró a mano) */
   if (!got.deps || !got.rutas || !Object.keys(S.rutas).length) return; const n = nowParts();
   const sig = n.key + '|' + Object.keys(S.rutas).sort().join(',');
@@ -79,9 +86,9 @@ function filaSalida(d, a) {
   const opt = function (v, t) { return '<option value="' + v + '"' + (stv === v ? ' selected' : '') + '>' + t + '</option>'; };
   return '<div class="sl-row' + (late ? ' late' : '') + (d._next ? ' next' : '') + (d._st === ST.SAL ? ' done' : '') + '" data-id="' + esc(d.id) + '">' +
     '<input type="time" class="sl-time" data-f="time" value="' + esc(d.time) + '">' +
-    '<input type="text" class="sl-dest" data-f="destination" list="dl-rutas" value="' + esc(d.destination) + '">' +
+    '<input type="text" class="sl-dest" data-f="destination" list="dl-rutas" maxlength="60" value="' + esc(d.destination) + '">' +
     '<button type="button" class="sl-bus' + (d.bus ? '' : ' none') + '" data-a="bus">🚌 ' + (d.bus ? '<b>' + esc(d.bus) + '</b>' : 'sin unidad') + '</button>' +
-    '<input type="text" class="sl-gate" data-f="gate" placeholder="' + esc(a.pantalla.anden) + '" value="' + esc(d.gate || '') + '">' +
+    '<input type="text" class="sl-gate" data-f="gate" maxlength="30" placeholder="' + esc(a.pantalla.anden) + '" value="' + esc(d.gate || '') + '">' +
     '<div class="sl-stwrap"><select class="sl-st" data-a="st" title="Estado: Automático sigue la hora">' + opt('', 'Automático') + opt('ETIQUETANDO', 'Etiquetando') + opt('ABORDAJE', 'Abordaje') + opt('ULTIMA', 'Última llamada') + opt('SALIDO', 'Salió') + '</select>' + (manual ? '<span class="pin" title="Estado fijado a mano">📌</span>' : '') + '<span class="sl-badge">' + badge(d._st) + '</span></div>' +
     '<div class="sl-dl"><button type="button" data-a="d5">+5</button><button type="button" data-a="d15">+15</button>' + (d.delay > 0 ? '<span class="dl-tag">⏱ +' + d.delay + '</span>' : '') + '</div>' +
     '<button type="button" class="sl-more" data-a="more" title="Más">⋯</button></div>';
@@ -237,7 +244,7 @@ function renderAjustes() {
       '<div class="vq-lbl">TVs de esta empresa</div>' + (tvs.length ? tvs.map(function (t) { const v = nowMs() - t.ts <= 150000; return '<div class="sc-item ' + (v ? 'ok' : 'no') + '"><span>' + (v ? '🟢' : '🔴') + ' ' + esc(t.view || 'tv') + ' · ' + esc(t.id) + '</span><span class="hint">' + (v ? 'conectada' : 'visto hace ' + Math.round((nowMs() - t.ts) / 60000) + ' min') + '</span></div>'; }).join('') : '<p class="hint">Ninguna TV ha reportado todavía.</p>') +
       '<div class="vq-lbl">Direcciones</div><div class="urls"><button type="button" class="btn btn-dark" data-a="copy" data-v="' + esc(urlTV('tv')) + '">📋 Copiar dirección de la TV</button><button type="button" class="btn btn-dark" data-a="copy" data-v="' + esc(urlTV('anden', 1)) + '">📋 Copiar dirección de andén</button></div>', true) +
     det('eq', '👥 Equipo', '<p class="hint">Crea un código de invitación y compártelo. La persona crea su cuenta con ese código y entra a esta empresa.</p><div class="row2"><select id="iv-rol"><option value="taquillero">Taquillero (opera las salidas)</option><option value="admin">Administrador (configura todo)</option></select><button type="button" class="btn btn-green" data-a="iv-crear">Crear invitación</button></div><div id="iv-out">' + misInv.map(function (i) { return '<div class="invcard"><b>' + esc(i.code) + '</b> · ' + esc(i.rol) + '<br><small>' + esc(i.url) + '</small><button type="button" class="btn btn-dark" data-a="copy" data-v="' + esc(i.url) + '">📋 Copiar enlace</button></div>'; }).join('') + '</div>' +
-      '<div class="vq-lbl">Personas</div>' + Object.keys(equipo || {}).map(function (uid) { const p = equipo[uid]; return '<div class="sc-item"><span>' + (p.rol === 'admin' ? '🛡️' : '🎫') + ' ' + esc(p.email) + ' · ' + esc(p.rol) + '</span>' + (uid !== Session.uid ? '<button type="button" class="btn btn-dark btn-red" data-a="eq-quitar" data-u="' + esc(uid) + '">Quitar</button>' : '<span class="hint">tú</span>') + '</div>'; }).join(''), true) +
+      '<div class="vq-lbl">Personas</div>' + Object.keys(equipo || {}).map(function (uid) { const p = equipo[uid]; return '<div class="sc-item"><span>' + (p.rol === 'admin' ? '🛡️' : '🎫') + ' ' + esc(p.email) + ' · ' + esc(p.rol) + '</span>' + (uid === S.e ? '<span class="hint">' + (uid === Session.uid ? 'tú · ' : '') + 'fundador</span>' : uid !== Session.uid ? '<button type="button" class="btn btn-dark btn-red" data-a="eq-quitar" data-u="' + esc(uid) + '">Quitar</button>' : '<span class="hint">tú</span>') + '</div>'; }).join(''), true) +
     det('cu', '👤 Mi cuenta', '<div class="sc-item"><span>Correo: <b>' + esc(Session.email) + '</b></span></div><div class="sc-item"><span>Rol: <b>' + esc(Session.rol) + '</b> · Plan: <b>' + esc(lim.nombre) + '</b></span></div>' +
       (esAdmin() ? '<label class="vz-lbl">Nombre de la empresa</label><input type="text" data-nf="nombre" value="' + esc((S.meta && S.meta.nombre) || '') + '" maxlength="60">' : '') +
       '<div class="acts"><button type="button" class="btn btn-dark" data-a="pw">🔑 Cambiar mi contraseña (te llega un correo)</button><button type="button" class="btn btn-dark btn-red" data-a="logout">Cerrar sesión</button></div>') +
@@ -273,12 +280,12 @@ function clicks(e) {
     const code = ($('pr-code').value || '').replace(/\D/g, ''), vista = $('pr-vista').value, n = parseInt($('pr-n').value, 10) || 0;
     if (code.length !== 6) return toast('Escribe los 6 números que muestra la TV'); if (vista === 'anden' && !n) return toast('Escribe el número de andén');
     const v = { vista: vista, ts: TS(), e: S.e }; if (n) v.n = n;
-    return db.ref('pairing/' + code + '/assigned').set(v).then(function () { toast('✅ TV vinculada'); $('pr-code').value = ''; }).catch(fail);
+    return db.ref('pairing/' + code + '/assigned').set(v).then(function () { toast('✅ TV vinculada'); $('pr-code').value = ''; }).catch(function (e) { if (/PERMISSION/i.test(String(e && e.message || e))) return toast(S.meta && S.meta.suspendida ? '⛔ La empresa está suspendida' : '⚠️ Ese código no existe o ya se usó. Revisa el número que muestra la TV.'); fail(e); });
   }
   if (a === 'copy') { const v = t.dataset.v; if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { toast('📋 Copiado'); }, function () { prompt('Copia esta dirección:', v); }); else prompt('Copia esta dirección:', v); return; }
   if (a === 'iv-crear') {
-    const rol = $('iv-rol').value, code = Array.from({ length: 10 }, function () { return 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'.charAt(Math.floor(Math.random() * 31)); }).join('');
-    return db.ref('invitaciones/' + code).set({ empresa: S.e, rol: rol, exp: Date.now() + 7 * 864e5 }).then(function () { misInv.unshift({ code: code, rol: rol, url: baseURL() + '?invitacion=' + code + (DEMO ? '&demo=1' : '') }); toast('🎟️ Invitación creada (vale 7 días)'); renderActual(true); }).catch(fail);
+    const rol = $('iv-rol').value, code = rndCode(10, 'ABCDEFGHJKMNPQRSTUVWXYZ23456789');
+    return db.ref('invitaciones/' + code).set({ empresa: S.e, rol: rol, exp: Date.now() + 7 * 864e5 }).then(function () { misInv.unshift({ code: code, rol: rol, url: baseURL() + '?invitacion=' + code + (DEMO ? '&demo=1' : '') }); toast('🎟️ Invitación creada (vale 7 días y para una sola persona)'); renderActual(true); }).catch(fail);
   }
   if (a === 'eq-quitar') { const uid = t.dataset.u; if (!confirm('¿Quitar a esta persona del equipo? Ya no podrá entrar a la empresa.')) return; const up = {}; up['usuarios/' + uid] = null; up['equipos/' + S.e + '/' + uid] = null; return db.ref().update(up).then(function () { toast('Persona quitada'); }).catch(fail); }
   if (a === 'pw') return auth.sendPasswordResetEmail(Session.email).then(function () { toast('📧 Te enviamos un correo para cambiar tu contraseña'); }).catch(fail);

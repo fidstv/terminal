@@ -15,6 +15,7 @@ const deepMerge = function (base, over) {
   Object.keys(over).forEach(function (k) { if (!(k in o)) o[k] = over[k]; });
   return o;
 };
+const rndCode = function (len, abc) { const a = new Uint32Array(len); (window.crypto || window.msCrypto).getRandomValues(a); let s = ''; for (let i = 0; i < len; i++) s += abc.charAt(a[i] % abc.length); return s; };
 const asArr = function (x) { return Array.isArray(x) ? x : (x && typeof x === 'object' ? Object.keys(x).map(function (k) { return x[k]; }) : []); };
 
 /* ---------- Firebase ---------- */
@@ -42,7 +43,13 @@ const nowParts = function () { return tzParts(nowMs()); };
 const toMin = function (t) { const p = String(t || '0:0').split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); };
 const fromMin = function (m) { m = ((m % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
 const dayShift = function (key, delta) { const d = new Date(key + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + delta); return d.toISOString().slice(0, 10); };
-const diffOf = function (d, n) { let x = toMin(d.time) - n.min; if (x < -1200) x += 1440; if (x > 1200) x -= 1440; return x; };
+/* Minutos que faltan para una salida. Usa el día de la salida (no adivina), y entiende un retraso que pasó de medianoche (23:50 → 00:10). */
+const diffOf = function (d, n) {
+  let t = toMin(d.time); if (d.orig && toMin(d.orig) - t > 720) t += 1440;
+  if (d.day === n.key) return t - n.min;
+  if (d.day && d.day === dayShift(n.key, -1)) return t - 1440 - n.min;
+  let x = toMin(d.time) - n.min; if (x < -1200) x += 1440; if (x > 1200) x -= 1440; return x;   /* salidas sin día (datos viejos) */
+};
 const isLive = function (d, n) { return d.day === n.key || (n.min < 360 && d.day === dayShift(n.key, -1)); };
 const weekIdx = function (key) { return (new Date(key + 'T12:00:00Z').getUTCDay() + 6) % 7; };   /* 0=lunes … 6=domingo */
 
@@ -70,7 +77,7 @@ function buildList() {
     .filter(function (d) { return d && d.time && isLive(d, n); });
   arr.forEach(function (d) { d._diff = diffOf(d, n); d._st = estadoDe(d, d._diff); d._eta = d._diff >= 0 ? d._diff : null; });
   const vis = arr.filter(function (d) { return !(d._st === ST.SAL && d._diff <= -15); });
-  vis.sort(function (a, b) { const ta = toMin(a.time) + (a.day !== n.key ? -1440 : 0), tb = toMin(b.time) + (b.day !== n.key ? -1440 : 0); return ta - tb; });
+  vis.sort(function (a, b) { return a._diff - b._diff; });
   const nx = vis.find(function (d) { return d._st !== ST.SAL && d._diff >= 0; });
   vis.forEach(function (d) { d._next = d === nx; });
   return vis;
@@ -97,7 +104,7 @@ function toast(msg) {
   let t = $('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'v-toast'; document.body.appendChild(t); }
   t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('on'); }, 2800);
 }
-const fail = function (e) { console.error(e); const m = String(e && e.message || e); toast(/PERMISSION|permiso/i.test(m) ? '⛔ No tienes permiso para hacer eso' : '⚠️ ' + m.slice(0, 90)); };
+const fail = function (e) { console.error(e); const m = String(e && e.message || e); toast(/PERMISSION|permiso/i.test(m) ? (S.meta && S.meta.suspendida ? '⛔ La empresa está suspendida: no se pueden hacer cambios' : '⛔ No tienes permiso para hacer eso') : '⚠️ ' + m.slice(0, 90)); };
 function vqOpen(html) { const m = document.createElement('div'); m.className = 'vq-overlay'; m.innerHTML = '<div class="vq-sheet">' + html + '</div>'; document.body.appendChild(m); return m; }
 function askUnit(titulo, actual) {
   return new Promise(function (res) {

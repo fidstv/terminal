@@ -1,4 +1,4 @@
-const V = '1';   // súbelo junto con VIALTIS_VERSION de config.js y los ?v= de index.html
+const V = '2';   // súbelo junto con VIALTIS_VERSION de config.js y los ?v= de index.html
 const CACHE = 'vialtis-' + V;
 const ASSETS = ['./', 'index.html', 'styles.css?v=' + V, 'config.js?v=' + V, 'core.js?v=' + V, 'auth.js?v=' + V, 'voz.js?v=' + V, 'tv.js?v=' + V, 'panel.js?v=' + V, 'manifest.json', 'icon.svg'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(ASSETS).catch(function () {}); }).then(function () { return self.skipWaiting(); })); });

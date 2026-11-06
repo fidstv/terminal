@@ -1,6 +1,6 @@
 /* Pantallas de TV: tabla de salidas, TV de andén y TV nueva (vincular con código) */
 'use strict';
-const TV_ID = (function () { let id = lsGet('vialtis_tvid', ''); if (!id) { id = 'TV-' + Math.random().toString(36).slice(2, 10); lsSet('vialtis_tvid', id); } return id; })();
+const TV_ID = (function () { let id = lsGet('vialtis_tvid', ''); if (!id) { id = 'TV-' + rndCode(10, 'abcdefghijkmnpqrstuvwxyz23456789'); lsSet('vialtis_tvid', id); } return id; })();
 let tvVista = 'tv', andenN = 0, offSince = 0, urgSeen = null;
 
 const gateNum = function (d) { const m = String(d.gate || AJ().pantalla.anden || '').match(/\d+/); return m ? +m[0] : 0; };
@@ -76,18 +76,29 @@ function tvPair() {
   if (qs.get('reset')) { ['vialtis_tv_e', 'vialtis_tv_vista', 'vialtis_tv_n'].forEach(lsDel); }
   const gE = lsGet('vialtis_tv_e', ''), gV = lsGet('vialtis_tv_vista', '');
   if (gE && gV) return location.replace('?e=' + encodeURIComponent(gE) + '&vista=' + gV + (lsGet('vialtis_tv_n', '') ? '&n=' + lsGet('vialtis_tv_n', '') : '') + (DEMO ? '&demo=1' : ''));
-  let code = lsGet('vialtis_pair', ''); if (!/^\d{6}$/.test(code)) { code = String(Math.floor(100000 + Math.random() * 900000)); lsSet('vialtis_pair', code); }
+  lsDel('vialtis_pair');   /* versiones anteriores guardaban el código: ya no se reutiliza */
   const p = $('tv-pair'); p.classList.remove('hidden');
-  const url = location.origin + location.pathname.replace(/[^\/]*$/, '') + '?vincular=' + code;
-  p.innerHTML = '<h1>Vincular esta TV</h1><div class="pr-code">' + code.slice(0, 3) + ' ' + code.slice(3) + '</div>' +
-    '<p>En el panel entra a <b>Ajustes → Pantallas</b>, escribe este código y elige qué pantalla será.</p>' +
-    '<img class="pr-qr" src="' + esc(qrImg(url, 220)) + '" alt="" onerror="this.style.display=\'none\'"><p class="pr-wait">Esperando… esta TV se configura sola.</p>';
-  db.ref('pairing/' + code + '/info').set({ ts: TS() }).catch(function () {});
-  db.ref('pairing/' + code + '/assigned').on('value', function (s) {
-    const v = s.val(); if (!v || !v.vista || !v.e) return;
-    lsSet('vialtis_tv_e', v.e); lsSet('vialtis_tv_vista', v.vista); lsSet('vialtis_tv_n', v.n ? String(v.n) : '');
-    location.replace('?e=' + encodeURIComponent(v.e) + '&vista=' + v.vista + (v.n ? '&n=' + v.n : '') + (DEMO ? '&demo=1' : ''));
-  });
+  /* Cada vez se pide un código NUEVO. Las reglas solo dejan crearlo si nadie lo usó antes y solo dejan asignarlo una vez,
+     así una TV nunca toma la asignación vieja de otra empresa. */
+  let intentos = 0;
+  (function pedirCodigo() {
+    const code = String(100000 + (Number('0x' + rndCode(8, '0123456789abcdef')) % 900000)), creado = nowMs();
+    db.ref('pairing/' + code + '/info').set({ ts: TS() }).then(function () {
+      const url = location.origin + location.pathname.replace(/[^\/]*$/, '') + '?vincular=' + code;
+      p.innerHTML = '<h1>Vincular esta TV</h1><div class="pr-code">' + code.slice(0, 3) + ' ' + code.slice(3) + '</div>' +
+        '<p>En el panel entra a <b>Ajustes → Pantallas</b>, escribe este código y elige qué pantalla será.</p>' +
+        '<img class="pr-qr" src="' + esc(qrImg(url, 220)) + '" alt="" onerror="this.style.display=\'none\'"><p class="pr-wait">Esperando… esta TV se configura sola.</p>';
+      db.ref('pairing/' + code + '/assigned').on('value', function (s) {
+        const v = s.val(); if (!v || !v.e || (v.vista !== 'tv' && v.vista !== 'anden')) return;
+        if (v.ts && v.ts < creado - 120000) return;   /* asignación vieja: no es para esta TV */
+        lsSet('vialtis_tv_e', v.e); lsSet('vialtis_tv_vista', v.vista); lsSet('vialtis_tv_n', v.n ? String(v.n) : '');
+        location.replace('?e=' + encodeURIComponent(v.e) + '&vista=' + v.vista + (v.n ? '&n=' + v.n : '') + (DEMO ? '&demo=1' : ''));
+      });
+    }).catch(function () {
+      if (++intentos < 6) return pedirCodigo();
+      p.innerHTML = '<h1>Vincular esta TV</h1><p>No se pudo obtener un código. Revisa el internet y recarga la página.</p>';
+    });
+  })();
 }
 const qrImg = function (data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=8&data=' + encodeURIComponent(data); };
 
