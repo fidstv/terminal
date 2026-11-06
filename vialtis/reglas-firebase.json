@@ -1,0 +1,98 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "usuarios": {
+      ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && ((newData.child('empresa').val() === auth.uid && newData.child('rol').val() === 'admin') || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === newData.child('empresa').val() && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true) || (auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && root.child('usuarios').child(auth.uid).child('empresa').val() === data.child('empresa').val() && !newData.exists())",
+        ".validate": "newData.hasChildren(['empresa','rol','email']) && (newData.child('rol').val() === 'admin' || newData.child('rol').val() === 'taquillero') && newData.child('email').isString() && newData.child('empresa').isString()",
+        "inv": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        }
+      }
+    },
+    "invitaciones": {
+      "$code": {
+        ".read": true,
+        ".write": "auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && (newData.exists() ? root.child('usuarios').child(auth.uid).child('empresa').val() === newData.child('empresa').val() : root.child('usuarios').child(auth.uid).child('empresa').val() === data.child('empresa').val())",
+        ".validate": "newData.hasChildren(['empresa','rol','exp']) && (newData.child('rol').val() === 'admin' || newData.child('rol').val() === 'taquillero') && newData.child('exp').isNumber() && newData.child('exp').val() < now + 1209600000 && $code.matches(/^[A-Za-z0-9]{8,24}$/)"
+      }
+    },
+    "equipos": {
+      "$e": {
+        ".read": "(auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin') || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+        "$uid": {
+          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && (auth.uid === $e || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === $e && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin') || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+          ".validate": "newData.hasChildren(['email','rol']) && (newData.child('rol').val() === 'admin' || newData.child('rol').val() === 'taquillero')"
+        }
+      }
+    },
+    "empresas": {
+      ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+      "$e": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+        "meta": {
+          ".write": "auth != null && auth.token.email_verified === true && auth.uid === $e && !data.exists()",
+          ".validate": "newData.hasChildren(['nombre','plan','creada']) && newData.child('nombre').isString() && newData.child('nombre').val().length <= 60 && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true))",
+          "nombre": {
+            ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'",
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+          }
+        },
+        "ajustes": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'"
+        },
+        "rutas": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin'"
+        },
+        "deps": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e"
+        },
+        "urgent": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e"
+        },
+        "plantillas": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e"
+        },
+        "voz_cmd": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e"
+        },
+        "panico": {
+          ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e"
+        },
+        "tvs": {
+          "$id": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['ts']) && $id.matches(/^[A-Za-z0-9_-]{4,40}$/)"
+          }
+        }
+      }
+    },
+    "plataforma": {
+      "empresas": {
+        ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+        "$e": {
+          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $e && !data.exists()) || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+          ".validate": "newData.hasChildren(['nombre','plan','creada']) && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true))"
+        }
+      }
+    },
+    "pairing": {
+      "$code": {
+        ".read": true,
+        ".validate": "$code.matches(/^[0-9]{6}$/)",
+        "info": {
+          ".write": "!data.exists()",
+          ".validate": "newData.hasChild('ts')"
+        },
+        "assigned": {
+          ".write": "auth != null && auth.token.email_verified === true && newData.child('e').val() === root.child('usuarios').child(auth.uid).child('empresa').val()",
+          ".validate": "newData.hasChildren(['vista','ts','e'])"
+        }
+      }
+    }
+  }
+}

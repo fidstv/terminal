@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000B18">
+<title>Vialtis · Pantallas de salidas</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="styles.css?v=1">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>if (/[?&]demo/.test(location.search)) { document.write('<script src="rules-eval.js?v=1"><\/script><script src="demo.js?v=1"><\/script>'); }</script>
+</head>
+<body>
+
+<!-- Aviso de instalación (si faltan los datos de Firebase) -->
+<div id="setup" class="gate hidden"><div class="gate-card">
+  <div class="gate-brand">VIALTIS</div><h2>Falta conectar Firebase</h2>
+  <p>Esta plataforma todavía no tiene los datos de su proyecto de Firebase. Abre <b>config.js</b> y pega ahí los datos de tu proyecto (guía: <b>docs/INSTALAR.md</b>).</p>
+  <p class="hint">Mientras tanto puedes ver cómo funciona en modo demostración: agrega <b>?demo=1</b> a la dirección.</p>
+</div></div>
+
+<!-- Entrar / Crear cuenta -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-road"><span>🚌</span></div>
+    <div class="gate-brand">VIALTIS</div>
+    <div class="gate-sub">Control inteligente de terminales</div>
+    <div class="gate-tabs" id="gate-tabs"><button type="button" data-gt="entrar" class="on">Entrar</button><button type="button" data-gt="crear">Crear cuenta</button></div>
+
+    <div id="f-entrar">
+      <input type="text" id="lg-user" placeholder="Correo o usuario" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <input type="password" id="lg-pass" placeholder="Contraseña" autocomplete="current-password">
+      <button type="button" class="btn btn-green big" id="btn-entrar">Entrar</button>
+      <button type="button" class="linkbtn" id="btn-olvide">Olvidé mi contraseña</button>
+    </div>
+
+    <div id="f-crear" class="hidden">
+      <div id="rg-nombre-wrap"><input type="text" id="rg-nombre" placeholder="Nombre de tu empresa" maxlength="60" autocomplete="organization"></div>
+      <input type="email" id="rg-email" placeholder="Correo" autocomplete="email" autocapitalize="none">
+      <input type="password" id="rg-pass" placeholder="Contraseña (8 o más, con letras y números)" autocomplete="new-password">
+      <input type="text" id="rg-code" placeholder="¿Tienes código de invitación? (opcional)" maxlength="24" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <label class="chk"><input type="checkbox" id="rg-terminos"> Entiendo que las salidas que se muestran en las pantallas son públicas.</label>
+      <button type="button" class="btn btn-green big" id="btn-crear">Crear cuenta</button>
+    </div>
+
+    <div id="f-verificar" class="hidden">
+      <h3>Verifica tu correo</h3>
+      <p>Te enviamos un enlace a <b id="ver-email"></b>. Ábrelo y después toca el botón.</p>
+      <button type="button" class="btn btn-green big" id="btn-yaverif">Ya verifiqué mi correo</button>
+      <button type="button" class="btn btn-dark" id="btn-reenviar">Reenviar el correo</button>
+      <button type="button" class="linkbtn" id="btn-salir-g">Salir</button>
+    </div>
+
+    <div id="f-sinempresa" class="hidden">
+      <h3>Tu cuenta no tiene empresa</h3>
+      <p>No pudimos ligar tu cuenta a una empresa. Intenta de nuevo con un código de invitación o avisa a quien administra la plataforma.</p>
+      <button type="button" class="btn btn-dark" id="btn-salir-g2">Salir</button>
+    </div>
+
+    <div class="gate-msg hidden" id="gate-msg"></div>
+    <div class="gate-foot">Vialtis · v<span id="ver-n">1</span></div>
+  </div>
+</div>
+
+<!-- Panel de la empresa -->
+<div id="app" class="hidden">
+  <header class="ap-head">
+    <div class="ap-brand">VIALTIS</div>
+    <div class="ap-emp" id="ap-empresa"></div>
+    <button type="button" class="ap-stop" data-a="panico" title="Detener la voz en todas las TVs">🛑</button>
+    <div class="ap-clock" id="ap-clock">--:--</div>
+  </header>
+  <div id="ap-susp" class="ap-susp hidden">⚠️ Esta empresa está suspendida. Las pantallas no muestran salidas. Contacta a tu proveedor.</div>
+  <main id="panes">
+    <section class="pane" id="pane-salidas"></section>
+    <section class="pane hidden" id="pane-rutas"></section>
+    <section class="pane hidden" id="pane-voz"></section>
+    <section class="pane hidden" id="pane-pantalla"></section>
+    <section class="pane hidden" id="pane-ajustes"></section>
+  </main>
+  <nav class="tabs" id="tabs">
+    <button type="button" data-tab="salidas" class="on"><b>🚌</b><span>Salidas</span></button>
+    <button type="button" data-tab="rutas" data-adm><b>🗺️</b><span>Rutas</span></button>
+    <button type="button" data-tab="voz" data-adm><b>🔊</b><span>Voz</span></button>
+    <button type="button" data-tab="pantalla" data-adm><b>📺</b><span>Pantalla</span></button>
+    <button type="button" data-tab="ajustes"><b>⚙️</b><span>Ajustes</span></button>
+  </nav>
+</div>
+
+<!-- Pantalla de TV -->
+<div id="tv" class="tv hidden">
+  <header class="tv-head">
+    <div class="tv-brand" id="tv-brand">VIALTIS</div>
+    <div class="tv-titlebox"><h1 id="tv-title">SALIDAS DE AUTOBUSES</h1><div class="tv-sub" id="tv-sub"></div></div>
+    <div class="tv-clock"><div id="tv-time">00:00:00</div><div id="tv-date"></div></div>
+  </header>
+  <div id="tv-urgent" class="tv-urgent hidden"></div>
+  <main class="tv-main">
+    <div class="tv-wrap" id="tv-wrap">
+      <table class="tv-table">
+        <thead><tr><th>HORA</th><th>DESTINO / ESCALAS</th><th>AUTOBÚS</th><th>ANDÉN</th><th>ESTATUS</th></tr></thead>
+        <tbody id="tv-body"></tbody>
+      </table>
+    </div>
+  </main>
+  <footer class="tv-foot"><div class="tv-foot-t" id="tv-foot-t">AVISOS</div><div class="tv-foot-c"><div id="tv-ticker"></div></div></footer>
+  <div id="tv-idle" class="tv-idle hidden"></div>
+  <div id="tv-anden" class="tv-anden hidden"></div>
+  <div id="tv-pair" class="tv-pair hidden"></div>
+  <div id="tv-susp" class="tv-susp hidden">Servicio suspendido<small>Contacta a tu proveedor</small></div>
+  <div id="tv-off" class="tv-off hidden">Sin conexión · mostrando el último horario</div>
+  <button type="button" id="tv-sound" class="tv-sound">▶ ACTIVAR SONIDO</button>
+</div>
+
+<script src="config.js?v=1"></script>
+<script src="core.js?v=1"></script>
+<script src="auth.js?v=1"></script>
+<script src="voz.js?v=1"></script>
+<script src="tv.js?v=1"></script>
+<script src="panel.js?v=1"></script>
+<script>
+(function boot() {
+  $('ver-n').textContent = window.VIALTIS_VERSION;
+  if (!FB_OK) { $('gate').classList.add('hidden'); $('setup').classList.remove('hidden'); return; }
+  const vista = (qs.get('vista') || '').toLowerCase();
+  if (vista === 'tv' || vista === 'anden' || vista === 'nueva') startTV(vista); else startAuth();
+  if ('serviceWorker' in navigator && !DEMO) navigator.serviceWorker.register('sw.js').catch(function () {});
+})();
+</script>
+</body>
+</html>
