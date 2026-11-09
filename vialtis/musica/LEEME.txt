@@ -1,0 +1,12 @@
+MÚSICA DE FONDO (carpeta musica/)
+
+Las tres canciones que vienen aquí se generaron por computadora para esta plataforma (sonidos suaves tipo ambiente).
+No copian ninguna canción existente ni usan grabaciones de terceros, así que no tienen autor ni sociedad de gestión de derechos detrás.
+
+Cómo agregar tus propias canciones:
+1. Sube el archivo MP3 a esta carpeta (musica/).
+2. Agrégalo a lista.json, así:  { "archivo": "mi-cancion.mp3", "titulo": "Nombre" }
+
+IMPORTANTE sobre música de terceros: "gratis" no siempre significa "se puede poner en un lugar público".
+Usa solo música cuya licencia permita uso comercial y en público (por ejemplo la licencia de Pixabay o CC0), evita las licencias "NC" (no comercial),
+guarda una captura de la licencia de cada canción y no uses radio, YouTube ni Spotify. Esto no es asesoría legal.

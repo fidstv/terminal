@@ -1,0 +1,27 @@
+# Cada cambio a Vialtis prueba las reglas de seguridad en el simulador y en el emulador oficial de Firebase.
+name: Vialtis · reglas de seguridad
+on:
+  push:
+    paths: ['vialtis/**', '.github/workflows/vialtis-reglas.yml']
+  pull_request:
+    paths: ['vialtis/**', '.github/workflows/vialtis-reglas.yml']
+jobs:
+  reglas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vialtis
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install --no-audit --no-fund
+      - name: Simulador
+        run: npm test
+      - name: Emulador oficial de Firebase
+        run: npm run test:emulador
