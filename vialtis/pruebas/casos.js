@@ -4,7 +4,7 @@
    write(etiqueta, usuario, ruta, valor, ¿se permite?, ¿se queda guardado?) · read(etiqueta, usuario, ruta, ¿se permite?) */
 module.exports = function (write, read, now) {
 const U=(uid,email,ver=true)=>({uid,token:{email,email_verified:ver}});
-const A=U('uidA','ana@correo.com'), B=U('uidB','beto@correo.com'), T=U('uidT','tere@correo.com'), OWN=U('uidO','vialtis@gmail.com'), FAKE=U('uidF','vialtis@gmail.com',false), NOV=U('uidN','nuevo@correo.com',false);
+const A=U('uidA','ana@correo.com'), B=U('uidB','beto@correo.com'), T=U('uidT','tere@correo.com'), OWN=U('uidO','quinterodanielxzs@gmail.com'), FAKE=U('uidF','quinterodanielxzs@gmail.com',false), NOV=U('uidN','nuevo@correo.com',false);
 console.log('--- Registro de una empresa (fundadora Ana) ---');
 write('sin verificar el correo NO puede registrarse',NOV,'usuarios/uidN',{empresa:'uidN',rol:'admin',email:'nuevo@correo.com'},false);
 write('Ana crea su usuario como administradora de su empresa',A,'usuarios/uidA',{empresa:'uidA',rol:'admin',email:'ana@correo.com'},true);

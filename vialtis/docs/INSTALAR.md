@@ -11,7 +11,7 @@ La plataforma vive en la carpeta `vialtis/` de tu repositorio de GitHub y usa **
 6. **Configuración del proyecto (engrane) → General → Tus apps → `</>` (Web)** → registra la app. Te muestra un bloque con `apiKey`, `authDomain`, `databaseURL`, `projectId`, `appId`.
 
 ## 2. Poner tus datos en `config.js`
-Abre `config.js` en GitHub (lápiz de editar) y reemplaza los valores `REEMPLAZAR` de `firebase` con los tuyos. Revisa también `plataforma.dueno`: es **tu correo de dueño** (hoy `vialtis@gmail.com`) y debe ser el mismo que aparece en `reglas-firebase.json`. Si lo cambias, cámbialo en los dos lugares (busca ese correo en las reglas) y vuelve a publicar las reglas.
+Abre `config.js` en GitHub (lápiz de editar) y reemplaza los valores `REEMPLAZAR` de `firebase` con los tuyos. Revisa también `plataforma.dueno`: es **tu correo de dueño** (hoy `quinterodanielxzs@gmail.com`) y debe ser el mismo que aparece en `reglas-firebase.json`. Si lo cambias, cámbialo en los dos lugares (busca ese correo en las reglas) y vuelve a publicar las reglas.
 > La `apiKey` de Firebase no es un secreto; la seguridad está en las reglas. Aun así, en Google Cloud puedes restringirla a tu dominio.
 
 ## 3. Subir y publicar
@@ -20,7 +20,7 @@ Abre `config.js` en GitHub (lápiz de editar) y reemplaza los valores `REEMPLAZA
 3. La plataforma queda en `https://tu-usuario.github.io/tu-repositorio/vialtis/`.
 
 ## 4. Tu cuenta de dueño
-1. Abre la dirección y toca **Crear cuenta** con **tu correo de dueño** (`vialtis@gmail.com`). Usa una contraseña larga que no contenga tu correo.
+1. Abre la dirección y toca **Crear cuenta** con **tu correo de dueño** (`quinterodanielxzs@gmail.com`). Usa una contraseña larga que no contenga tu correo.
 2. Abre el correo de verificación de Firebase (revisa spam) y vuelve a tocar **Ya verifiqué mi correo**.
 3. En **Ajustes → Plataforma** verás a todas las empresas, y podrás cambiar su plan o suspenderlas. Para entrar solo escribe `vialtis` en el campo de usuario.
 

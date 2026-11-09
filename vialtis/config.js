@@ -4,16 +4,16 @@
 window.VIALTIS_VERSION = '3';
 window.CFG = {
   firebase: {
-    apiKey: 'REEMPLAZAR',
-    authDomain: 'REEMPLAZAR.firebaseapp.com',
-    databaseURL: 'https://REEMPLAZAR-default-rtdb.firebaseio.com',
-    projectId: 'REEMPLAZAR',
-    appId: 'REEMPLAZAR'
+    apiKey: 'AIzaSyBCu8E1b_xoHeqpRuchnanao9vfTy84OIQ',
+    authDomain: 'transpais-fids.firebaseapp.com',
+    databaseURL: 'https://transpais-fids-default-rtdb.firebaseio.com',
+    projectId: 'transpais-fids',
+    appId: '1:562920108882:web:4b61a6cd076c407eb8408b'
   },
   plataforma: {
     nombre: 'VIALTIS',
-    dueno: 'vialtis@gmail.com',                 /* correo del dueño de la plataforma (ve todas las empresas) */
-    alias: { vialtis: 'vialtis@gmail.com' },     /* usuario corto → correo, para escribir "vialtis" al entrar */
+    dueno: 'quinterodanielxzs@gmail.com',                 /* correo del dueño de la plataforma (ve todas las empresas) */
+    alias: { vialtis: 'quinterodanielxzs@gmail.com' },     /* usuario corto → correo, para escribir "vialtis" al entrar */
     tz: 'America/Matamoros'                      /* zona horaria de las empresas (cambiar si hace falta) */
   },
   planes: {

@@ -3,10 +3,10 @@
     ".read": false,
     ".write": false,
     "usuarios": {
-      ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+      ".read": "auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && ((newData.child('empresa').val() === auth.uid && newData.child('rol').val() === 'admin') || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === newData.child('empresa').val() && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true) || (auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && root.child('usuarios').child(auth.uid).child('empresa').val() === data.child('empresa').val() && !newData.exists() && $uid !== data.child('empresa').val())",
+        ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && ((newData.child('empresa').val() === auth.uid && newData.child('rol').val() === 'admin') || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === newData.child('empresa').val() && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true) || (auth != null && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && root.child('usuarios').child(auth.uid).child('empresa').val() === data.child('empresa').val() && !newData.exists() && $uid !== data.child('empresa').val())",
         ".validate": "newData.hasChildren(['empresa','rol','email']) && (newData.child('rol').val() === 'admin' || newData.child('rol').val() === 'taquillero') && newData.child('email').isString() && newData.child('empresa').isString()",
         "inv": {
           ".validate": "newData.isString() && newData.val().length <= 40"
@@ -28,21 +28,21 @@
     },
     "equipos": {
       "$e": {
-        ".read": "(auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin') || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+        ".read": "(auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin') || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)",
         "$uid": {
-          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && (auth.uid === $e || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === $e && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && $uid !== $e) || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $uid && !data.exists() && (auth.uid === $e || (root.child('invitaciones').child(newData.child('inv').val()).child('empresa').val() === $e && root.child('invitaciones').child(newData.child('inv').val()).child('rol').val() === newData.child('rol').val() && root.child('invitaciones').child(newData.child('inv').val()).child('exp').val() > now))) || (auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && $uid !== $e) || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)",
           ".validate": "newData.hasChildren(['email','rol']) && (newData.child('rol').val() === 'admin' || newData.child('rol').val() === 'taquillero')"
         }
       }
     },
     "empresas": {
-      ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+      ".read": "auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true",
       "$e": {
         ".read": true,
-        ".write": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+        ".write": "auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true",
         "meta": {
           ".write": "auth != null && auth.token.email_verified === true && auth.uid === $e && !data.exists()",
-          ".validate": "newData.hasChildren(['nombre','plan','creada']) && newData.child('nombre').isString() && newData.child('nombre').val().length <= 60 && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)) && newData.child('creada').isNumber()",
+          ".validate": "newData.hasChildren(['nombre','plan','creada']) && newData.child('nombre').isString() && newData.child('nombre').val().length <= 60 && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)) && newData.child('creada').isNumber()",
           "nombre": {
             ".write": "auth != null && root.child('usuarios').child(auth.uid).child('empresa').val() === $e && root.child('usuarios').child(auth.uid).child('rol').val() === 'admin' && root.child('empresas').child($e).child('meta').child('suspendida').val() !== true",
             ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
@@ -183,10 +183,10 @@
     },
     "plataforma": {
       "empresas": {
-        ".read": "auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true",
+        ".read": "auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true",
         "$e": {
-          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $e && !data.exists()) || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
-          ".validate": "newData.hasChildren(['nombre','plan','creada']) && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true))",
+          ".write": "(auth != null && auth.token.email_verified === true && auth.uid === $e && !data.exists()) || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)",
+          ".validate": "newData.hasChildren(['nombre','plan','creada']) && (newData.child('plan').val() === 'gratis' || (auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true))",
           "nombre": {
             ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 60"
           }
@@ -227,8 +227,8 @@
           }
         }
       },
-      ".write": "(auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
-      ".read": "(auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)"
+      ".write": "(auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)",
+      ".read": "(auth != null && auth.token.email === 'quinterodanielxzs@gmail.com' && auth.token.email_verified === true)"
     }
   }
 }
