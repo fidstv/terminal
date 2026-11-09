@@ -21,7 +21,7 @@ function renderTV() {
   $('tv-brand').innerHTML = a.marca.logo ? '<img src="' + esc(a.marca.logo) + '" alt="">' : esc((a.marca.nombre || nombre || CFG.plataforma.nombre).toUpperCase().slice(0, 24));
   $('tv-title').textContent = 'SALIDAS DE AUTOBUSES'; $('tv-sub').textContent = 'PANTALLAS ' + CFG.plataforma.nombre;
   $('tv-time').textContent = n.hh + ':' + n.mm + ':' + n.ss;
-  $('tv-date').textContent = new Intl.DateTimeFormat('es-MX', { timeZone: CFG.plataforma.tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(nowMs()));
+  $('tv-date').textContent = new Intl.DateTimeFormat('es-MX', { timeZone: zona(), weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(nowMs()));
   const susp = !!(S.meta && S.meta.suspendida); $('tv-susp').classList.toggle('hidden', !susp);
   if (tvVista === 'anden') { renderAnden(list); return; }
   const g = a.pantalla.anden;
@@ -100,7 +100,10 @@ function tvPair() {
     });
   })();
 }
-const qrImg = function (data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=8&data=' + encodeURIComponent(data); };
+/* El QR se genera aquí mismo (qrcode.js): funciona sin internet y nadie de fuera ve el código */
+const qrImg = function (data, size) {
+  try { const q = qrcode(0, 'M'); q.addData(data); q.make(); const c = Math.max(2, Math.floor(size / (q.getModuleCount() + 8))); return q.createDataURL(c, c * 4); } catch (e) { return ''; }
+};
 
 function startTV(vista) {
   tvVista = vista; document.body.classList.add('tv-mode'); $('gate').classList.add('hidden'); $('tv').classList.remove('hidden');

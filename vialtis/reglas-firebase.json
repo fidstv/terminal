@@ -60,6 +60,9 @@
             "nombre": {
               ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 24"
             }
+          },
+          "zona": {
+            ".validate": "newData.isString() && newData.val().length <= 40 && newData.val().matches(/^[A-Za-z_]+\\/[A-Za-z_\\/-]+$/)"
           }
         },
         "rutas": {
@@ -224,7 +227,8 @@
           }
         }
       },
-      ".write": "(auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)"
+      ".write": "(auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)",
+      ".read": "(auth != null && auth.token.email === 'vialtis@gmail.com' && auth.token.email_verified === true)"
     }
   }
 }

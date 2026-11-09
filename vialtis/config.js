@@ -1,7 +1,7 @@
 /* Plataforma Vialtis · configuración.
    1) Crea un proyecto NUEVO en Firebase (ver docs/INSTALAR.md) y pega aquí sus datos en "firebase".
    2) Pon tu correo de dueño de la plataforma en "plataforma.dueno" (debe ser el mismo de reglas-firebase.json). */
-window.VIALTIS_VERSION = '2';
+window.VIALTIS_VERSION = '3';
 window.CFG = {
   firebase: {
     apiKey: 'REEMPLAZAR',

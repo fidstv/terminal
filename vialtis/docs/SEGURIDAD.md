@@ -1,6 +1,6 @@
 # Seguridad: qué protegen las reglas y qué no
 
-## Qué se comprueba (77 pruebas automáticas en `pruebas/reglas_test.js`)
+## Qué se comprueba (83 pruebas automáticas en `pruebas/casos.js`)
 - Para crear una cuenta, el correo debe estar **verificado**.
 - Cada persona solo lee su propio perfil. Nadie lista usuarios ni empresas, salvo el dueño de la plataforma.
 - **Una empresa no puede leer ni escribir en otra.** Escribir salidas lo hace cualquier miembro de la empresa; **rutas, voces, pantalla y ajustes**, solo los administradores.
@@ -16,8 +16,13 @@
 - **Las salidas, los textos y los ajustes de pantalla de cada empresa son públicos** porque las TVs no inician sesión. Es información de salidas de autobuses; no pongas datos privados en ellas.
 - **No hay límite de empresas nuevas por persona más allá de una cuenta = una empresa**, ni límite de velocidad. Para evitar abusos, Firebase ofrece *App Check*; conviene activarlo si abres el registro al público.
 - El límite de TVs y rutas del plan se muestra en el panel, pero **no se hace cumplir en las reglas**.
-- El código QR de la TV nueva se genera con un servicio externo (api.qrserver.com), que ve la dirección de vinculación. Si no carga, la TV muestra solo el número.
 - Los correos de verificación y de cambio de contraseña los envía Firebase.
 
 ## Cómo se probó
-Las reglas se probaron con un **simulador** (`rules-eval.js`), no con el emulador oficial de Firebase, que aquí no estaba disponible. Si al pegar las reglas en Firebase una línea sale marcada en rojo, esa manda: corrige o pide ayuda. Conviene repetir la prueba rápida de `INSTALAR.md` (punto 5) con dos empresas reales.
+Las mismas 83 pruebas corren de dos formas:
+- `npm test` → con el **simulador** (`rules-eval.js`), en un segundo y sin instalar nada.
+- `npm run test:emulador` → con el **emulador oficial de Firebase** (el mismo motor que Firebase real; necesita Java).
+
+En GitHub corren solas cada vez que cambia algo en `vialtis/` (pestaña **Actions**, "Vialtis · reglas de seguridad"). Si una sale en rojo, no publiques esas reglas.
+
+La app completa (registro con verificación de correo, rutas, salidas, invitación, vincular TV, zona horaria, panel del dueño) también se probó con el SDK real de Firebase 10 contra los emuladores oficiales. Aun así, conviene repetir la prueba rápida de `INSTALAR.md` (punto 5) con dos empresas reales.

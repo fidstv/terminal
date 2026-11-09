@@ -27,6 +27,8 @@ let auth = null, db = null, srvOff = 0, FB_OK = false;
   try {
     if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(CFG.firebase);
     auth = firebase.auth(); db = firebase.database(); FB_OK = true;
+    /* Solo para pruebas locales con los emuladores de Firebase (en config.js: emulador: { auth: '127.0.0.1:9099', db: '127.0.0.1:9000' }) */
+    if (CFG.emulador && !DEMO) { auth.useEmulator('http://' + CFG.emulador.auth); const h = CFG.emulador.db.split(':'); db.useEmulator(h[0], +h[1]); }
     db.ref('.info/serverTimeOffset').on('value', function (s) { srvOff = s.val() || 0; });
   } catch (e) { console.error('Firebase:', e); }
 })();
@@ -34,8 +36,11 @@ const TS = function () { return (typeof firebase !== 'undefined' && firebase.dat
 const nowMs = function () { return Date.now() + srvOff; };
 
 /* ---------- Tiempo (zona horaria de la plataforma) ---------- */
+/* Zona horaria: la que eligió la empresa en Ajustes, o la de la plataforma */
+const zonaOK = function (z) { try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; } };
+const zona = function () { const z = typeof S !== 'undefined' && S.aj && S.aj.zona; return z && zonaOK(z) ? z : CFG.plataforma.tz; };
 function tzParts(ms) {
-  const f = new Intl.DateTimeFormat('en-CA', { timeZone: CFG.plataforma.tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: zona(), hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const p = {}; f.formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
   return { key: p.year + '-' + p.month + '-' + p.day, min: (+p.hour % 24) * 60 + (+p.minute), sec: +p.second, hh: pad(+p.hour % 24), mm: p.minute, ss: p.second };
 }

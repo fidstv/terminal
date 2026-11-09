@@ -23,7 +23,8 @@ Pantallas de salidas para terminales de autobuses, con voceo automático por tex
 | `demo.js`, `rules-eval.js` | Modo demostración y simulador de reglas |
 | `musica/` | Música de fondo (3 canciones incluidas) |
 | `sw.js`, `manifest.json`, iconos | Instalación como app y arranque sin internet |
-| `pruebas/` | Pruebas de las reglas de seguridad |
+| `pruebas/`, `package.json`, `firebase.json` | Pruebas de las reglas de seguridad (simulador y emulador oficial) |
+| `qrcode.js` | Genera el código QR de la TV nueva sin servicios externos (licencia MIT) |
 | `docs/` | Guías |
 
 ## Guías
